@@ -9,11 +9,11 @@ import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import AuthLayout from '@/layouts/auth-layout';
+import Auth from '@/layouts/auth';
 
 export default function ForgotPassword({ status }: { status?: string }) {
     return (
-        <AuthLayout
+        <Auth
             title="Forgot password"
             description="Enter your email to receive a password reset link"
         >
@@ -64,6 +64,6 @@ export default function ForgotPassword({ status }: { status?: string }) {
                     <TextLink href={login()}>log in</TextLink>
                 </div>
             </div>
-        </AuthLayout>
+        </Auth>
     );
 }

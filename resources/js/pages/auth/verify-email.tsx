@@ -2,14 +2,14 @@
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
-import AuthLayout from '@/layouts/auth-layout';
+import Auth from '@/layouts/auth';
 import { logout } from '@/routes';
 import { send } from '@/routes/verification';
 import { Form, Head } from '@inertiajs/react';
 
 export default function VerifyEmail({ status }: { status?: string }) {
     return (
-        <AuthLayout
+        <Auth
             title="Verify email"
             description="Please verify your email address by clicking on the link we just emailed to you."
         >
@@ -39,6 +39,6 @@ export default function VerifyEmail({ status }: { status?: string }) {
                     </>
                 )}
             </Form>
-        </AuthLayout>
+        </Auth>
     );
 }

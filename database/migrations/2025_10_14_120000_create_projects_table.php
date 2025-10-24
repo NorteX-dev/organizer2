@@ -1,0 +1,27 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration {
+	public function up(): void
+	{
+		Schema::create("projects", function (Blueprint $table) {
+			$table->id();
+			$table->foreignId("team_id")->constrained()->cascadeOnDelete();
+			$table->string("name");
+			$table->text("description")->nullable();
+			$table->string("github_repo")->nullable(); // owner/repo
+			$table->integer("default_sprint_length")->default(14); // dni
+			$table->enum("status", ["active", "archived", "paused"])->default("active");
+			$table->timestamps();
+			$table->softDeletes();
+		});
+	}
+
+	public function down(): void
+	{
+		Schema::dropIfExists("projects");
+	}
+};
