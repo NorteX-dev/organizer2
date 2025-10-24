@@ -4,7 +4,7 @@ import { Link } from '@inertiajs/react';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { ReactNode } from 'react';
 
-export default function Auth({
+export default function AuthLayout({
     children,
     title,
     description,

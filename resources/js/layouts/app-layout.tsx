@@ -1,8 +1,6 @@
 import { type BreadcrumbItem } from '@/types';
 import { type ReactNode } from 'react';
 import { AppHeader } from '@/components/app-header';
-import { AppContent } from '@/components/app-content';
-import { AppShell } from '@/components/app-shell';
 
 interface AppLayoutProps {
     children: ReactNode;
@@ -10,8 +8,10 @@ interface AppLayoutProps {
 }
 
 export default ({ children, breadcrumbs }: AppLayoutProps) => (
-    <AppShell>
+    <div className="flex min-h-screen w-full flex-col">
         <AppHeader breadcrumbs={breadcrumbs} />
-        <AppContent>{children}</AppContent>
-    </AppShell>
+        <main className="mx-auto flex h-full w-full max-w-7xl flex-1 flex-col gap-4 rounded-xl">
+            {children}
+        </main>
+    </div>
 );

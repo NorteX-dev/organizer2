@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import Auth from '@/layouts/auth';
+import AuthLayout from '@/layouts/auth-layout';
 import { Head } from '@inertiajs/react';
 import { Github } from 'lucide-react';
 
@@ -9,7 +9,7 @@ interface LoginProps {
 
 export default function Login({ error }: LoginProps) {
     return (
-        <Auth
+        <AuthLayout
             title="Log in to your account"
             description="Sign in with your GitHub account to continue"
         >
@@ -34,6 +34,6 @@ export default function Login({ error }: LoginProps) {
                     </div>
                 )}
             </div>
-        </Auth>
+        </AuthLayout>
     );
 }

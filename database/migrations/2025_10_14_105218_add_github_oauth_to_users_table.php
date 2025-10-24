@@ -11,8 +11,7 @@ return new class extends Migration {
 	public function up(): void
 	{
 		Schema::table("users", function (Blueprint $table) {
-			$table->dropColumn("password");
-			$table->string("github_id")->nullable()->unique()->after("email");
+			$table->string("github_id")->unique()->after("email");
 			$table->string("github_token")->nullable()->after("github_id");
 			$table->string("github_refresh_token")->nullable()->after("github_token");
 		});
@@ -24,7 +23,6 @@ return new class extends Migration {
 	public function down(): void
 	{
 		Schema::table("users", function (Blueprint $table) {
-			$table->string("password")->nullable()->after("email");
 			$table->dropColumn(["github_id", "github_token", "github_refresh_token"]);
 		});
 	}
