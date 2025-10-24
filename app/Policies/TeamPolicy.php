@@ -4,84 +4,49 @@ namespace App\Policies;
 
 use App\Models\Team;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
+use Illuminate\Auth\Access\HandlesAuthorization;
 
 class TeamPolicy
 {
-	/**
-	 * Determine whether the user can view any models.
-	 */
-	public function viewAny(User $user): bool
-	{
-		// All authenticated users can view teams list
-		return true;
-	}
+    use HandlesAuthorization;
 
-	/**
-	 * Determine whether the user can view the model.
-	 */
-	public function view(User $user, Team $team): bool
-	{
-		// User must be a member of the team
-		return $user->teams()->where("teams.id", $team->id)->exists();
-	}
+    /**
+     * Determine whether the user can view any teams.
+     */
+    public function viewAny(User $user)
+    {
+        return true;
+    }
 
-	/**
-	 * Determine whether the user can create models.
-	 */
-	public function create(User $user): bool
-	{
-		// All authenticated users can create teams
-		return true;
-	}
+    /**
+     * Determine whether the user can view the team.
+     */
+    public function view(User $user, Team $team)
+    {
+        return $user->teams()->where('team_id', $team->id)->exists();
+    }
 
-	/**
-	 * Determine whether the user can update the model.
-	 */
-	public function update(User $user, Team $team): bool
-	{
-		// User must be a member of the team
-		return $user->teams()->where("teams.id", $team->id)->exists();
-	}
+    /**
+     * Determine whether the user can create teams.
+     */
+    public function create(User $user)
+    {
+        return true;
+    }
 
-	/**
-	 * Determine whether the user can delete the model.
-	 */
-	public function delete(User $user, Team $team): bool
-	{
-		// User must be a member of the team
-		return $user->teams()->where("teams.id", $team->id)->exists();
-	}
+    /**
+     * Determine whether the user can update the team.
+     */
+    public function update(User $user, Team $team)
+    {
+        return $user->teams()->where('team_id', $team->id)->exists();
+    }
 
-	/**
-	 * Determine whether the user can restore the model.
-	 */
-	public function restore(User $user, Team $team): bool
-	{
-		return $user->teams()->where("teams.id", $team->id)->exists();
-	}
-
-	/**
-	 * Determine whether the user can permanently delete the model.
-	 */
-	public function forceDelete(User $user, Team $team): bool
-	{
-		return $user->teams()->where("teams.id", $team->id)->exists();
-	}
-
-	/**
-	 * Determine whether the user can add members to the team.
-	 */
-	public function addMember(User $user, Team $team): bool
-	{
-		return $user->teams()->where("teams.id", $team->id)->exists();
-	}
-
-	/**
-	 * Determine whether the user can remove members from the team.
-	 */
-	public function removeMember(User $user, Team $team): bool
-	{
-		return $user->teams()->where("teams.id", $team->id)->exists();
-	}
+    /**
+     * Determine whether the user can delete the team.
+     */
+    public function delete(User $user, Team $team)
+    {
+        return $user->teams()->where('team_id', $team->id)->exists();
+    }
 }

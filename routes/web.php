@@ -27,6 +27,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('dashboard', function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
+
+    // Team routes
+    Route::resource('teams', App\Http\Controllers\TeamController::class);
+    Route::post('teams/{team}/members', [App\Http\Controllers\TeamController::class, 'addMember'])->name('teams.members.add');
+    Route::delete('teams/{team}/members/{user}', [App\Http\Controllers\TeamController::class, 'removeMember'])->name('teams.members.remove');
+    Route::post('teams/{team}/switch', [App\Http\Controllers\TeamController::class, 'switch'])->name('teams.switch');
 });
 
 require __DIR__.'/settings.php';
+ 

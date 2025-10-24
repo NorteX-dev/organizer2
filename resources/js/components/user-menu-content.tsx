@@ -5,11 +5,12 @@ import {
     DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { UserInfo } from '@/components/user-info';
+import { TeamSelector } from '@/components/team-selector';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import { logout } from '@/routes';
 import { edit } from '@/routes/profile';
-import { type User } from '@/types';
-import { Link, router } from '@inertiajs/react';
+import { type User, type Team, type SharedData } from '@/types';
+import { Link, router, usePage } from '@inertiajs/react';
 import { LogOut, Settings } from 'lucide-react';
 
 interface UserMenuContentProps {
@@ -18,6 +19,8 @@ interface UserMenuContentProps {
 
 export function UserMenuContent({ user }: UserMenuContentProps) {
     const cleanup = useMobileNavigation();
+    const page = usePage<SharedData>();
+    const { teams, currentTeam } = page.props;
 
     const handleLogout = () => {
         cleanup();
@@ -46,6 +49,7 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
                     </Link>
                 </DropdownMenuItem>
             </DropdownMenuGroup>
+            <TeamSelector teams={teams || []} currentTeam={currentTeam} />
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
                 <Link
