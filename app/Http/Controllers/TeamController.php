@@ -13,6 +13,7 @@ use Inertia\Inertia;
 class TeamController extends Controller
 {
     use AuthorizesRequests;
+    
     /**
      * Display a listing of teams.
      */
