@@ -34,7 +34,7 @@ export default function TeamsEdit({ team }: TeamsEditProps) {
                 </Link>
             </div>
 
-            <HeaderSection title={`Edit Team`} description="Edit team details." className="mt-0" />
+            <HeaderSection title="Edit Team" description="Edit team details." className="mt-0" />
 
             <Card>
                 <CardHeader>

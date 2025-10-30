@@ -8,9 +8,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class ProjectController extends Controller
 {
+    use AuthorizesRequests;
+
     public function index(Request $request)
     {
         $user = Auth::user();
@@ -33,6 +36,9 @@ class ProjectController extends Controller
             'default_sprint_length' => 'nullable|integer',
             'status' => 'nullable|string',
         ]);
+        if (!isset($validated['status']) || $validated['status'] === null) {
+            $validated['status'] = 'active';
+        }
         $validated['team_id'] = $team->id;
         $project = Project::create($validated);
         return Redirect::route('projects.edit', $project->id)->with('success', 'Project created successfully.');

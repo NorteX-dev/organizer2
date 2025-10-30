@@ -13,7 +13,6 @@ class ProjectPolicy
 	 */
 	public function viewAny(User $user): bool
 	{
-		// User must have a current team to view projects
 		return $user->currentTeam() !== null;
 	}
 
@@ -22,7 +21,6 @@ class ProjectPolicy
 	 */
 	public function view(User $user, Project $project): bool
 	{
-		// User must be a member of the team that owns the project
 		return $user->teams()->where("teams.id", $project->team_id)->exists();
 	}
 
@@ -31,7 +29,6 @@ class ProjectPolicy
 	 */
 	public function create(User $user): bool
 	{
-		// User must have a current team to create projects
 		return $user->currentTeam() !== null;
 	}
 
@@ -40,7 +37,6 @@ class ProjectPolicy
 	 */
 	public function update(User $user, Project $project): bool
 	{
-		// User must be a member of the team that owns the project
 		return $user->teams()->where("teams.id", $project->team_id)->exists();
 	}
 
@@ -49,7 +45,6 @@ class ProjectPolicy
 	 */
 	public function delete(User $user, Project $project): bool
 	{
-		// User must be a member of the team that owns the project
 		return $user->teams()->where("teams.id", $project->team_id)->exists();
 	}
 
