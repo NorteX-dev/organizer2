@@ -1,4 +1,7 @@
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import AppLayout from "@/layouts/app-layout";
 import { Head, router } from "@inertiajs/react";
 import { useState } from "react";
@@ -56,62 +59,57 @@ export default function ProjectEditPage({ project: initial }: PageProps) {
             ]}
         >
             <Head title={`Edit Project: ${project.name}`} />
-            <div className="mx-auto max-w-xl p-4">
+            <div className="mt-8">
                 <h1 className="mb-4 text-2xl font-bold">Edit Project</h1>
                 <form className="space-y-5" onSubmit={handleSave}>
-                    <div>
-                        <label className="mb-1 block font-medium">Name</label>
-                        <input
-                            name="name"
-                            value={project.name ?? ""}
-                            onChange={handleChange}
-                            className="input w-full"
-                            required
-                        />
+                    <div className="space-y-2">
+                        <Label htmlFor="name">Name</Label>
+                        <Input id="name" name="name" value={project.name ?? ""} onChange={handleChange} required />
                     </div>
-                    <div>
-                        <label className="mb-1 block font-medium">Description</label>
-                        <textarea
+                    <div className="space-y-2">
+                        <Label htmlFor="description">Description</Label>
+                        <Textarea
+                            id="description"
                             name="description"
                             value={project.description ?? ""}
                             onChange={handleChange}
-                            className="input min-h-[3rem] w-full"
                         />
                     </div>
-                    <div>
-                        <label className="mb-1 block font-medium">GitHub Repo</label>
-                        <input
+                    <div className="space-y-2">
+                        <Label htmlFor="github_repo">GitHub Repo</Label>
+                        <Input
+                            id="github_repo"
                             name="github_repo"
                             value={project.github_repo ?? ""}
                             onChange={handleChange}
-                            className="input w-full"
                         />
                     </div>
-                    <div>
-                        <label className="mb-1 block font-medium">Default Sprint Length</label>
-                        <input
+                    <div className="space-y-2">
+                        <Label htmlFor="default_sprint_length">Default Sprint Length</Label>
+                        <Input
+                            id="default_sprint_length"
                             name="default_sprint_length"
                             type="number"
                             value={project.default_sprint_length ?? ""}
                             onChange={handleChange}
-                            className="input w-full"
                         />
                     </div>
-                    <div>
-                        <label className="mb-1 block font-medium">Status</label>
-                        <input
-                            name="status"
-                            value={project.status ?? ""}
-                            onChange={handleChange}
-                            className="input w-full"
-                        />
+                    <div className="space-y-2">
+                        <Label htmlFor="status">Status</Label>
+                        <Input id="status" name="status" value={project.status ?? ""} onChange={handleChange} />
                     </div>
                     {error && <div className="text-sm text-red-500">{error}</div>}
                     <div className="flex gap-2 pt-2">
-                        <Button type="submit" variant="default" disabled={loading}>
+                        <Button type="submit" disabled={loading}>
                             Save
                         </Button>
-                        <Button type="button" variant="destructive" disabled={loading} onClick={handleDelete}>
+                        <Button
+                            type="button"
+                            variant="destructive"
+                            disabled={loading}
+                            onClick={handleDelete}
+                            className="cursor-pointer"
+                        >
                             Delete
                         </Button>
                     </div>

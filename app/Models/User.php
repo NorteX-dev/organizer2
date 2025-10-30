@@ -70,12 +70,10 @@ class User extends Authenticatable
         $teamId = session("current_team_id");
 
         if ($teamId) {
-            /** @var Team|null $team */
             $team = $this->teams()->find($teamId);
             return $team;
         }
 
-        /** @var Team|null $team */
         $team = $this->teams()->first();
         return $team;
     }
