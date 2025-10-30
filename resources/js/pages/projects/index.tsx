@@ -1,21 +1,15 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import AppLayout from "@/layouts/app-layout";
+import type { Team, Project } from "@/types";
 import { Head, Link, router } from "@inertiajs/react";
 import { useState } from "react";
+import { HeaderSection } from "@/components/header-section";
 
-interface Project {
-    id: number;
-    name: string;
-    status: string;
-}
 
-interface PageProps {
-    projects: Project[];
-    team: any;
-}
-
-export default function ProjectsIndexPage({ projects, team }: PageProps) {
+export default function ProjectsIndexPage({ projects, team }: { projects: Project[], team: Team }) {
     const [open, setOpen] = useState(false);
     const [form, setForm] = useState({ name: "", status: "" });
     const [loading, setLoading] = useState(false);
@@ -30,11 +24,6 @@ export default function ProjectsIndexPage({ projects, team }: PageProps) {
                 setOpen(false);
                 setLoading(false);
                 setForm({ name: "", status: "" });
-                // Find new project id and redirect
-                if (page.props.projects && page.props.projects.length > 0) {
-                    const maxId = Math.max(...page.props.projects.map((p: any) => p.id));
-                    router.visit(`/projects/${maxId}/edit`);
-                }
             },
             onError: (err) => {
                 setLoading(false);
@@ -45,42 +34,45 @@ export default function ProjectsIndexPage({ projects, team }: PageProps) {
     return (
         <AppLayout breadcrumbs={[{ title: "Projects", href: "/projects" }]}>
             <Head title="Projects" />
-            <div className="mb-4 flex items-center justify-between">
-                <h1 className="text-2xl font-bold">Projects</h1>
-                <Dialog open={open} onOpenChange={setOpen}>
-                    <DialogTrigger asChild>
-                        <Button variant="default">New Project</Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>New Project</DialogTitle>
-                        </DialogHeader>
-                        <form className="space-y-4" onSubmit={handleSubmit}>
-                            <div>
-                                <label className="mb-2 block text-sm font-medium">Name</label>
-                                <input
-                                    className="input w-full"
-                                    required
-                                    value={form.name}
-                                    onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                                />
-                            </div>
-                            <div>
-                                <label className="mb-2 block text-sm font-medium">Status</label>
-                                <input
-                                    className="input w-full"
-                                    value={form.status}
-                                    onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}
-                                />
-                            </div>
-                            {error && <div className="text-sm text-red-500">{error}</div>}
-                            <Button type="submit" disabled={loading}>
-                                Create
-                            </Button>
-                        </form>
-                    </DialogContent>
-                </Dialog>
-            </div>
+            <HeaderSection
+                title="Projects"
+                description="Manage your team's projects."
+                rightHandItem={
+                    <Dialog open={open} onOpenChange={setOpen}>
+                        <DialogTrigger asChild>
+                            <Button variant="default">New Project</Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>New Project</DialogTitle>
+                            </DialogHeader>
+                            <form className="space-y-4" onSubmit={handleSubmit}>
+                                <div>
+                                    <Label className="mb-2 block text-sm font-medium">Name</Label>
+                                    <Input
+                                        className="input w-full"
+                                        required
+                                        value={form.name}
+                                        onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                                    />
+                                </div>
+                                <div>
+                                    <Label className="mb-2 block text-sm font-medium">Status</Label>
+                                    <Input
+                                        className="input w-full"
+                                        value={form.status}
+                                        onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}
+                                    />
+                                </div>
+                                {error && <div className="text-sm text-red-500">{error}</div>}
+                                <Button type="submit" disabled={loading}>
+                                    Create
+                                </Button>
+                            </form>
+                        </DialogContent>
+                    </Dialog>
+                }
+            />
             <div>
                 <div className="grid gap-2">
                     {projects.length === 0 ? (

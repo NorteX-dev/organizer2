@@ -1,10 +1,11 @@
 import { AppHeader } from "@/components/app-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import teams from "@/routes/teams";
+import { HeaderSection } from "@/components/header-section";
 import { type Team } from "@/types";
 import { Link, router } from "@inertiajs/react";
 import { Plus, Settings, Trash2, Users } from "lucide-react";
+import AppLayout from "@/layouts/app-layout";
 
 interface TeamsIndexProps {
     teams: Team[];
@@ -14,27 +15,25 @@ interface TeamsIndexProps {
 export default function TeamsIndex({ teams: teamsData, currentTeam }: TeamsIndexProps) {
     const handleDeleteTeam = (team: Team) => {
         if (confirm(`Are you sure you want to delete "${team.name}"? This action cannot be undone.`)) {
-            router.delete(teams.destroy.url({ team: team.id }));
+            router.delete(`/teams/${team.id}`);
         }
     };
 
     return (
-        <div className="min-h-screen bg-background">
-            <AppHeader />
-            <div className="mx-auto max-w-7xl px-4 py-8">
-                <div className="mb-8 flex items-center justify-between">
-                    <div>
-                        <h1 className="text-3xl font-bold tracking-tight">Teams</h1>
-                        <p className="text-muted-foreground">Manage your teams and collaborate with others.</p>
-                    </div>
-                    <Link href={teams.create.url()}>
+        <AppLayout breadcrumbs={[{ title: "Projects", href: "/projects" }]}>
+            <HeaderSection
+                title="Teams"
+                description="Manage your teams and collaborate with others."
+                rightHandItem={
+                    <Link href="/teams/create">
                         <Button>
                             <Plus className="mr-2 h-4 w-4" />
                             Create Team
                         </Button>
                     </Link>
-                </div>
-
+                }
+            />
+            <div>
                 {teamsData.length === 0 ? (
                     <Card>
                         <CardContent className="flex flex-col items-center justify-center py-12">
@@ -43,7 +42,7 @@ export default function TeamsIndex({ teams: teamsData, currentTeam }: TeamsIndex
                             <p className="mb-4 text-center text-muted-foreground">
                                 Create your first team to start collaborating with others.
                             </p>
-                            <Link href={teams.create.url()}>
+                            <Link href="/teams/create">
                                 <Button>
                                     <Plus className="mr-2 h-4 w-4" />
                                     Create Team
@@ -73,7 +72,7 @@ export default function TeamsIndex({ teams: teamsData, currentTeam }: TeamsIndex
                                 </CardHeader>
                                 <CardContent>
                                     <div className="flex gap-2">
-                                        <Link href={teams.show.url({ team: team.id })} className="flex-1">
+                                        <Link href={`/teams/${team.id}`} className="flex-1">
                                             <Button variant="outline" className="w-full">
                                                 <Settings className="mr-2 h-4 w-4" />
                                                 Manage
@@ -94,6 +93,6 @@ export default function TeamsIndex({ teams: teamsData, currentTeam }: TeamsIndex
                     </div>
                 )}
             </div>
-        </div>
+        </AppLayout>
     );
 }

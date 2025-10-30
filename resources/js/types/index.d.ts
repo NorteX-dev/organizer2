@@ -51,3 +51,9 @@ export interface Team {
     updated_at: string;
     users?: User[];
 }
+
+export interface Project {
+    id: number;
+    name: string;
+    status: string;
+}

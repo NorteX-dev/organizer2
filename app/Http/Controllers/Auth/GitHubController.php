@@ -38,7 +38,7 @@ class GitHubController extends Controller
 
 			Auth::login($user, true);
 
-			return redirect()->intended("/dashboard");
+			return redirect()->intended("/projects");
 		} catch (\Exception $e) {
 			error_log($e);
 

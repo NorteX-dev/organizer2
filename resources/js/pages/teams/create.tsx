@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import teams from "@/routes/teams";
 import { Link, useForm } from "@inertiajs/react";
 import { ArrowLeft, Users } from "lucide-react";
 
@@ -14,7 +13,7 @@ export default function TeamsCreate() {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        post(teams.store.url());
+        post("/teams");
     };
 
     return (
@@ -23,7 +22,7 @@ export default function TeamsCreate() {
             <div className="mx-auto max-w-2xl px-4 py-8">
                 <div className="mb-8">
                     <Link
-                        href={teams.index.url()}
+                        href="/teams"
                         className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
                     >
                         <ArrowLeft className="mr-2 h-4 w-4" />
@@ -58,7 +57,7 @@ export default function TeamsCreate() {
                                 <Button type="submit" disabled={processing}>
                                     {processing ? "Creating..." : "Create Team"}
                                 </Button>
-                                <Link href={teams.index.url()}>
+                                <Link href="/teams">
                                     <Button variant="outline">Cancel</Button>
                                 </Link>
                             </div>

@@ -14,8 +14,6 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { UserMenuContent } from "@/components/user-menu-content";
 import { useInitials } from "@/hooks/use-initials";
 import { cn, isSameUrl, resolveUrl } from "@/lib/utils";
-import { projects } from "@/routes";
-import teams from "@/routes/teams";
 import { type BreadcrumbItem, type NavItem, type SharedData } from "@/types";
 import { Link, usePage } from "@inertiajs/react";
 import { LayoutGrid, Menu, Users } from "lucide-react";
@@ -25,12 +23,12 @@ import AppLogoIcon from "./app-logo-icon";
 const mainNavItems: NavItem[] = [
     {
         title: "Projects",
-        href: projects(),
+        href: "/projects",
         icon: LayoutGrid,
     },
     {
         title: "Teams",
-        href: teams.index(),
+        href: "/teams",
         icon: Users,
     },
 ];
@@ -102,7 +100,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                         </Sheet>
                     </div>
 
-                    <Link href={projects()} prefetch className="flex items-center space-x-2">
+                    <Link href="/projects" prefetch className="flex items-center space-x-2">
                         <AppLogo />
                     </Link>
 

@@ -1,6 +1,5 @@
 import { DropdownMenuGroup, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import teams from "@/routes/teams";
 import { type Team } from "@/types";
 import { router } from "@inertiajs/react";
 import { Users } from "lucide-react";
@@ -15,7 +14,7 @@ export function TeamSelector({ teams: teamsData, currentTeam }: TeamSelectorProp
         const team = teamsData.find((t) => t.id === parseInt(teamId));
         if (team) {
             router.post(
-                teams.switch.url({ team: team.id }),
+                `/teams/${team.id}/switch`,
                 {},
                 {
                     preserveState: true,
