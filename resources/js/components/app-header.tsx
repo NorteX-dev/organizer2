@@ -16,7 +16,7 @@ import { useInitials } from "@/hooks/use-initials";
 import { cn, isSameUrl, resolveUrl } from "@/lib/utils";
 import { type BreadcrumbItem, type NavItem, type SharedData } from "@/types";
 import { Link, usePage } from "@inertiajs/react";
-import { LayoutGrid, Menu, Users } from "lucide-react";
+import { LayoutDashboard, LayoutGrid, Menu, Users } from "lucide-react";
 import AppLogo from "./app-logo";
 import AppLogoIcon from "./app-logo-icon";
 
@@ -43,6 +43,21 @@ interface AppHeaderProps {
 
 export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
     const page = usePage<SharedData>();
+    type SubpageTab = { title: string; href: string; icon: any; active: boolean };
+    let subpages: SubpageTab[] = [];
+    const lastCrumb = breadcrumbs[breadcrumbs.length - 1];
+    const match = lastCrumb && lastCrumb.href.match(/^\/projects\/(\d+)/);
+    const projectId = match ? match[1] : null;
+    if (projectId) {
+        subpages = [
+            {
+                title: "Sprints",
+                href: `/projects/${projectId}/sprints`,
+                icon: LayoutDashboard,
+                active: page.url.endsWith(`/projects/${projectId}/sprints`),
+            },
+        ];
+    }
     const { auth } = page.props;
     const getInitials = useInitials();
     return (
@@ -181,7 +196,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
             {breadcrumbs.length > 1 && (
                 <div className="flex w-full border-b border-sidebar-border/70">
                     <div className="mx-auto flex h-12 w-full items-center justify-start px-4 text-neutral-500 md:max-w-7xl">
-                        <Breadcrumbs breadcrumbs={breadcrumbs} />
+                        <Breadcrumbs breadcrumbs={breadcrumbs} subpages={subpages} />
                     </div>
                 </div>
             )}

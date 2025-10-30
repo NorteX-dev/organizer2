@@ -57,3 +57,17 @@ export interface Project {
     name: string;
     status: string;
 }
+
+export interface Sprint {
+    id: number;
+    project_id: number;
+    name: string;
+    goal: string;
+    start_date: string;
+    end_date: string;
+    status: string;
+    planned_points: number;
+    completed_points: number;
+    created_at: string;
+    updated_at: string;
+}

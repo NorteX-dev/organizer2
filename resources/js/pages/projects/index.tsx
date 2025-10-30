@@ -109,12 +109,17 @@ export default function ProjectsIndexPage({ projects, team }: { projects: Projec
                                     <tr
                                         key={project.id}
                                         className="cursor-pointer border-b last:border-b-0 hover:bg-gray-50"
-                                        onClick={() => router.visit(`/projects/${project.id}/edit`)}
+                                        onClick={() => router.visit(`/projects/${project.id}/sprints`)}
                                     >
                                         <td className="px-3 py-2">{project.name}</td>
                                         <td className="px-3 py-2">{project.status}</td>
                                         <td className="flex justify-center space-x-2 px-3 py-2">
-                                            <Button variant="outline" size="sm" asChild>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                asChild
+                                                onClick={(e) => e.stopPropagation()}
+                                            >
                                                 <Link href={`/projects/${project.id}/edit`}>
                                                     <PencilIcon />
                                                 </Link>
@@ -122,7 +127,10 @@ export default function ProjectsIndexPage({ projects, team }: { projects: Projec
                                             <Button
                                                 variant="destructive"
                                                 size="sm"
-                                                onClick={(e) => handleDeleteProject(e, project.id)}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDeleteProject(e, project.id);
+                                                }}
                                             >
                                                 <Trash2Icon />
                                             </Button>

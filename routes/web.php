@@ -26,6 +26,7 @@ Route::post('/logout', function () {
 Route::middleware(['auth'])->group(function () {
     // Projects routes
     Route::resource('projects', App\Http\Controllers\ProjectController::class);
+    Route::resource('projects.sprints', App\Http\Controllers\SprintController::class);
 
     // Team routes
     Route::resource('teams', App\Http\Controllers\TeamController::class);

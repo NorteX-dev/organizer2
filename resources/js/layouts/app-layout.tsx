@@ -1,15 +1,24 @@
 import { AppHeader } from "@/components/app-header";
+import { cn } from "@/lib/utils";
 import { type BreadcrumbItem } from "@/types";
 import { type ReactNode } from "react";
 
 interface AppLayoutProps {
     children: ReactNode;
     breadcrumbs?: BreadcrumbItem[];
+    container?: boolean;
 }
 
-export default ({ children, breadcrumbs }: AppLayoutProps) => (
+export default ({ children, breadcrumbs, container = true }: AppLayoutProps) => (
     <div className="flex min-h-screen w-full flex-col">
         <AppHeader breadcrumbs={breadcrumbs} />
-        <main className="mx-auto flex h-full w-full max-w-7xl flex-1 flex-col gap-4 rounded-xl">{children}</main>
+        <main
+            className={cn("flex h-full w-full flex-1 flex-col gap-4 rounded-xl", {
+                container,
+                "px-8 py-4": !container,
+            })}
+        >
+            {children}
+        </main>
     </div>
 );
