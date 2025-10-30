@@ -1,15 +1,15 @@
-import { AppHeader } from '@/components/app-header';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, Users } from 'lucide-react';
-import teams from '@/routes/teams';
+import { AppHeader } from "@/components/app-header";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import teams from "@/routes/teams";
+import { Link, useForm } from "@inertiajs/react";
+import { ArrowLeft, Users } from "lucide-react";
 
 export default function TeamsCreate() {
     const { data, setData, post, processing, errors } = useForm({
-        name: '',
+        name: "",
     });
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -37,9 +37,7 @@ export default function TeamsCreate() {
                             <Users className="h-5 w-5" />
                             Create New Team
                         </CardTitle>
-                        <CardDescription>
-                            Create a new team to collaborate with others on projects.
-                        </CardDescription>
+                        <CardDescription>Create a new team to collaborate with others on projects.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={handleSubmit} className="space-y-6">
@@ -49,18 +47,16 @@ export default function TeamsCreate() {
                                     id="name"
                                     type="text"
                                     value={data.name}
-                                    onChange={(e) => setData('name', e.target.value)}
+                                    onChange={(e) => setData("name", e.target.value)}
                                     placeholder="Enter team name"
-                                    className={errors.name ? 'border-destructive' : ''}
+                                    className={errors.name ? "border-destructive" : ""}
                                 />
-                                {errors.name && (
-                                    <p className="text-sm text-destructive">{errors.name}</p>
-                                )}
+                                {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
                             </div>
 
                             <div className="flex gap-3">
                                 <Button type="submit" disabled={processing}>
-                                    {processing ? 'Creating...' : 'Create Team'}
+                                    {processing ? "Creating..." : "Create Team"}
                                 </Button>
                                 <Link href={teams.index.url()}>
                                     <Button variant="outline">Cancel</Button>

@@ -1,20 +1,9 @@
-import {
-    DropdownMenuGroup,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
-import { type Team } from '@/types';
-import { router } from '@inertiajs/react';
-import { Users } from 'lucide-react';
-import teams from '@/routes/teams';
+import { DropdownMenuGroup, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import teams from "@/routes/teams";
+import { type Team } from "@/types";
+import { router } from "@inertiajs/react";
+import { Users } from "lucide-react";
 
 interface TeamSelectorProps {
     teams: Team[];
@@ -23,12 +12,16 @@ interface TeamSelectorProps {
 
 export function TeamSelector({ teams: teamsData, currentTeam }: TeamSelectorProps) {
     const handleTeamSwitch = (teamId: string) => {
-        const team = teamsData.find(t => t.id === parseInt(teamId));
+        const team = teamsData.find((t) => t.id === parseInt(teamId));
         if (team) {
-            router.post(teams.switch.url({ team: team.id }), {}, {
-                preserveState: true,
-                preserveScroll: true,
-            });
+            router.post(
+                teams.switch.url({ team: team.id }),
+                {},
+                {
+                    preserveState: true,
+                    preserveScroll: true,
+                },
+            );
         }
     };
 
@@ -44,17 +37,12 @@ export function TeamSelector({ teams: teamsData, currentTeam }: TeamSelectorProp
                     Teams
                 </DropdownMenuLabel>
                 <div className="px-2 py-1">
-                    <Select
-                        value={currentTeam?.id?.toString() || ''}
-                        onValueChange={handleTeamSwitch}
-                    >
+                    <Select value={currentTeam?.id?.toString() || ""} onValueChange={handleTeamSwitch}>
                         <SelectTrigger className="h-8 w-full">
                             <SelectValue placeholder="Select team">
                                 <div className="flex items-center gap-2">
                                     <Users className="h-4 w-4" />
-                                    <span className="truncate">
-                                        {currentTeam?.name || 'Select team'}
-                                    </span>
+                                    <span className="truncate">{currentTeam?.name || "Select team"}</span>
                                 </div>
                             </SelectValue>
                         </SelectTrigger>

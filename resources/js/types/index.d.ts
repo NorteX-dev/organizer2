@@ -1,5 +1,5 @@
-import { InertiaLinkProps } from '@inertiajs/react';
-import { LucideIcon } from 'lucide-react';
+import { InertiaLinkProps } from "@inertiajs/react";
+import { LucideIcon } from "lucide-react";
 
 export interface Auth {
     user: User;
@@ -17,7 +17,7 @@ export interface NavGroup {
 
 export interface NavItem {
     title: string;
-    href: NonNullable<InertiaLinkProps['href']>;
+    href: NonNullable<InertiaLinkProps["href"]>;
     icon?: LucideIcon | null;
     isActive?: boolean;
 }

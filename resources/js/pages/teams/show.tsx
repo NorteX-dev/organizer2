@@ -1,13 +1,13 @@
-import { AppHeader } from '@/components/app-header';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { type Team, type User } from '@/types';
-import { Link, useForm, router } from '@inertiajs/react';
-import { ArrowLeft, Users, UserPlus, Trash2 } from 'lucide-react';
-import teams from '@/routes/teams';
+import { AppHeader } from "@/components/app-header";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import teams from "@/routes/teams";
+import { type Team, type User } from "@/types";
+import { Link, router, useForm } from "@inertiajs/react";
+import { ArrowLeft, Trash2, UserPlus, Users } from "lucide-react";
 
 interface TeamsShowProps {
     team: Team;
@@ -15,7 +15,7 @@ interface TeamsShowProps {
 
 export default function TeamsShow({ team }: TeamsShowProps) {
     const { data, setData, post, processing, errors, reset } = useForm({
-        email: '',
+        email: "",
     });
 
     const handleAddMember = (e: React.FormEvent) => {
@@ -47,9 +47,7 @@ export default function TeamsShow({ team }: TeamsShowProps) {
 
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold tracking-tight">{team.name}</h1>
-                    <p className="text-muted-foreground">
-                        Manage team members and settings.
-                    </p>
+                    <p className="text-muted-foreground">Manage team members and settings.</p>
                 </div>
 
                 <div className="grid gap-6 lg:grid-cols-2">
@@ -60,9 +58,7 @@ export default function TeamsShow({ team }: TeamsShowProps) {
                                 <UserPlus className="h-5 w-5" />
                                 Add Member
                             </CardTitle>
-                            <CardDescription>
-                                Invite a new member to join this team.
-                            </CardDescription>
+                            <CardDescription>Invite a new member to join this team.</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <form onSubmit={handleAddMember} className="space-y-4">
@@ -72,16 +68,14 @@ export default function TeamsShow({ team }: TeamsShowProps) {
                                         id="email"
                                         type="email"
                                         value={data.email}
-                                        onChange={(e) => setData('email', e.target.value)}
+                                        onChange={(e) => setData("email", e.target.value)}
                                         placeholder="Enter member's email"
-                                        className={errors.email ? 'border-destructive' : ''}
+                                        className={errors.email ? "border-destructive" : ""}
                                     />
-                                    {errors.email && (
-                                        <p className="text-sm text-destructive">{errors.email}</p>
-                                    )}
+                                    {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
                                 </div>
                                 <Button type="submit" disabled={processing}>
-                                    {processing ? 'Adding...' : 'Add Member'}
+                                    {processing ? "Adding..." : "Add Member"}
                                 </Button>
                             </form>
                         </CardContent>
@@ -95,7 +89,7 @@ export default function TeamsShow({ team }: TeamsShowProps) {
                                 Team Members
                             </CardTitle>
                             <CardDescription>
-                                {team.users?.length || 0} member{(team.users?.length || 0) !== 1 ? 's' : ''}
+                                {team.users?.length || 0} member{(team.users?.length || 0) !== 1 ? "s" : ""}
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -106,7 +100,11 @@ export default function TeamsShow({ team }: TeamsShowProps) {
                                             <Avatar className="h-8 w-8">
                                                 <AvatarImage src={user.avatar} alt={user.name} />
                                                 <AvatarFallback className="text-xs">
-                                                    {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                                                    {user.name
+                                                        .split(" ")
+                                                        .map((n) => n[0])
+                                                        .join("")
+                                                        .toUpperCase()}
                                                 </AvatarFallback>
                                             </Avatar>
                                             <div>
@@ -125,9 +123,7 @@ export default function TeamsShow({ team }: TeamsShowProps) {
                                     </div>
                                 ))}
                                 {(!team.users || team.users.length === 0) && (
-                                    <p className="text-center text-sm text-muted-foreground">
-                                        No members yet
-                                    </p>
+                                    <p className="text-center text-sm text-muted-foreground">No members yet</p>
                                 )}
                             </div>
                         </CardContent>

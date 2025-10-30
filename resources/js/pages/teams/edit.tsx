@@ -1,12 +1,12 @@
-import { AppHeader } from '@/components/app-header';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { type Team } from '@/types';
-import { Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, Users } from 'lucide-react';
-import teams from '@/routes/teams';
+import { AppHeader } from "@/components/app-header";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import teams from "@/routes/teams";
+import { type Team } from "@/types";
+import { Link, useForm } from "@inertiajs/react";
+import { ArrowLeft, Users } from "lucide-react";
 
 interface TeamsEditProps {
     team: Team;
@@ -42,9 +42,7 @@ export default function TeamsEdit({ team }: TeamsEditProps) {
                             <Users className="h-5 w-5" />
                             Edit Team
                         </CardTitle>
-                        <CardDescription>
-                            Update your team information and settings.
-                        </CardDescription>
+                        <CardDescription>Update your team information and settings.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={handleSubmit} className="space-y-6">
@@ -54,18 +52,16 @@ export default function TeamsEdit({ team }: TeamsEditProps) {
                                     id="name"
                                     type="text"
                                     value={data.name}
-                                    onChange={(e) => setData('name', e.target.value)}
+                                    onChange={(e) => setData("name", e.target.value)}
                                     placeholder="Enter team name"
-                                    className={errors.name ? 'border-destructive' : ''}
+                                    className={errors.name ? "border-destructive" : ""}
                                 />
-                                {errors.name && (
-                                    <p className="text-sm text-destructive">{errors.name}</p>
-                                )}
+                                {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
                             </div>
 
                             <div className="flex gap-3">
                                 <Button type="submit" disabled={processing}>
-                                    {processing ? 'Updating...' : 'Update Team'}
+                                    {processing ? "Updating..." : "Update Team"}
                                 </Button>
                                 <Link href={teams.index.url()}>
                                     <Button variant="outline">Cancel</Button>

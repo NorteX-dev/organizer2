@@ -24,9 +24,8 @@ Route::post('/logout', function () {
 })->name('logout');
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
-    })->name('dashboard');
+    // Projects routes
+    Route::resource('projects', App\Http\Controllers\ProjectController::class);
 
     // Team routes
     Route::resource('teams', App\Http\Controllers\TeamController::class);
