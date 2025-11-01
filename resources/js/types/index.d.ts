@@ -29,6 +29,8 @@ export interface SharedData {
     sidebarOpen: boolean;
     teams?: Team[];
     currentTeam?: Team | null;
+    projects?: Project[];
+    currentProject?: Project | null;
     [key: string]: unknown;
 }
 

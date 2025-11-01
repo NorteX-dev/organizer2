@@ -79,6 +79,28 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the user's current project.
+     */
+    public function currentProject(): ?\App\Models\Project
+    {
+        $team = $this->currentTeam();
+        
+        if (!$team) {
+            return null;
+        }
+
+        $projectId = session("current_project_id");
+
+        if ($projectId) {
+            $project = $team->projects()->find($projectId);
+            return $project;
+        }
+
+        $project = $team->projects()->first();
+        return $project;
+    }
+
+    /**
      * Tasks assigned to the user.
      */
     public function assignedTasks(): \Illuminate\Database\Eloquent\Relations\HasMany

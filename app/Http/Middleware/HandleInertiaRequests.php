@@ -41,6 +41,8 @@ class HandleInertiaRequests extends Middleware
         $user = $request->user();
         $teams = $user ? $user->teams : collect();
         $currentTeam = $user ? $user->currentTeam() : null;
+        $projects = $currentTeam ? $currentTeam->projects : collect();
+        $currentProject = $user ? $user->currentProject() : null;
 
         return [
             ...parent::share($request),
@@ -52,6 +54,8 @@ class HandleInertiaRequests extends Middleware
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'teams' => $teams,
             'currentTeam' => $currentTeam,
+            'projects' => $projects,
+            'currentProject' => $currentProject,
         ];
     }
 }

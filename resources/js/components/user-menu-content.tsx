@@ -33,6 +33,8 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
                 </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
+            <TeamSelector teams={teams || []} currentTeam={currentTeam} />
+            <DropdownMenuSeparator />
             <DropdownMenuGroup>
                 <DropdownMenuItem asChild>
                     <Link className="block w-full" href="/settings/profile" as="button" prefetch onClick={cleanup}>
@@ -41,7 +43,6 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
                     </Link>
                 </DropdownMenuItem>
             </DropdownMenuGroup>
-            <TeamSelector teams={teams || []} currentTeam={currentTeam} />
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
                 <Link

@@ -1,5 +1,6 @@
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { Icon } from "@/components/icon";
+import { ProjectSelector } from "@/components/project-selector";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -12,24 +13,20 @@ import {
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { UserMenuContent } from "@/components/user-menu-content";
+import { useProjectTeam } from "@/contexts/project-team-context";
 import { useInitials } from "@/hooks/use-initials";
 import { cn, isSameUrl, resolveUrl } from "@/lib/utils";
 import { type BreadcrumbItem, type NavItem, type SharedData } from "@/types";
 import { Link, usePage } from "@inertiajs/react";
-import { LayoutDashboard, LayoutGrid, Menu, Users } from "lucide-react";
+import { LayoutDashboard, Menu } from "lucide-react";
 import AppLogo from "./app-logo";
 import AppLogoIcon from "./app-logo-icon";
 
 const mainNavItems: NavItem[] = [
     {
-        title: "Projects",
-        href: "/projects",
-        icon: LayoutGrid,
-    },
-    {
-        title: "Teams",
-        href: "/teams",
-        icon: Users,
+        title: "Sprints",
+        href: "/sprints",
+        icon: LayoutDashboard,
     },
 ];
 
@@ -43,21 +40,7 @@ interface AppHeaderProps {
 
 export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
     const page = usePage<SharedData>();
-    type SubpageTab = { title: string; href: string; icon: any; active: boolean };
-    let subpages: SubpageTab[] = [];
-    const lastCrumb = breadcrumbs[breadcrumbs.length - 1];
-    const match = lastCrumb && lastCrumb.href.match(/^\/projects\/(\d+)/);
-    const projectId = match ? match[1] : null;
-    if (projectId) {
-        subpages = [
-            {
-                title: "Sprints",
-                href: `/projects/${projectId}/sprints`,
-                icon: LayoutDashboard,
-                active: page.url.endsWith(`/projects/${projectId}/sprints`),
-            },
-        ];
-    }
+    const { projects, currentProject } = useProjectTeam();
     const { auth } = page.props;
     const getInitials = useInitials();
     return (
@@ -115,7 +98,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                         </Sheet>
                     </div>
 
-                    <Link href="/projects" prefetch className="flex items-center space-x-2">
+                    <Link href="/sprints" prefetch className="flex items-center space-x-2">
                         <AppLogo />
                     </Link>
 
@@ -175,6 +158,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                 ))}
                             </div>
                         </div>
+                        <ProjectSelector projects={projects} currentProject={currentProject} />
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" className="size-10 rounded-full p-1">
@@ -196,7 +180,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
             {breadcrumbs.length > 1 && (
                 <div className="flex w-full border-b border-sidebar-border/70">
                     <div className="mx-auto flex h-12 w-full items-center justify-start px-4 text-neutral-500 md:max-w-7xl">
-                        <Breadcrumbs breadcrumbs={breadcrumbs} subpages={subpages} />
+                        <Breadcrumbs breadcrumbs={breadcrumbs} />
                     </div>
                 </div>
             )}

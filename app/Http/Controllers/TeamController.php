@@ -163,6 +163,7 @@ class TeamController extends Controller
         $this->authorize('view', $team);
 
         session(['current_team_id' => $team->id]);
+        session()->forget('current_project_id');
 
         return back()->with('success', 'Team switched successfully.');
     }
