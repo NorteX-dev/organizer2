@@ -2,7 +2,7 @@ import { DropdownMenuGroup, DropdownMenuLabel, DropdownMenuSeparator } from "@/c
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { type Team } from "@/types";
 import { router } from "@inertiajs/react";
-import { Users } from "lucide-react";
+import { Plus, Users } from "lucide-react";
 
 interface TeamSelectorProps {
     teams: Team[];
@@ -10,8 +10,13 @@ interface TeamSelectorProps {
 }
 
 export function TeamSelector({ teams: teamsData, currentTeam }: TeamSelectorProps) {
-    const handleTeamSwitch = (teamId: string) => {
-        const team = teamsData.find((t) => t.id === parseInt(teamId));
+    const handleTeamSwitch = (value: string) => {
+        if (value === "create-new") {
+            router.visit("/teams/create");
+            return;
+        }
+
+        const team = teamsData.find((t) => t.id === parseInt(value));
         if (team) {
             router.post(
                 `/teams/${team.id}/switch`,
@@ -23,10 +28,6 @@ export function TeamSelector({ teams: teamsData, currentTeam }: TeamSelectorProp
             );
         }
     };
-
-    if (teamsData.length === 0) {
-        return null;
-    }
 
     return (
         <>
@@ -46,14 +47,31 @@ export function TeamSelector({ teams: teamsData, currentTeam }: TeamSelectorProp
                             </SelectValue>
                         </SelectTrigger>
                         <SelectContent>
-                            {teamsData.map((team) => (
-                                <SelectItem key={team.id} value={team.id.toString()}>
+                            {teamsData.length === 0 ? (
+                                <SelectItem value="create-new">
                                     <div className="flex items-center gap-2">
-                                        <Users className="h-4 w-4" />
-                                        <span>{team.name}</span>
+                                        <Plus className="h-4 w-4" />
+                                        <span>Create new team</span>
                                     </div>
                                 </SelectItem>
-                            ))}
+                            ) : (
+                                <>
+                                    {teamsData.map((team) => (
+                                        <SelectItem key={team.id} value={team.id.toString()}>
+                                            <div className="flex items-center gap-2">
+                                                <Users className="h-4 w-4" />
+                                                <span>{team.name}</span>
+                                            </div>
+                                        </SelectItem>
+                                    ))}
+                                    <SelectItem value="create-new">
+                                        <div className="flex items-center gap-2">
+                                            <Plus className="h-4 w-4" />
+                                            <span>Create new team</span>
+                                        </div>
+                                    </SelectItem>
+                                </>
+                            )}
                         </SelectContent>
                     </Select>
                 </div>

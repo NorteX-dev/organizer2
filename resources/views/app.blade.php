@@ -10,6 +10,13 @@
             }
         </style>
 
+        <meta name="project-team-data" content='{{ json_encode([
+            'teams' => $teams ?? [],
+            'currentTeam' => $currentTeam ?? null,
+            'projects' => $projects ?? [],
+            'currentProject' => $currentProject ?? null,
+        ], JSON_HEX_APOS | JSON_HEX_QUOT) }}'>
+
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
         <link rel="icon" href="/favicon.ico" sizes="any">

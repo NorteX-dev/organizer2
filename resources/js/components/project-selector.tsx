@@ -1,7 +1,7 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { type Project } from "@/types";
 import { router } from "@inertiajs/react";
-import { LayoutGrid } from "lucide-react";
+import { LayoutGrid, Plus } from "lucide-react";
 
 interface ProjectSelectorProps {
     projects: Project[];
@@ -9,8 +9,13 @@ interface ProjectSelectorProps {
 }
 
 export function ProjectSelector({ projects, currentProject }: ProjectSelectorProps) {
-    const handleProjectSwitch = (projectId: string) => {
-        const project = projects.find((p) => p.id === parseInt(projectId));
+    const handleProjectSwitch = (value: string) => {
+        if (value === "create-new") {
+            router.visit("/projects");
+            return;
+        }
+
+        const project = projects.find((p) => p.id === parseInt(value));
         if (project) {
             router.post(
                 `/projects/${project.id}/switch`,
@@ -22,10 +27,6 @@ export function ProjectSelector({ projects, currentProject }: ProjectSelectorPro
             );
         }
     };
-
-    if (projects.length === 0) {
-        return null;
-    }
 
     return (
         <Select
@@ -41,14 +42,31 @@ export function ProjectSelector({ projects, currentProject }: ProjectSelectorPro
                 </SelectValue>
             </SelectTrigger>
             <SelectContent>
-                {projects.map((project) => (
-                    <SelectItem key={project.id} value={project.id.toString()}>
+                {projects.length === 0 ? (
+                    <SelectItem value="create-new">
                         <div className="flex items-center gap-2">
-                            <LayoutGrid className="h-4 w-4" />
-                            <span>{project.name}</span>
+                            <Plus className="h-4 w-4" />
+                            <span>Create new project</span>
                         </div>
                     </SelectItem>
-                ))}
+                ) : (
+                    <>
+                        {projects.map((project) => (
+                            <SelectItem key={project.id} value={project.id.toString()}>
+                                <div className="flex items-center gap-2">
+                                    <LayoutGrid className="h-4 w-4" />
+                                    <span>{project.name}</span>
+                                </div>
+                            </SelectItem>
+                        ))}
+                        <SelectItem value="create-new">
+                            <div className="flex items-center gap-2">
+                                <Plus className="h-4 w-4" />
+                                <span>Create new project</span>
+                            </div>
+                        </SelectItem>
+                    </>
+                )}
             </SelectContent>
         </Select>
     );

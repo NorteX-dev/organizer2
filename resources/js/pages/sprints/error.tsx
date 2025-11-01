@@ -6,14 +6,12 @@ import { AlertCircle } from "lucide-react";
 export default function SprintsErrorPage({ message }: { message: string }) {
     return (
         <AppLayout>
-            <div className="mx-auto max-w-2xl">
-                <HeaderSection title="Sprints" />
-                <Alert variant="destructive" className="mt-4">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>Project Required</AlertTitle>
-                    <AlertDescription>{message}</AlertDescription>
-                </Alert>
-            </div>
+            <HeaderSection title="Sprints" />
+            <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Project Required</AlertTitle>
+                <AlertDescription>{message}</AlertDescription>
+            </Alert>
         </AppLayout>
     );
 }

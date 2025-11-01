@@ -1,6 +1,5 @@
-import { type Project, type SharedData, type Team } from "@/types";
-import { usePage } from "@inertiajs/react";
-import { createContext, useContext, type ReactNode } from "react";
+import { type Project, type Team } from "@/types";
+import { createContext, useContext, useMemo, type ReactNode } from "react";
 
 interface ProjectTeamContextValue {
     teams: Team[];
@@ -11,19 +10,51 @@ interface ProjectTeamContextValue {
 
 const ProjectTeamContext = createContext<ProjectTeamContextValue | undefined>(undefined);
 
+function getProjectTeamData(): ProjectTeamContextValue {
+    const metaTag = document.querySelector('meta[name="project-team-data"]');
+    if (!metaTag) {
+        return {
+            teams: [],
+            currentTeam: null,
+            projects: [],
+            currentProject: null,
+        };
+    }
+
+    try {
+        const content = metaTag.getAttribute('content');
+        if (!content) {
+            return {
+                teams: [],
+                currentTeam: null,
+                projects: [],
+                currentProject: null,
+            };
+        }
+
+        const data = JSON.parse(content);
+        return {
+            teams: data.teams || [],
+            currentTeam: data.currentTeam || null,
+            projects: data.projects || [],
+            currentProject: data.currentProject || null,
+        };
+    } catch (error) {
+        console.error('Failed to parse project-team-data:', error);
+        return {
+            teams: [],
+            currentTeam: null,
+            projects: [],
+            currentProject: null,
+        };
+    }
+}
+
 export function ProjectTeamProvider({ children }: { children: ReactNode }) {
-    const page = usePage<SharedData>();
-    const { teams = [], currentTeam = null, projects = [], currentProject = null } = page.props;
+    const data = useMemo(() => getProjectTeamData(), []);
 
     return (
-        <ProjectTeamContext.Provider
-            value={{
-                teams,
-                currentTeam,
-                projects,
-                currentProject,
-            }}
-        >
+        <ProjectTeamContext.Provider value={data}>
             {children}
         </ProjectTeamContext.Provider>
     );
