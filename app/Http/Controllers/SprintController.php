@@ -13,23 +13,6 @@ class SprintController extends Controller
     use AuthorizesRequests;
 
     /**
-     * Redirect to sprints page for current project.
-     */
-    public function redirect(Request $request)
-    {
-        $user = $request->user();
-        $currentProject = $user->currentProject();
-
-        if (!$currentProject) {
-            return Inertia::render('sprints/error', [
-                'message' => 'Please select a project first to view sprints.',
-            ]);
-        }
-
-        return redirect()->route('projects.sprints.index', $currentProject->id);
-    }
-
-    /**
      * Display a listing of the resource.
      */
     public function index(Project $project)

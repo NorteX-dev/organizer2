@@ -7,19 +7,41 @@ import { Label } from "@/components/ui/label";
 import AppLayout from "@/layouts/app-layout";
 import type { Project, Sprint } from "@/types";
 import { router } from "@inertiajs/react";
-import { format, parseISO } from "date-fns";
+import { addDays, format, parseISO } from "date-fns";
 import { Info, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 
+function getTodayString() {
+    const today = new Date();
+    return today.toISOString().slice(0, 10);
+}
+function getInSevenDaysString() {
+    const date = addDays(new Date(), 7);
+    return date.toISOString().slice(0, 10);
+}
+
 export default function SprintsPage({ project, sprints = [] }: { project: Project; sprints: Sprint[] }) {
-    const [form, setForm] = useState({ name: "", goal: "", start_date: "", end_date: "", planned_points: "" });
+    const initialForm = {
+        name: "",
+        goal: "",
+        start_date: getTodayString(),
+        end_date: getInSevenDaysString(),
+        planned_points: "",
+    };
+    const [form, setForm] = useState(initialForm);
     const [modalOpen, setModalOpen] = useState(false);
 
     function openCreate() {
-        setForm({ name: "", goal: "", start_date: "", end_date: "", planned_points: "" });
+        setForm({
+            name: "",
+            goal: "",
+            start_date: getTodayString(),
+            end_date: getInSevenDaysString(),
+            planned_points: "",
+        });
         setModalOpen(true);
     }
-    function handleSubmit(e: any) {
+    function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
         router.post(`/projects/${project.id}/sprints`, form, {
             preserveScroll: true,
@@ -38,8 +60,8 @@ export default function SprintsPage({ project, sprints = [] }: { project: Projec
     return (
         <AppLayout
             breadcrumbs={[
-                { title: "Projects", href: "/projects" },
-                { title: `Project ${project.id}`, href: `/projects/${project.id}/sprints` },
+                { title: `Project ${project.id}`, href: `/projects/${project.id}/edit` },
+                { title: `Sprints`, href: `/projects/${project.id}/sprints` },
             ]}
         >
             <HeaderSection
@@ -112,54 +134,75 @@ export default function SprintsPage({ project, sprints = [] }: { project: Projec
             {modalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
                     <form className="w-full max-w-md rounded bg-white p-6" onSubmit={handleSubmit}>
-                        <h3 className="mb-4 text-lg font-bold">Create Sprint</h3>
-                        <Label htmlFor="name">Name</Label>
-                        <Input
-                            id="name"
-                            className="input mb-2 w-full"
-                            placeholder="Name"
-                            required
-                            value={form.name}
-                            onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                        />
-                        <Label htmlFor="goal">Goal</Label>
-                        <Input
-                            id="goal"
-                            className="input mb-2 w-full"
-                            placeholder="Goal"
-                            value={form.goal}
-                            onChange={(e) => setForm((f) => ({ ...f, goal: e.target.value }))}
-                        />
-                        <Label htmlFor="start_date">Start Date</Label>
-                        <Input
-                            id="start_date"
-                            type="date"
-                            className="input mb-2 w-full"
-                            placeholder="Start Date"
-                            required
-                            value={form.start_date}
-                            onChange={(e) => setForm((f) => ({ ...f, start_date: e.target.value }))}
-                        />
-                        <Label htmlFor="end_date">End Date</Label>
-                        <Input
-                            id="end_date"
-                            type="date"
-                            className="input mb-2 w-full"
-                            placeholder="End Date"
-                            required
-                            value={form.end_date}
-                            onChange={(e) => setForm((f) => ({ ...f, end_date: e.target.value }))}
-                        />
-                        <Label htmlFor="planned_points">Planned Points</Label>
-                        <Input
-                            id="planned_points"
-                            className="input mb-2 w-full"
-                            type="number"
-                            placeholder="Planned Points"
-                            value={form.planned_points}
-                            onChange={(e) => setForm((f) => ({ ...f, planned_points: e.target.value }))}
-                        />
-                        <div className="flex justify-end gap-2">
+                        <h3 className="mb-6 text-lg font-bold">Create Sprint</h3>
+                        <div className="mb-4">
+                            <Label htmlFor="name" className="mb-1 block">
+                                Name <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                                id="name"
+                                className="input w-full"
+                                placeholder="Name"
+                                required
+                                value={form.name}
+                                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <Label htmlFor="goal" className="mb-1 block">
+                                Goal
+                            </Label>
+                            <Input
+                                id="goal"
+                                className="input w-full"
+                                placeholder="Goal"
+                                value={form.goal}
+                                onChange={(e) => setForm((f) => ({ ...f, goal: e.target.value }))}
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <Label htmlFor="start_date" className="mb-1 block">
+                                Start Date <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                                id="start_date"
+                                type="date"
+                                className="input w-full"
+                                placeholder="Start Date"
+                                required
+                                value={form.start_date}
+                                onChange={(e) => setForm((f) => ({ ...f, start_date: e.target.value }))}
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <Label htmlFor="end_date" className="mb-1 block">
+                                End Date <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                                id="end_date"
+                                type="date"
+                                className="input w-full"
+                                placeholder="End Date"
+                                required
+                                value={form.end_date}
+                                onChange={(e) => setForm((f) => ({ ...f, end_date: e.target.value }))}
+                            />
+                        </div>
+                        <div className="mb-6">
+                            <Label htmlFor="planned_points" className="mb-1 block">
+                                Planned Points <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                                id="planned_points"
+                                className="input w-full"
+                                type="number"
+                                placeholder="Planned Points"
+                                value={form.planned_points}
+                                onChange={(e) => setForm((f) => ({ ...f, planned_points: e.target.value }))}
+                                required
+                            />
+                        </div>
+                        <div className="mt-4 flex justify-end gap-2">
                             <Button type="button" onClick={() => setModalOpen(false)}>
                                 Cancel
                             </Button>

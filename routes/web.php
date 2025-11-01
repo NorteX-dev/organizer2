@@ -27,8 +27,16 @@ Route::middleware(['auth'])->group(function () {
     // Projects routes
     Route::resource('projects', App\Http\Controllers\ProjectController::class);
     Route::post('projects/{project}/switch', [App\Http\Controllers\ProjectController::class, 'switch'])->name('projects.switch');
-    Route::get('/sprints', [App\Http\Controllers\SprintController::class, 'redirect'])->name('sprints.redirect');
-    Route::resource('projects.sprints', App\Http\Controllers\SprintController::class);
+    
+    // Sprints routes - require team and project selection
+    Route::middleware(['team.project'])->group(function () {
+        Route::get('/sprints', function () {
+            $user = auth()->user();
+            $currentProject = $user->currentProject();
+            return redirect()->route('projects.sprints.index', $currentProject->id);
+        })->name('sprints.redirect');
+        Route::resource('projects.sprints', App\Http\Controllers\SprintController::class);
+    });
 
     // Team routes
     Route::resource('teams', App\Http\Controllers\TeamController::class);

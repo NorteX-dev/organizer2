@@ -2,7 +2,7 @@ import { DropdownMenuGroup, DropdownMenuLabel, DropdownMenuSeparator } from "@/c
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { type Team } from "@/types";
 import { router } from "@inertiajs/react";
-import { Plus, Users } from "lucide-react";
+import { Edit, Plus, Users } from "lucide-react";
 
 interface TeamSelectorProps {
     teams: Team[];
@@ -13,6 +13,11 @@ export function TeamSelector({ teams: teamsData, currentTeam }: TeamSelectorProp
     const handleTeamSwitch = (value: string) => {
         if (value === "create-new") {
             router.visit("/teams/create");
+            return;
+        }
+
+        if (value === "edit-team" && currentTeam) {
+            router.visit(`/teams/${currentTeam.id}`);
             return;
         }
 
@@ -48,12 +53,22 @@ export function TeamSelector({ teams: teamsData, currentTeam }: TeamSelectorProp
                         </SelectTrigger>
                         <SelectContent>
                             {teamsData.length === 0 ? (
-                                <SelectItem value="create-new">
-                                    <div className="flex items-center gap-2">
-                                        <Plus className="h-4 w-4" />
-                                        <span>Create new team</span>
-                                    </div>
-                                </SelectItem>
+                                <>
+                                    {currentTeam && (
+                                        <SelectItem value="edit-team">
+                                            <div className="flex items-center gap-2">
+                                                <Edit className="h-4 w-4" />
+                                                <span>Edit team</span>
+                                            </div>
+                                        </SelectItem>
+                                    )}
+                                    <SelectItem value="create-new">
+                                        <div className="flex items-center gap-2">
+                                            <Plus className="h-4 w-4" />
+                                            <span>Create new team</span>
+                                        </div>
+                                    </SelectItem>
+                                </>
                             ) : (
                                 <>
                                     {teamsData.map((team) => (
@@ -64,6 +79,14 @@ export function TeamSelector({ teams: teamsData, currentTeam }: TeamSelectorProp
                                             </div>
                                         </SelectItem>
                                     ))}
+                                    {currentTeam && (
+                                        <SelectItem value="edit-team">
+                                            <div className="flex items-center gap-2">
+                                                <Edit className="h-4 w-4" />
+                                                <span>Edit team</span>
+                                            </div>
+                                        </SelectItem>
+                                    )}
                                     <SelectItem value="create-new">
                                         <div className="flex items-center gap-2">
                                             <Plus className="h-4 w-4" />
