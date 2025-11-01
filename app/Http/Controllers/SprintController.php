@@ -55,7 +55,18 @@ class SprintController extends Controller
     public function show(Project $project, Sprint $sprint)
     {
         $this->authorize('view', $sprint);
-        return Inertia::render('projects/[id]/sprints-show', ['project' => $project, 'sprint' => $sprint]);
+        
+        // Load tasks with their relations
+        $tasks = $sprint->tasks()
+            ->with(['assignedUser', 'labels'])
+            ->orderBy('position')
+            ->get();
+        
+        return Inertia::render('projects/[id]/sprints/[sprintId]/tasks', [
+            'project' => $project,
+            'sprint' => $sprint,
+            'tasks' => $tasks,
+        ]);
     }
 
     /**

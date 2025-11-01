@@ -73,3 +73,28 @@ export interface Sprint {
     created_at: string;
     updated_at: string;
 }
+
+export interface Task {
+    id: number;
+    project_id: number;
+    sprint_id: number | null;
+    assigned_to: number | null;
+    title: string;
+    description: string | null;
+    type: "story" | "task" | "bug" | "epic";
+    status: "Planned" | "Backlog" | "Active" | "Completed";
+    priority: "low" | "medium" | "high" | "critical";
+    story_points: number | null;
+    position: number;
+    github_issue_number: string | null;
+    created_at: string;
+    updated_at: string;
+    assigned_user?: User;
+    labels?: Label[];
+}
+
+export interface Label {
+    id: number;
+    name: string;
+    color: string;
+}

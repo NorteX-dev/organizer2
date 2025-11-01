@@ -119,7 +119,7 @@ export default function SprintsPage({ project, sprints = [] }: { project: Projec
                                             size="sm"
                                             variant="outline"
                                             className="w-full cursor-pointer rounded-lg py-2 text-sm"
-                                            onClick={() => router.get(`#/sprints/${sprint.id}`)}
+                                            onClick={() => router.get(`/projects/${project.id}/sprints/${sprint.id}`)}
                                         >
                                             <Info className="mr-2 size-4" />
                                             Details

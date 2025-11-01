@@ -62,12 +62,12 @@ class Task extends Model
 
 	public function isInBacklog(): bool
 	{
-		return $this->status === "backlog";
+		return $this->status === "Backlog";
 	}
 
 	public function isDone(): bool
 	{
-		return $this->status === "done";
+		return $this->status === "Completed";
 	}
 
 	public function isAssigned(): bool
