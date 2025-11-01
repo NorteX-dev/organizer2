@@ -26,7 +26,7 @@ const KANBAN_COLUMNS = ["Planned", "Backlog", "Active", "Completed"] as const;
 
 type StatusType = (typeof KANBAN_COLUMNS)[number];
 
-interface LocalTask extends Omit<Task, "id"> {
+interface KanbanTask extends Omit<Task, "id"> {
     id: number | string;
     isNew?: boolean;
 }
@@ -45,8 +45,7 @@ const TYPE_COLORS = {
     epic: "bg-indigo-50 text-indigo-700 border-indigo-200",
 };
 
-// Draggable Task Card Component
-function TaskCard({ task }: { task: LocalTask }) {
+function TaskCard({ task }: { task: KanbanTask }) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
         id: task.id,
         data: { task },
@@ -124,7 +123,6 @@ function TaskCard({ task }: { task: LocalTask }) {
     );
 }
 
-// Droppable Column Component
 function DroppableColumn({
     status,
     tasks,
@@ -133,7 +131,7 @@ function DroppableColumn({
     onCancelAdd,
 }: {
     status: StatusType;
-    tasks: LocalTask[];
+    tasks: KanbanTask[];
     addingToColumn: StatusType | null;
     onAddTask: (status: StatusType, title: string) => void;
     onCancelAdd: () => void;
@@ -176,7 +174,6 @@ function DroppableColumn({
     );
 }
 
-// Add Task Form Component
 function AddTaskForm({ onAdd, onCancel }: { onAdd: (title: string) => void; onCancel: () => void }) {
     const [title, setTitle] = useState("");
 
@@ -222,12 +219,10 @@ export default function SprintTasksPage({
     sprint: Sprint;
     tasks: Task[];
 }) {
-    // Convert tasks to local state
-    const [localTasks, setLocalTasks] = useState<LocalTask[]>(tasks);
+    const [localTasks, setLocalTasks] = useState<KanbanTask[]>(tasks);
     const [activeId, setActiveId] = useState<string | number | null>(null);
     const [addingToColumn, setAddingToColumn] = useState<StatusType | null>(null);
 
-    // Configure drag sensors
     const sensors = useSensors(
         useSensor(PointerSensor, {
             activationConstraint: {
@@ -236,13 +231,12 @@ export default function SprintTasksPage({
         }),
     );
 
-    // Group tasks by status
     const tasksByStatus = KANBAN_COLUMNS.reduce(
         (acc, status) => {
             acc[status] = localTasks.filter((task) => task.status === status);
             return acc;
         },
-        {} as Record<StatusType, LocalTask[]>,
+        {} as Record<StatusType, KanbanTask[]>,
     );
 
     const handleDragStart = (event: DragStartEvent) => {
@@ -258,21 +252,17 @@ export default function SprintTasksPage({
         const activeTask = localTasks.find((t) => t.id === active.id);
         if (!activeTask) return;
 
-        // Determine the new status based on where it was dropped
         let newStatus: StatusType | null = null;
 
-        // Check if dropped over a column container
         if (KANBAN_COLUMNS.includes(over.id as StatusType)) {
             newStatus = over.id as StatusType;
         } else {
-            // Dropped over another task, find which column
             const overTask = localTasks.find((t) => t.id === over.id);
             if (overTask) {
                 newStatus = overTask.status;
             }
         }
 
-        // Handle moving to a different column
         if (newStatus && newStatus !== activeTask.status) {
             setLocalTasks((tasks) =>
                 tasks.map((task) => (task.id === active.id ? { ...task, status: newStatus } : task)),
@@ -280,7 +270,6 @@ export default function SprintTasksPage({
             return;
         }
 
-        // Handle reordering within the same column
         if (active.id !== over.id) {
             const activeIndex = localTasks.findIndex((t) => t.id === active.id);
             const overIndex = localTasks.findIndex((t) => t.id === over.id);
@@ -297,13 +286,12 @@ export default function SprintTasksPage({
     };
 
     const handleAddTask = (status: StatusType, title: string) => {
-        // If title is empty, just set the adding column
         if (!title) {
             setAddingToColumn(status);
             return;
         }
 
-        const newTask: LocalTask = {
+        const newTask: KanbanTask = {
             id: `temp-${Date.now()}`,
             project_id: project.id,
             sprint_id: sprint.id,
