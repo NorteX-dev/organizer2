@@ -12,8 +12,8 @@ return new class extends Migration {
 			$table->foreignId("team_id")->constrained()->cascadeOnDelete();
 			$table->string("name");
 			$table->text("description")->nullable();
-			$table->string("github_repo")->nullable(); // owner/repo
-			$table->integer("default_sprint_length")->default(14); // dni
+			$table->string("github_repo")->nullable(); 
+			$table->integer("default_sprint_length")->default(14); 
 			$table->enum("status", ["active", "archived", "paused"])->default("active");
 			$table->timestamps();
 			$table->softDeletes();

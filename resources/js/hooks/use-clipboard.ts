@@ -1,4 +1,3 @@
-// Credit: https://usehooks-ts.com/
 import { useCallback, useState } from "react";
 
 type CopiedValue = string | null;

@@ -11,7 +11,7 @@ return new class extends Migration {
 			$table->id();
 			$table->foreignId("project_id")->constrained()->cascadeOnDelete();
 			$table->string("name");
-			$table->string("color", 7)->default("#3b82f6"); // hex color
+			$table->string("color", 7)->default("#3b82f6"); 
 			$table->timestamps();
 		});
 

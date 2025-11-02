@@ -10,7 +10,7 @@ return new class extends Migration {
 		Schema::create("sprints", function (Blueprint $table) {
 			$table->id();
 			$table->foreignId("project_id")->constrained()->cascadeOnDelete();
-			$table->string("name"); // np. "Sprint 1", "Alpha Release Sprint"
+			$table->string("name"); 
 			$table->text("goal")->nullable();
 			$table->date("start_date");
 			$table->date("end_date");

@@ -236,7 +236,7 @@ class ProjectController extends Controller
             $issues = $issuesResponse->json();
             $prs = $prsResponse->json();
 
-            // Filter out PRs from issues (PRs are returned in issues endpoint)
+            
             $issuesOnly = array_filter($issues, fn($issue) => !isset($issue['pull_request']));
             
             $formattedIssues = array_map(function ($issue) {
@@ -273,23 +273,14 @@ class ProjectController extends Controller
      */
     private function parseGithubRepoUrl(string $url): ?string
     {
-        // Handle various GitHub URL formats:
-        // https://github.com/owner/repo
-        // https://github.com/owner/repo.git
-        // github.com/owner/repo
-        // owner/repo
-        
         $url = trim($url);
         
-        // Remove .git suffix if present
         $url = preg_replace('/\.git$/', '', $url);
         
-        // Extract owner/repo from URL
-        if (preg_match('/github\.com[\/:]([^\/]+)\/([^\/\s]+)/', $url, $matches)) {
+        if (preg_match('/github\.com[/:]([^\/]+)\/([^\/\s]+)/', $url, $matches)) {
             return $matches[1] . '/' . $matches[2];
         }
         
-        // Check if it's already in owner/repo format
         if (preg_match('/^[a-zA-Z0-9_-]+\/[a-zA-Z0-9_.-]+$/', $url)) {
             return $url;
         }

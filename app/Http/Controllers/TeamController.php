@@ -49,7 +49,7 @@ class TeamController extends Controller
             'name' => $request->name,
         ]);
 
-        // Add the creator as a member
+        
         $team->users()->attach(Auth::id());
 
         return redirect()->route('teams.index')
@@ -145,7 +145,7 @@ class TeamController extends Controller
     {
         $this->authorize('update', $team);
 
-        // Don't allow removing the last member
+        
         if ($team->users()->count() <= 1) {
             return back()->withErrors(['error' => 'Cannot remove the last member from the team.']);
         }

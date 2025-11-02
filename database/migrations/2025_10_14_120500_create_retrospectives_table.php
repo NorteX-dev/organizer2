@@ -21,7 +21,7 @@ return new class extends Migration {
 			$table->foreignId("retrospective_id")->constrained()->cascadeOnDelete();
 			$table->foreignId("user_id")->constrained()->cascadeOnDelete();
 			$table->enum("vote_type", ["went_well", "went_wrong", "to_improve"]);
-			$table->boolean("upvote")->default(true); // true = +1, false = -1
+			$table->boolean("upvote")->default(true); 
 			$table->primary(["retrospective_id", "user_id", "vote_type"]);
 			$table->timestamps();
 		});

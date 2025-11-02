@@ -18,7 +18,7 @@ return new class extends Migration {
 			$table->enum("status", ["Planned", "Backlog", "Active", "Completed"])->default("Backlog");
 			$table->enum("priority", ["low", "medium", "high", "critical"])->default("medium");
 			$table->integer("story_points")->nullable();
-			$table->integer("position")->default(0); // dla drag-and-drop
+			$table->integer("position")->default(0); 
 			$table->string("github_issue_number")->nullable();
 			$table->timestamps();
 		});

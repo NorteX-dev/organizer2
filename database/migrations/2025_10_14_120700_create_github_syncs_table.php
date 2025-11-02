@@ -10,8 +10,8 @@ return new class extends Migration {
 		Schema::create("github_syncs", function (Blueprint $table) {
 			$table->id();
 			$table->foreignId("project_id")->constrained()->cascadeOnDelete();
-			$table->enum("type", ["commits", "issues", "prs"]); // pull requests
-			$table->json("data"); // szczegóły synchronizacji
+			$table->enum("type", ["commits", "issues", "prs"]); 
+			$table->json("data"); 
 			$table->timestamp("synced_at");
 			$table->timestamps();
 		});

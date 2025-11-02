@@ -8,7 +8,7 @@ Route::get('/', function () {
     return redirect()->route('projects.index');
 })->name('home');
 
-// GitHub OAuth routes
+
 Route::get('/login', function () {
     return Inertia::render('auth/login');
 })->name('login');
@@ -24,13 +24,13 @@ Route::post('/logout', function () {
 })->name('logout');
 
 Route::middleware(['auth'])->group(function () {
-    // Projects routes
+    
     Route::resource('projects', App\Http\Controllers\ProjectController::class);
     Route::post('projects/{project}/switch', [App\Http\Controllers\ProjectController::class, 'switch'])->name('projects.switch');
     Route::post('projects/{project}/sync-github', [App\Http\Controllers\ProjectController::class, 'syncGithub'])->name('projects.sync-github');
     Route::get('projects/{project}/github-issues-prs', [App\Http\Controllers\ProjectController::class, 'fetchGithubIssuesAndPRs'])->name('projects.github-issues-prs');
     
-    // Sprints routes - require team and project selection
+    
     Route::middleware(['team.project'])->group(function () {
         Route::get('/sprints', function () {
             $user = auth()->user();
@@ -54,7 +54,7 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('projects/{project}/documents/{document}', [App\Http\Controllers\DocumentController::class, 'destroy'])->name('projects.documents.destroy');
     });
 
-    // Team routes
+    
     Route::resource('teams', App\Http\Controllers\TeamController::class);
     Route::post('teams/{team}/members', [App\Http\Controllers\TeamController::class, 'addMember'])->name('teams.members.add');
     Route::delete('teams/{team}/members/{user}', [App\Http\Controllers\TeamController::class, 'removeMember'])->name('teams.members.remove');

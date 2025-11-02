@@ -13,7 +13,7 @@ class SprintPolicy
      */
     public function viewAny(User $user): bool
     {
-        // Any authenticated user can see sprints (filtered by project later)
+        
         return true;
     }
 
@@ -30,7 +30,7 @@ class SprintPolicy
      */
     public function create(User $user): bool
     {
-        // Can create if user is in any team
+        
         return !!$user->currentTeam();
     }
 

@@ -12,7 +12,7 @@ return new class extends Migration {
 			$table->foreignId("project_id")->constrained()->cascadeOnDelete();
 			$table->foreignId("created_by")->constrained("users")->cascadeOnDelete();
 			$table->string("title");
-			$table->longText("content"); // markdown
+			$table->longText("content"); 
 			$table->integer("position")->default(0);
 			$table->timestamps();
 		});

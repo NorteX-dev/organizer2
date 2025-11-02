@@ -61,24 +61,19 @@ function normalizeGithubUrl(repo: string | null | undefined): string | null {
 
     let url = repo.trim();
 
-    // Remove .git suffix if present
     url = url.replace(/\.git$/, "");
 
-    // If it's already a full URL, return it
     if (url.startsWith("http://") || url.startsWith("https://")) {
-        // Ensure it ends with github.com path
         if (url.includes("github.com")) {
             return url.replace(/\/$/, "");
         }
     }
 
-    // Extract owner/repo from various formats
     const match = url.match(/(?:github\.com[/:])?([^/]+)\/([^/\s]+)/);
     if (match) {
         return `https://github.com/${match[1]}/${match[2]}`;
     }
 
-    // If it's already in owner/repo format
     if (/^[a-zA-Z0-9_-]+\/[a-zA-Z0-9_.-]+$/.test(url)) {
         return `https://github.com/${url}`;
     }
