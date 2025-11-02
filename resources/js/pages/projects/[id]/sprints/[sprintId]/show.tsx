@@ -16,3 +16,4 @@ export default function SprintsShowPage({ project, sprint }: { project: Project;
         </AppLayout>
     );
 }
+

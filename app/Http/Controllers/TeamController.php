@@ -79,7 +79,7 @@ class TeamController extends Controller
 
         $team->load('users');
 
-        return Inertia::render('teams/edit', [
+        return Inertia::render('teams/[id]/edit', [
             'team' => $team,
         ]);
     }

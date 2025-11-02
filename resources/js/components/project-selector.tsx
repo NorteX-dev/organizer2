@@ -1,7 +1,7 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { type Project } from "@/types";
 import { router } from "@inertiajs/react";
-import { LayoutGrid, Plus } from "lucide-react";
+import { Edit, LayoutGrid, Plus } from "lucide-react";
 
 interface ProjectSelectorProps {
     projects: Project[];
@@ -12,6 +12,11 @@ export function ProjectSelector({ projects, currentProject }: ProjectSelectorPro
     const handleProjectSwitch = (value: string) => {
         if (value === "create-new") {
             router.visit("/projects");
+            return;
+        }
+
+        if (value === "edit-project" && currentProject) {
+            router.visit(`/projects/${currentProject.id}/edit`);
             return;
         }
 
@@ -29,10 +34,7 @@ export function ProjectSelector({ projects, currentProject }: ProjectSelectorPro
     };
 
     return (
-        <Select
-            value={currentProject?.id?.toString() || ""}
-            onValueChange={handleProjectSwitch}
-        >
+        <Select value={currentProject?.id?.toString() || ""} onValueChange={handleProjectSwitch}>
             <SelectTrigger className="h-9 w-[200px]">
                 <SelectValue placeholder="Select project">
                     <div className="flex items-center gap-2">
@@ -43,12 +45,22 @@ export function ProjectSelector({ projects, currentProject }: ProjectSelectorPro
             </SelectTrigger>
             <SelectContent>
                 {projects.length === 0 ? (
-                    <SelectItem value="create-new">
-                        <div className="flex items-center gap-2">
-                            <Plus className="h-4 w-4" />
-                            <span>Create new project</span>
-                        </div>
-                    </SelectItem>
+                    <>
+                        {currentProject && (
+                            <SelectItem value="edit-project">
+                                <div className="flex items-center gap-2">
+                                    <Edit className="h-4 w-4" />
+                                    <span>Edit project</span>
+                                </div>
+                            </SelectItem>
+                        )}
+                        <SelectItem value="create-new">
+                            <div className="flex items-center gap-2">
+                                <Plus className="h-4 w-4" />
+                                <span>Create new project</span>
+                            </div>
+                        </SelectItem>
+                    </>
                 ) : (
                     <>
                         {projects.map((project) => (
@@ -59,6 +71,14 @@ export function ProjectSelector({ projects, currentProject }: ProjectSelectorPro
                                 </div>
                             </SelectItem>
                         ))}
+                        {currentProject && (
+                            <SelectItem value="edit-project">
+                                <div className="flex items-center gap-2">
+                                    <Edit className="h-4 w-4" />
+                                    <span>Edit project</span>
+                                </div>
+                            </SelectItem>
+                        )}
                         <SelectItem value="create-new">
                             <div className="flex items-center gap-2">
                                 <Plus className="h-4 w-4" />
@@ -71,4 +91,3 @@ export function ProjectSelector({ projects, currentProject }: ProjectSelectorPro
         </Select>
     );
 }
-

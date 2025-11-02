@@ -73,3 +73,4 @@ export default function TeamsEdit({ team }: TeamsEditProps) {
         </AppLayout>
     );
 }
+

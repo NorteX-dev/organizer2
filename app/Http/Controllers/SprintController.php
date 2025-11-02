@@ -27,7 +27,7 @@ class SprintController extends Controller
     public function create(Project $project)
     {
         $this->authorize('create', Sprint::class);
-        return Inertia::render('projects/[id]/sprints-create', ['project' => $project]);
+        return Inertia::render('projects/[id]/sprints/create', ['project' => $project]);
     }
 
     /**
@@ -56,9 +56,9 @@ class SprintController extends Controller
     {
         $this->authorize('view', $sprint);
         
-        // Load tasks with their relations
         $tasks = $sprint->tasks()
             ->with(['assignedUser', 'labels'])
+            ->orderBy('status')
             ->orderBy('position')
             ->get();
         
@@ -75,7 +75,7 @@ class SprintController extends Controller
     public function edit(Project $project, Sprint $sprint)
     {
         $this->authorize('update', $sprint);
-        return Inertia::render('projects/[id]/sprints-edit', ['project' => $project, 'sprint' => $sprint]);
+        return Inertia::render('projects/[id]/sprints/[sprintId]/edit', ['project' => $project, 'sprint' => $sprint]);
     }
 
     /**

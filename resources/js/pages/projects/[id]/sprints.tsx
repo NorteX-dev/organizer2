@@ -60,7 +60,8 @@ export default function SprintsPage({ project, sprints = [] }: { project: Projec
     return (
         <AppLayout
             breadcrumbs={[
-                { title: `Project ${project.id}`, href: `/projects/${project.id}/edit` },
+                { title: "Projects", href: "/projects" },
+                { title: project.name, href: `/projects/${project.id}/edit` },
                 { title: `Sprints`, href: `/projects/${project.id}/sprints` },
             ]}
         >

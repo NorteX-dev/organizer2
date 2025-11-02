@@ -20,12 +20,12 @@ export default function ProjectsIndexPage({ projects, team }: { projects: Projec
         setLoading(true);
         router.post("/projects", form, {
             preserveScroll: true,
-            onSuccess: (page) => {
+            onSuccess: () => {
                 setOpen(false);
                 setLoading(false);
                 setForm({ name: "", status: "" });
             },
-            onError: (err) => {
+            onError: () => {
                 setLoading(false);
                 setError("There was an error creating the project.");
             },

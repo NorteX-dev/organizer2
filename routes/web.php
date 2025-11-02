@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return Inertia::render('welcome');
+    return redirect()->route('projects.index');
 })->name('home');
 
 // GitHub OAuth routes
@@ -36,6 +36,10 @@ Route::middleware(['auth'])->group(function () {
             return redirect()->route('projects.sprints.index', $currentProject->id);
         })->name('sprints.redirect');
         Route::resource('projects.sprints', App\Http\Controllers\SprintController::class);
+        Route::get('projects/{project}/sprints/{sprint}/tasks', [App\Http\Controllers\TaskController::class, 'index'])->name('projects.sprints.tasks.index');
+        Route::post('projects/{project}/sprints/{sprint}/tasks', [App\Http\Controllers\TaskController::class, 'store'])->name('projects.sprints.tasks.store');
+        Route::put('projects/{project}/sprints/{sprint}/tasks/{task}', [App\Http\Controllers\TaskController::class, 'update'])->name('projects.sprints.tasks.update');
+        Route::post('projects/{project}/sprints/{sprint}/tasks/reorder', [App\Http\Controllers\TaskController::class, 'reorder'])->name('projects.sprints.tasks.reorder');
     });
 
     // Team routes

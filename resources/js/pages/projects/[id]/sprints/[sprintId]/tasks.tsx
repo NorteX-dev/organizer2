@@ -18,9 +18,10 @@ import {
 } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { router } from "@inertiajs/react";
 import { format, parseISO } from "date-fns";
 import { GripVertical, Plus, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const KANBAN_COLUMNS = ["Planned", "Backlog", "Active", "Completed"] as const;
 
@@ -87,7 +88,7 @@ function TaskCard({ task }: { task: KanbanTask }) {
                         </Badge>
                     </div>
                 </CardHeader>
-                {(task.description || task.assigned_user || task.labels?.length) && (
+                {(task.description || task.assigned_user || (task.labels && task.labels.length > 0)) && (
                     <CardContent className="pt-0">
                         {task.description && (
                             <CardDescription className="mb-2 line-clamp-2 text-xs">{task.description}</CardDescription>
@@ -222,6 +223,11 @@ export default function SprintTasksPage({
     const [localTasks, setLocalTasks] = useState<KanbanTask[]>(tasks);
     const [activeId, setActiveId] = useState<string | number | null>(null);
     const [addingToColumn, setAddingToColumn] = useState<StatusType | null>(null);
+    const [isSaving, setIsSaving] = useState(false);
+
+    useEffect(() => {
+        setLocalTasks(tasks);
+    }, [tasks]);
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -253,6 +259,7 @@ export default function SprintTasksPage({
         if (!activeTask) return;
 
         let newStatus: StatusType | null = null;
+        const newTasks: KanbanTask[] = [...localTasks];
 
         if (KANBAN_COLUMNS.includes(over.id as StatusType)) {
             newStatus = over.id as StatusType;
@@ -263,26 +270,73 @@ export default function SprintTasksPage({
             }
         }
 
-        if (newStatus && newStatus !== activeTask.status) {
-            setLocalTasks((tasks) =>
-                tasks.map((task) => (task.id === active.id ? { ...task, status: newStatus } : task)),
-            );
-            return;
-        }
+        if (!newStatus) return;
 
-        if (active.id !== over.id) {
-            const activeIndex = localTasks.findIndex((t) => t.id === active.id);
-            const overIndex = localTasks.findIndex((t) => t.id === over.id);
+        const activeTaskIndex = newTasks.findIndex((t) => t.id === active.id);
+        if (activeTaskIndex === -1) return;
 
-            if (activeIndex !== -1 && overIndex !== -1) {
-                setLocalTasks((tasks) => {
-                    const newTasks = [...tasks];
-                    const [movedTask] = newTasks.splice(activeIndex, 1);
-                    newTasks.splice(overIndex, 0, movedTask);
-                    return newTasks;
-                });
+        if (KANBAN_COLUMNS.includes(over.id as StatusType)) {
+            newTasks[activeTaskIndex] = {
+                ...newTasks[activeTaskIndex],
+                status: newStatus,
+            };
+        } else {
+            const overTaskIndex = newTasks.findIndex((t) => t.id === over.id);
+            if (overTaskIndex === -1) return;
+
+            const sameStatus = newStatus === activeTask.status;
+            const movedTask = { ...newTasks[activeTaskIndex], status: newStatus };
+
+            if (sameStatus) {
+                newTasks.splice(activeTaskIndex, 1);
+                const insertIndex = overTaskIndex > activeTaskIndex ? overTaskIndex : overTaskIndex + 1;
+                newTasks.splice(insertIndex, 0, movedTask);
+            } else {
+                newTasks.splice(activeTaskIndex, 1);
+                const tasksInNewStatus = newTasks.filter((t) => t.status === newStatus);
+                const insertIndex = tasksInNewStatus.findIndex((t) => t.id === over.id);
+                const finalInsertIndex =
+                    insertIndex >= 0
+                        ? newTasks.findIndex((t) => t.id === tasksInNewStatus[insertIndex].id) + 1
+                        : newTasks.length;
+                newTasks.splice(finalInsertIndex, 0, movedTask);
             }
         }
+
+        const reorderedTasks = KANBAN_COLUMNS.flatMap((status) => {
+            const tasksInStatus = newTasks.filter((t) => t.status === status);
+            return tasksInStatus.map((task, index) => ({
+                ...task,
+                position: index,
+            }));
+        });
+
+        setLocalTasks(reorderedTasks);
+        setIsSaving(true);
+
+        const tasksToReorder = reorderedTasks
+            .filter((task) => typeof task.id === "number")
+            .map((task) => ({
+                id: task.id,
+                status: task.status,
+                position: task.position,
+            }));
+
+        router.post(
+            `/projects/${project.id}/sprints/${sprint.id}/tasks/reorder`,
+            { tasks: tasksToReorder },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setIsSaving(false);
+                    router.reload({ only: ["tasks"] });
+                },
+                onError: () => {
+                    setIsSaving(false);
+                    router.reload({ only: ["tasks"] });
+                },
+            },
+        );
     };
 
     const handleAddTask = (status: StatusType, title: string) => {
@@ -291,8 +345,12 @@ export default function SprintTasksPage({
             return;
         }
 
+        setIsSaving(true);
+        setAddingToColumn(null);
+
+        const tempId = `temp-${Date.now()}`;
         const newTask: KanbanTask = {
-            id: `temp-${Date.now()}`,
+            id: tempId,
             project_id: project.id,
             sprint_id: sprint.id,
             assigned_to: null,
@@ -310,7 +368,28 @@ export default function SprintTasksPage({
         };
 
         setLocalTasks((tasks) => [...tasks, newTask]);
-        setAddingToColumn(null);
+
+        router.post(
+            `/projects/${project.id}/sprints/${sprint.id}/tasks`,
+            {
+                title,
+                status,
+                type: "task",
+                priority: "medium",
+            },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setIsSaving(false);
+                    router.reload({ only: ["tasks"] });
+                },
+                onError: () => {
+                    setIsSaving(false);
+                    setLocalTasks((tasks) => tasks.filter((t) => t.id !== tempId));
+                    router.reload({ only: ["tasks"] });
+                },
+            },
+        );
     };
 
     const activeTask = activeId ? localTasks.find((t) => t.id === activeId) : null;
@@ -318,14 +397,15 @@ export default function SprintTasksPage({
     return (
         <AppLayout
             breadcrumbs={[
-                { title: `Project ${project.id}`, href: `/projects/${project.id}/edit` },
+                { title: "Projects", href: "/projects" },
+                { title: project.name, href: `/projects/${project.id}/edit` },
                 { title: "Sprints", href: `/projects/${project.id}/sprints` },
                 { title: sprint.name, href: `/projects/${project.id}/sprints/${sprint.id}` },
             ]}
         >
             <HeaderSection
                 title={`${sprint.name} - Tasks`}
-                description={`${format(parseISO(sprint.start_date), "MMM dd, yyyy")} - ${format(parseISO(sprint.end_date), "MMM dd, yyyy")}${sprint.goal ? ` • ${sprint.goal}` : ""}`}
+                description={`${format(parseISO(sprint.start_date), "MMM dd, yyyy")} - ${format(parseISO(sprint.end_date), "MMM dd, yyyy")}${sprint.goal ? ` • ${sprint.goal}` : ""}${isSaving ? " (Saving...)" : ""}`}
             />
 
             <DndContext

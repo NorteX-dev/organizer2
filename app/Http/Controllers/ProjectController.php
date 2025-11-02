@@ -83,7 +83,7 @@ class ProjectController extends Controller
         }
         
         $this->authorize('view', $project);
-        return Inertia::render('projects/edit', [
+        return Inertia::render('projects/[id]/edit', [
             'project' => $project,
         ]);
     }
