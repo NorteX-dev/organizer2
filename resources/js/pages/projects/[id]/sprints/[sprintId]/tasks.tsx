@@ -2,9 +2,19 @@ import { HeaderSection } from "@/components/header-section";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Combobox } from "@/components/ui/combobox";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import AppLayout from "@/layouts/app-layout";
-import type { Project, Sprint, Task } from "@/types";
+import type { GithubIssue, Project, Sprint, Task } from "@/types";
 import {
     DndContext,
     DragEndEvent,
@@ -20,7 +30,7 @@ import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-
 import { CSS } from "@dnd-kit/utilities";
 import { router } from "@inertiajs/react";
 import { format, parseISO } from "date-fns";
-import { GripVertical, Plus, X } from "lucide-react";
+import { ExternalLink, Github, GripVertical, Plus, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const KANBAN_COLUMNS = ["Planned", "Backlog", "Active", "Completed"] as const;
@@ -46,11 +56,64 @@ const TYPE_COLORS = {
     epic: "bg-indigo-50 text-indigo-700 border-indigo-200",
 };
 
-function TaskCard({ task }: { task: KanbanTask }) {
+function normalizeGithubUrl(repo: string | null | undefined): string | null {
+    if (!repo) return null;
+
+    let url = repo.trim();
+
+    // Remove .git suffix if present
+    url = url.replace(/\.git$/, "");
+
+    // If it's already a full URL, return it
+    if (url.startsWith("http://") || url.startsWith("https://")) {
+        // Ensure it ends with github.com path
+        if (url.includes("github.com")) {
+            return url.replace(/\/$/, "");
+        }
+    }
+
+    // Extract owner/repo from various formats
+    const match = url.match(/(?:github\.com[/:])?([^/]+)\/([^/\s]+)/);
+    if (match) {
+        return `https://github.com/${match[1]}/${match[2]}`;
+    }
+
+    // If it's already in owner/repo format
+    if (/^[a-zA-Z0-9_-]+\/[a-zA-Z0-9_.-]+$/.test(url)) {
+        return `https://github.com/${url}`;
+    }
+
+    return url;
+}
+
+function TaskCard({
+    task,
+    project,
+    sprint,
+    onUpdate,
+}: {
+    task: KanbanTask;
+    project: Project;
+    sprint: Sprint;
+    onUpdate: () => void;
+}) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
         id: task.id,
         data: { task },
     });
+
+    const [editDialogOpen, setEditDialogOpen] = useState(false);
+    const [issues, setIssues] = useState<GithubIssue[]>([]);
+    const [prs, setPrs] = useState<GithubIssue[]>([]);
+    const [loadingRefs, setLoadingRefs] = useState(false);
+    const [selectedIssue, setSelectedIssue] = useState<string | undefined>(task.github_issue_number || undefined);
+    const [selectedPR, setSelectedPR] = useState<string | undefined>(task.github_pr_number || undefined);
+    const [saving, setSaving] = useState(false);
+
+    useEffect(() => {
+        setSelectedIssue(task.github_issue_number || undefined);
+        setSelectedPR(task.github_pr_number || undefined);
+    }, [task.github_issue_number, task.github_pr_number]);
 
     const style = {
         transform: CSS.Transform.toString(transform),
@@ -58,69 +121,295 @@ function TaskCard({ task }: { task: KanbanTask }) {
         opacity: isDragging ? 0.5 : 1,
     };
 
+    const handleOpenDialog = async () => {
+        setEditDialogOpen(true);
+        if (project.github_repo && (issues.length === 0 || prs.length === 0)) {
+            setLoadingRefs(true);
+            try {
+                const response = await fetch(`/projects/${project.id}/github-issues-prs`);
+                if (response.ok) {
+                    const data = await response.json();
+                    setIssues(data.issues || []);
+                    setPrs(data.prs || []);
+                }
+            } catch (error) {
+                console.error("Failed to fetch GitHub issues/PRs:", error);
+            } finally {
+                setLoadingRefs(false);
+            }
+        }
+    };
+
+    const handleSave = () => {
+        if (typeof task.id !== "number") return;
+
+        setSaving(true);
+        router.put(
+            `/projects/${project.id}/sprints/${sprint.id}/tasks/${task.id}`,
+            {
+                github_issue_number: selectedIssue || null,
+                github_pr_number: selectedPR || null,
+            },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setEditDialogOpen(false);
+                    setSaving(false);
+                    onUpdate();
+                },
+                onError: () => {
+                    setSaving(false);
+                },
+            },
+        );
+    };
+
+    const allOptions = [
+        ...issues.map((issue) => ({
+            value: issue.number.toString(),
+            label: `#${issue.number}: ${issue.title}`,
+            type: "issue",
+        })),
+        ...prs.map((pr) => ({
+            value: pr.number.toString(),
+            label: `#${pr.number}: ${pr.title}`,
+            type: "pr",
+        })),
+    ];
+
+    const selectedIssueObj = issues.find((i) => i.number.toString() === selectedIssue);
+    const selectedPRObj = prs.find((p) => p.number.toString() === selectedPR);
+
     return (
-        <div ref={setNodeRef} style={style}>
-            <Card className="cursor-grab transition-shadow hover:shadow-md active:cursor-grabbing">
-                <CardHeader className="pb-3">
-                    <div className="mb-2 flex items-start justify-between gap-2">
-                        <div className="flex flex-1 items-start gap-2">
-                            <button
-                                className="mt-1 cursor-grab text-neutral-400 hover:text-neutral-600"
-                                {...attributes}
-                                {...listeners}
-                            >
-                                <GripVertical className="h-4 w-4" />
-                            </button>
-                            <CardTitle className="flex-1 text-base leading-tight font-medium">{task.title}</CardTitle>
-                        </div>
-                        {task.story_points && (
-                            <Badge variant="outline" className="shrink-0 text-xs">
-                                {task.story_points} pts
-                            </Badge>
-                        )}
-                    </div>
-                    <div className="ml-6 flex flex-wrap gap-1.5">
-                        <Badge variant="outline" className={`text-xs ${TYPE_COLORS[task.type]}`}>
-                            {task.type}
-                        </Badge>
-                        <Badge variant="outline" className={`text-xs ${PRIORITY_COLORS[task.priority]}`}>
-                            {task.priority}
-                        </Badge>
-                    </div>
-                </CardHeader>
-                {(task.description || task.assigned_user || (task.labels && task.labels.length > 0)) && (
-                    <CardContent className="pt-0">
-                        {task.description && (
-                            <CardDescription className="mb-2 line-clamp-2 text-xs">{task.description}</CardDescription>
-                        )}
-                        {task.assigned_user && (
-                            <div className="mb-2 flex items-center gap-2 text-xs text-neutral-600">
-                                <span className="font-medium">Assigned to:</span>
-                                <span>{task.assigned_user.name}</span>
+        <>
+            <div ref={setNodeRef} style={style}>
+                <Card className="cursor-grab transition-shadow hover:shadow-md active:cursor-grabbing">
+                    <CardHeader className="pb-3">
+                        <div className="mb-2 flex items-start justify-between gap-2">
+                            <div className="flex flex-1 items-start gap-2">
+                                <button
+                                    className="mt-1 cursor-grab text-neutral-400 hover:text-neutral-600"
+                                    {...attributes}
+                                    {...listeners}
+                                >
+                                    <GripVertical className="h-4 w-4" />
+                                </button>
+                                <CardTitle className="flex-1 text-base leading-tight font-medium">
+                                    {task.title}
+                                </CardTitle>
                             </div>
-                        )}
-                        {task.labels && task.labels.length > 0 && (
-                            <div className="flex flex-wrap gap-1">
-                                {task.labels.map((label) => (
-                                    <Badge
-                                        key={label.id}
-                                        variant="outline"
-                                        className="text-xs"
-                                        style={{
-                                            backgroundColor: `${label.color}20`,
-                                            borderColor: label.color,
-                                            color: label.color,
+                            {task.story_points && (
+                                <Badge variant="outline" className="shrink-0 text-xs">
+                                    {task.story_points} pts
+                                </Badge>
+                            )}
+                        </div>
+                        <div className="ml-6 flex flex-wrap gap-1.5">
+                            <Badge variant="outline" className={`text-xs ${TYPE_COLORS[task.type]}`}>
+                                {task.type}
+                            </Badge>
+                            <Badge variant="outline" className={`text-xs ${PRIORITY_COLORS[task.priority]}`}>
+                                {task.priority}
+                            </Badge>
+                        </div>
+                    </CardHeader>
+                    {(task.description ||
+                        task.assigned_user ||
+                        (task.labels && task.labels.length > 0) ||
+                        task.github_issue_number ||
+                        task.github_pr_number) && (
+                        <CardContent className="pt-0">
+                            {task.description && (
+                                <CardDescription className="mb-2 line-clamp-2 text-xs">
+                                    {task.description}
+                                </CardDescription>
+                            )}
+                            {task.assigned_user && (
+                                <div className="mb-2 flex items-center gap-2 text-xs text-neutral-600">
+                                    <span className="font-medium">Assigned to:</span>
+                                    <span>{task.assigned_user.name}</span>
+                                </div>
+                            )}
+                            {(task.github_issue_number || task.github_pr_number) && (
+                                <div className="mb-2 flex flex-wrap items-center gap-2 text-xs">
+                                    {task.github_issue_number &&
+                                        (() => {
+                                            const baseUrl = normalizeGithubUrl(project.github_repo);
+                                            return baseUrl ? (
+                                                <a
+                                                    href={`${baseUrl}/issues/${task.github_issue_number}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="inline-flex items-center gap-1 text-blue-600 hover:underline"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
+                                                    <Github className="h-3 w-3" />
+                                                    Issue #{task.github_issue_number}
+                                                    <ExternalLink className="h-3 w-3" />
+                                                </a>
+                                            ) : (
+                                                <span className="inline-flex items-center gap-1 text-blue-600">
+                                                    <Github className="h-3 w-3" />
+                                                    Issue #{task.github_issue_number}
+                                                </span>
+                                            );
+                                        })()}
+                                    {task.github_pr_number &&
+                                        (() => {
+                                            const baseUrl = normalizeGithubUrl(project.github_repo);
+                                            return baseUrl ? (
+                                                <a
+                                                    href={`${baseUrl}/pull/${task.github_pr_number}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="inline-flex items-center gap-1 text-purple-600 hover:underline"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
+                                                    <Github className="h-3 w-3" />
+                                                    PR #{task.github_pr_number}
+                                                    <ExternalLink className="h-3 w-3" />
+                                                </a>
+                                            ) : (
+                                                <span className="inline-flex items-center gap-1 text-purple-600">
+                                                    <Github className="h-3 w-3" />
+                                                    PR #{task.github_pr_number}
+                                                </span>
+                                            );
+                                        })()}
+                                </div>
+                            )}
+                            {task.labels && task.labels.length > 0 && (
+                                <div className="flex flex-wrap gap-1">
+                                    {task.labels.map((label) => (
+                                        <Badge
+                                            key={label.id}
+                                            variant="outline"
+                                            className="text-xs"
+                                            style={{
+                                                backgroundColor: `${label.color}20`,
+                                                borderColor: label.color,
+                                                color: label.color,
+                                            }}
+                                        >
+                                            {label.name}
+                                        </Badge>
+                                    ))}
+                                </div>
+                            )}
+                            {project.github_repo && (
+                                <div className="mt-2">
+                                    <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-6 text-xs"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleOpenDialog();
                                         }}
                                     >
-                                        {label.name}
-                                    </Badge>
-                                ))}
-                            </div>
+                                        {task.github_issue_number || task.github_pr_number ? "Edit" : "Add"} GitHub
+                                        References
+                                    </Button>
+                                </div>
+                            )}
+                        </CardContent>
+                    )}
+                    {project.github_repo &&
+                        !task.description &&
+                        !task.assigned_user &&
+                        (!task.labels || task.labels.length === 0) &&
+                        !task.github_issue_number &&
+                        !task.github_pr_number && (
+                            <CardContent className="pt-0">
+                                <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-6 text-xs"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleOpenDialog();
+                                    }}
+                                >
+                                    Add GitHub References
+                                </Button>
+                            </CardContent>
                         )}
-                    </CardContent>
-                )}
-            </Card>
-        </div>
+                </Card>
+            </div>
+
+            <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>GitHub References</DialogTitle>
+                        <DialogDescription>Link this task to GitHub issues or pull requests.</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <Label>GitHub Issue</Label>
+                            {loadingRefs ? (
+                                <div className="text-sm text-muted-foreground">Loading issues...</div>
+                            ) : (
+                                <Combobox
+                                    options={[
+                                        { value: "", label: "None", type: undefined },
+                                        ...allOptions.filter((opt) => opt.type === "issue"),
+                                    ]}
+                                    value={selectedIssue || ""}
+                                    onSelect={setSelectedIssue}
+                                    placeholder="Select an issue..."
+                                    emptyText="No issues found"
+                                />
+                            )}
+                            {selectedIssueObj && (
+                                <a
+                                    href={selectedIssueObj.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-1 text-xs text-blue-600 hover:underline"
+                                >
+                                    View on GitHub <ExternalLink className="h-3 w-3" />
+                                </a>
+                            )}
+                        </div>
+                        <div className="space-y-2">
+                            <Label>GitHub Pull Request</Label>
+                            {loadingRefs ? (
+                                <div className="text-sm text-muted-foreground">Loading PRs...</div>
+                            ) : (
+                                <Combobox
+                                    options={[
+                                        { value: "", label: "None", type: undefined },
+                                        ...allOptions.filter((opt) => opt.type === "pr"),
+                                    ]}
+                                    value={selectedPR || ""}
+                                    onSelect={setSelectedPR}
+                                    placeholder="Select a PR..."
+                                    emptyText="No PRs found"
+                                />
+                            )}
+                            {selectedPRObj && (
+                                <a
+                                    href={selectedPRObj.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-1 text-xs text-blue-600 hover:underline"
+                                >
+                                    View on GitHub <ExternalLink className="h-3 w-3" />
+                                </a>
+                            )}
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setEditDialogOpen(false)} disabled={saving}>
+                            Cancel
+                        </Button>
+                        <Button onClick={handleSave} disabled={saving || loadingRefs}>
+                            {saving ? "Saving..." : "Save"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </>
     );
 }
 
@@ -130,12 +419,16 @@ function DroppableColumn({
     addingToColumn,
     onAddTask,
     onCancelAdd,
+    project,
+    sprint,
 }: {
     status: StatusType;
     tasks: KanbanTask[];
     addingToColumn: StatusType | null;
     onAddTask: (status: StatusType, title: string) => void;
     onCancelAdd: () => void;
+    project: Project;
+    sprint: Sprint;
 }) {
     const { setNodeRef, isOver } = useDroppable({
         id: status,
@@ -163,7 +456,13 @@ function DroppableColumn({
                     }`}
                 >
                     {tasks.map((task) => (
-                        <TaskCard key={task.id} task={task} />
+                        <TaskCard
+                            key={task.id}
+                            task={task}
+                            project={project}
+                            sprint={sprint}
+                            onUpdate={() => router.reload({ only: ["tasks"] })}
+                        />
                     ))}
 
                     {addingToColumn === status && (
@@ -362,6 +661,7 @@ export default function SprintTasksPage({
             story_points: null,
             position: 0,
             github_issue_number: null,
+            github_pr_number: null,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
             isNew: true,
@@ -423,6 +723,8 @@ export default function SprintTasksPage({
                             addingToColumn={addingToColumn}
                             onAddTask={handleAddTask}
                             onCancelAdd={() => setAddingToColumn(null)}
+                            project={project}
+                            sprint={sprint}
                         />
                     ))}
                 </div>

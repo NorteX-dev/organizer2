@@ -198,6 +198,77 @@ class ProjectController extends Controller
     }
 
     /**
+     * Fetch GitHub issues and PRs for a project.
+     */
+    public function fetchGithubIssuesAndPRs(Project $project)
+    {
+        $redirect = $this->ensureCurrentTeam();
+        if ($redirect) {
+            return $redirect;
+        }
+        
+        $this->authorize('view', $project);
+
+        if (!$project->github_repo) {
+            return response()->json(['error' => 'No GitHub repository configured.'], 400);
+        }
+
+        $repoPath = $this->parseGithubRepoUrl($project->github_repo);
+        if (!$repoPath) {
+            return response()->json(['error' => 'Invalid GitHub repository URL.'], 400);
+        }
+
+        try {
+            $issuesResponse = Http::get("https://api.github.com/repos/{$repoPath}/issues", [
+                'state' => 'open',
+                'per_page' => 100,
+            ]);
+            
+            $prsResponse = Http::get("https://api.github.com/repos/{$repoPath}/pulls", [
+                'state' => 'open',
+                'per_page' => 100,
+            ]);
+
+            if ($issuesResponse->failed() || $prsResponse->failed()) {
+                return response()->json(['error' => 'Failed to fetch data from GitHub.'], 500);
+            }
+
+            $issues = $issuesResponse->json();
+            $prs = $prsResponse->json();
+
+            // Filter out PRs from issues (PRs are returned in issues endpoint)
+            $issuesOnly = array_filter($issues, fn($issue) => !isset($issue['pull_request']));
+            
+            $formattedIssues = array_map(function ($issue) {
+                return [
+                    'number' => $issue['number'],
+                    'title' => $issue['title'],
+                    'state' => $issue['state'],
+                    'type' => 'issue',
+                    'url' => $issue['html_url'],
+                ];
+            }, $issuesOnly);
+
+            $formattedPRs = array_map(function ($pr) {
+                return [
+                    'number' => $pr['number'],
+                    'title' => $pr['title'],
+                    'state' => $pr['state'],
+                    'type' => 'pr',
+                    'url' => $pr['html_url'],
+                ];
+            }, $prs);
+
+            return response()->json([
+                'issues' => array_values($formattedIssues),
+                'prs' => array_values($formattedPRs),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to fetch GitHub data: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
      * Parse GitHub repository URL to extract owner/repo path.
      */
     private function parseGithubRepoUrl(string $url): ?string

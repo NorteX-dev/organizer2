@@ -58,6 +58,7 @@ export interface Project {
     id: number;
     name: string;
     status: string;
+    github_repo?: string | null;
 }
 
 export interface Sprint {
@@ -87,10 +88,19 @@ export interface Task {
     story_points: number | null;
     position: number;
     github_issue_number: string | null;
+    github_pr_number: string | null;
     created_at: string;
     updated_at: string;
     assigned_user?: User;
     labels?: Label[];
+}
+
+export interface GithubIssue {
+    number: number;
+    title: string;
+    state: string;
+    type: "issue" | "pr";
+    url: string;
 }
 
 export interface Label {

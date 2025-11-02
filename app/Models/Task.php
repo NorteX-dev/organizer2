@@ -23,6 +23,7 @@ class Task extends Model
 		"story_points",
 		"position",
 		"github_issue_number",
+		"github_pr_number",
 	];
 
 	protected $casts = [

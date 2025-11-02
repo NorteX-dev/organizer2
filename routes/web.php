@@ -28,6 +28,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('projects', App\Http\Controllers\ProjectController::class);
     Route::post('projects/{project}/switch', [App\Http\Controllers\ProjectController::class, 'switch'])->name('projects.switch');
     Route::post('projects/{project}/sync-github', [App\Http\Controllers\ProjectController::class, 'syncGithub'])->name('projects.sync-github');
+    Route::get('projects/{project}/github-issues-prs', [App\Http\Controllers\ProjectController::class, 'fetchGithubIssuesAndPRs'])->name('projects.github-issues-prs');
     
     // Sprints routes - require team and project selection
     Route::middleware(['team.project'])->group(function () {

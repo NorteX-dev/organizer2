@@ -56,6 +56,8 @@ class SprintController extends Controller
     {
         $this->authorize('view', $sprint);
         
+        $project->load('githubSyncs');
+        
         $tasks = $sprint->tasks()
             ->with(['assignedUser', 'labels'])
             ->orderBy('status')

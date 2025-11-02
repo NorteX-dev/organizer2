@@ -38,6 +38,8 @@ class TaskController extends Controller
 			'priority' => 'nullable|in:low,medium,high,critical',
 			'story_points' => 'nullable|integer|min:0',
 			'assigned_to' => 'nullable|exists:users,id',
+			'github_issue_number' => 'nullable|string',
+			'github_pr_number' => 'nullable|string',
 		]);
 
 		$maxPosition = $sprint->tasks()
@@ -55,6 +57,8 @@ class TaskController extends Controller
 			'story_points' => $validated['story_points'] ?? null,
 			'assigned_to' => $validated['assigned_to'] ?? null,
 			'position' => $maxPosition + 1,
+			'github_issue_number' => $validated['github_issue_number'] ?? null,
+			'github_pr_number' => $validated['github_pr_number'] ?? null,
 		]);
 
 		$task->load(['assignedUser', 'labels']);
@@ -80,6 +84,8 @@ class TaskController extends Controller
 			'story_points' => 'nullable|integer|min:0',
 			'assigned_to' => 'nullable|exists:users,id',
 			'position' => 'sometimes|integer|min:0',
+			'github_issue_number' => 'nullable|string',
+			'github_pr_number' => 'nullable|string',
 		]);
 
 		$oldStatus = $task->status;
