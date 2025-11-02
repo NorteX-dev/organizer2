@@ -27,6 +27,7 @@ Route::middleware(['auth'])->group(function () {
     // Projects routes
     Route::resource('projects', App\Http\Controllers\ProjectController::class);
     Route::post('projects/{project}/switch', [App\Http\Controllers\ProjectController::class, 'switch'])->name('projects.switch');
+    Route::post('projects/{project}/sync-github', [App\Http\Controllers\ProjectController::class, 'syncGithub'])->name('projects.sync-github');
     
     // Sprints routes - require team and project selection
     Route::middleware(['team.project'])->group(function () {

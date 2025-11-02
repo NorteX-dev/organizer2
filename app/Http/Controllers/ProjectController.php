@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\GithubSync;
 use App\Models\Project;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -83,8 +85,14 @@ class ProjectController extends Controller
         }
         
         $this->authorize('view', $project);
+        
+        $latestSync = $project->githubSyncs()
+            ->orderBy('synced_at', 'desc')
+            ->first();
+        
         return Inertia::render('projects/[id]/edit', [
             'project' => $project,
+            'latestGithubSync' => $latestSync,
         ]);
     }
 
@@ -129,5 +137,92 @@ class ProjectController extends Controller
         session(['current_project_id' => $project->id]);
 
         return back()->with('success', 'Project switched successfully.');
+    }
+
+    /**
+     * Sync GitHub repository data.
+     */
+    public function syncGithub(Project $project)
+    {
+        $redirect = $this->ensureCurrentTeam();
+        if ($redirect) {
+            return $redirect;
+        }
+        
+        $this->authorize('update', $project);
+
+        if (!$project->github_repo) {
+            return back()->withErrors(['error' => 'No GitHub repository configured.']);
+        }
+
+        $repoPath = $this->parseGithubRepoUrl($project->github_repo);
+        if (!$repoPath) {
+            return back()->withErrors(['error' => 'Invalid GitHub repository URL.']);
+        }
+
+        try {
+            $response = Http::get("https://api.github.com/repos/{$repoPath}");
+            
+            if ($response->failed()) {
+                if ($response->status() === 404) {
+                    return back()->withErrors(['error' => 'Repository not found or is private. Only public repositories are supported.']);
+                }
+                return back()->withErrors(['error' => 'Failed to fetch repository data from GitHub.']);
+            }
+
+            $repoData = $response->json();
+            
+            GithubSync::create([
+                'project_id' => $project->id,
+                'type' => 'commits',
+                'data' => [
+                    'name' => $repoData['full_name'] ?? $repoData['name'] ?? '',
+                    'description' => $repoData['description'] ?? null,
+                    'stars' => $repoData['stargazers_count'] ?? 0,
+                    'forks' => $repoData['forks_count'] ?? 0,
+                    'language' => $repoData['language'] ?? null,
+                    'url' => $repoData['html_url'] ?? $project->github_repo,
+                ],
+                'synced_at' => now(),
+            ]);
+
+            $latestSync = $project->githubSyncs()
+                ->orderBy('synced_at', 'desc')
+                ->first();
+
+            return back()->with('success', 'GitHub repository synced successfully.')
+                ->with('latestGithubSync', $latestSync);
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'Failed to sync GitHub repository: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Parse GitHub repository URL to extract owner/repo path.
+     */
+    private function parseGithubRepoUrl(string $url): ?string
+    {
+        // Handle various GitHub URL formats:
+        // https://github.com/owner/repo
+        // https://github.com/owner/repo.git
+        // github.com/owner/repo
+        // owner/repo
+        
+        $url = trim($url);
+        
+        // Remove .git suffix if present
+        $url = preg_replace('/\.git$/', '', $url);
+        
+        // Extract owner/repo from URL
+        if (preg_match('/github\.com[\/:]([^\/]+)\/([^\/\s]+)/', $url, $matches)) {
+            return $matches[1] . '/' . $matches[2];
+        }
+        
+        // Check if it's already in owner/repo format
+        if (preg_match('/^[a-zA-Z0-9_-]+\/[a-zA-Z0-9_.-]+$/', $url)) {
+            return $url;
+        }
+        
+        return null;
     }
 }
