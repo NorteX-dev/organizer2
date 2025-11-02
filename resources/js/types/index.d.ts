@@ -98,3 +98,14 @@ export interface Label {
     name: string;
     color: string;
 }
+
+export interface Document {
+    id: number;
+    project_id: number;
+    created_by: number;
+    title: string;
+    content: string;
+    position: number;
+    created_at: string;
+    updated_at: string;
+}

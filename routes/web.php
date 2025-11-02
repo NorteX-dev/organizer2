@@ -40,6 +40,16 @@ Route::middleware(['auth'])->group(function () {
         Route::post('projects/{project}/sprints/{sprint}/tasks', [App\Http\Controllers\TaskController::class, 'store'])->name('projects.sprints.tasks.store');
         Route::put('projects/{project}/sprints/{sprint}/tasks/{task}', [App\Http\Controllers\TaskController::class, 'update'])->name('projects.sprints.tasks.update');
         Route::post('projects/{project}/sprints/{sprint}/tasks/reorder', [App\Http\Controllers\TaskController::class, 'reorder'])->name('projects.sprints.tasks.reorder');
+        
+        Route::get('/documents', function () {
+            $user = auth()->user();
+            $currentProject = $user->currentProject();
+            return redirect()->route('projects.documents.index', $currentProject->id);
+        })->name('documents.redirect');
+        Route::get('projects/{project}/documents', [App\Http\Controllers\DocumentController::class, 'index'])->name('projects.documents.index');
+        Route::post('projects/{project}/documents', [App\Http\Controllers\DocumentController::class, 'store'])->name('projects.documents.store');
+        Route::put('projects/{project}/documents/{document}', [App\Http\Controllers\DocumentController::class, 'update'])->name('projects.documents.update');
+        Route::delete('projects/{project}/documents/{document}', [App\Http\Controllers\DocumentController::class, 'destroy'])->name('projects.documents.destroy');
     });
 
     // Team routes
