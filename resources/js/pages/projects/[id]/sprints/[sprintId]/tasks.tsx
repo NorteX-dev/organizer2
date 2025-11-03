@@ -294,61 +294,80 @@ function TaskCard({
                                     ))}
                                 </div>
                             )}
-                            {project.github_repo && (
-                                <div className="mt-2">
-                                    <Button
-                                        size="sm"
-                                        variant="ghost"
-                                        className="h-6 text-xs"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleOpenDialog();
-                                        }}
-                                    >
-                                        {task.github_issue_number || task.github_pr_number ? "Edit" : "Add"} GitHub
-                                        References
-                                    </Button>
+                            {(project.github_repo || onMoveToBacklog) && (
+                                <div className="mt-2 flex items-center gap-2">
+                                    {project.github_repo && (
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            className="h-6 rounded-md border border-neutral-200 text-xs dark:border-neutral-700"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleOpenDialog();
+                                            }}
+                                        >
+                                            {task.github_issue_number || task.github_pr_number ? "Edit" : "Add"} GitHub
+                                            References
+                                        </Button>
+                                    )}
+                                    {onMoveToBacklog && typeof task.id === "number" && (
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            className="h-6 rounded-md border border-neutral-200 text-xs dark:border-neutral-700"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (confirm("Move this task back to backlog?")) {
+                                                    onMoveToBacklog();
+                                                }
+                                            }}
+                                        >
+                                            Move to Backlog
+                                        </Button>
+                                    )}
                                 </div>
                             )}
                         </CardContent>
                     )}
-                    {project.github_repo &&
-                        !task.description &&
+                    {!task.description &&
                         !task.assigned_user &&
                         (!task.labels || task.labels.length === 0) &&
                         !task.github_issue_number &&
-                        !task.github_pr_number && (
+                        !task.github_pr_number &&
+                        (project.github_repo || onMoveToBacklog) && (
                             <CardContent className="pt-0">
-                                <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    className="h-6 text-xs"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleOpenDialog();
-                                    }}
-                                >
-                                    Add GitHub References
-                                </Button>
+                                <div className="flex items-center gap-2">
+                                    {project.github_repo && (
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            className="h-6 rounded-md border border-neutral-200 text-xs dark:border-neutral-700"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleOpenDialog();
+                                            }}
+                                        >
+                                            Add GitHub References
+                                        </Button>
+                                    )}
+                                    {onMoveToBacklog && typeof task.id === "number" && (
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            className="h-6 rounded-md border border-neutral-200 text-xs dark:border-neutral-700"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (confirm("Move this task back to backlog?")) {
+                                                    onMoveToBacklog();
+                                                }
+                                            }}
+                                        >
+                                            Move to Backlog
+                                        </Button>
+                                    )}
+                                </div>
                             </CardContent>
                         )}
-                    {onMoveToBacklog && typeof task.id === "number" && (
-                        <CardContent className="pt-0">
-                            <Button
-                                size="sm"
-                                variant="outline"
-                                className="h-6 text-xs text-neutral-600"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    if (confirm("Move this task back to backlog?")) {
-                                        onMoveToBacklog();
-                                    }
-                                }}
-                            >
-                                Move to Backlog
-                            </Button>
-                        </CardContent>
-                    )}
                 </Card>
             </div>
 
