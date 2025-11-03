@@ -34,7 +34,7 @@ class TaskController extends Controller
 			'title' => 'required|string|max:255',
 			'description' => 'nullable|string',
 			'type' => 'nullable|in:story,task,bug,epic',
-			'status' => 'required|in:Planned,Backlog,Active,Completed',
+			'status' => 'required|in:Planned,Active,Completed',
 			'priority' => 'nullable|in:low,medium,high,critical',
 			'story_points' => 'nullable|integer|min:0',
 			'assigned_to' => 'nullable|exists:users,id',
@@ -79,7 +79,7 @@ class TaskController extends Controller
 			'title' => 'sometimes|string|max:255',
 			'description' => 'nullable|string',
 			'type' => 'sometimes|in:story,task,bug,epic',
-			'status' => 'sometimes|in:Planned,Backlog,Active,Completed',
+			'status' => 'sometimes|in:Planned,Active,Completed',
 			'priority' => 'sometimes|in:low,medium,high,critical',
 			'story_points' => 'nullable|integer|min:0',
 			'assigned_to' => 'nullable|exists:users,id',
@@ -130,7 +130,7 @@ class TaskController extends Controller
 		$validated = $request->validate([
 			'tasks' => 'required|array',
 			'tasks.*.id' => 'required|exists:tasks,id',
-			'tasks.*.status' => 'required|in:Planned,Backlog,Active,Completed',
+			'tasks.*.status' => 'required|in:Planned,Active,Completed',
 			'tasks.*.position' => 'required|integer|min:0',
 		]);
 
@@ -146,7 +146,7 @@ class TaskController extends Controller
 				}
 			}
 
-			$statuses = ['Planned', 'Backlog', 'Active', 'Completed'];
+			$statuses = ['Planned', 'Active', 'Completed'];
 			foreach ($statuses as $status) {
 				$tasksInStatus = $sprint->tasks()
 					->where('status', $status)
@@ -158,6 +158,62 @@ class TaskController extends Controller
 				}
 			}
 		});
+
+		return redirect()->route('projects.sprints.show', [$project->id, $sprint->id]);
+	}
+
+	public function addFromBacklog(Request $request, Project $project, Sprint $sprint)
+	{
+		$this->authorize('update', $sprint);
+
+		$validated = $request->validate([
+			'task_ids' => 'required|array',
+			'task_ids.*' => 'required|exists:tasks,id',
+		]);
+
+		$tasks = Task::whereIn('id', $validated['task_ids'])
+			->where('project_id', $project->id)
+			->whereNull('sprint_id')
+			->get();
+
+		if ($tasks->count() !== count($validated['task_ids'])) {
+			return back()->withErrors(['error' => 'Some tasks are not available in the backlog or belong to another project']);
+		}
+
+		DB::transaction(function () use ($tasks, $sprint) {
+			$maxPosition = $sprint->tasks()
+				->where('status', 'Planned')
+				->max('position') ?? -1;
+
+			foreach ($tasks as $index => $task) {
+				$task->update([
+					'sprint_id' => $sprint->id,
+					'status' => 'Planned',
+					'position' => $maxPosition + $index + 1,
+				]);
+			}
+		});
+
+		return redirect()->route('projects.sprints.show', [$project->id, $sprint->id]);
+	}
+
+	public function moveToBacklog(Project $project, Sprint $sprint, Task $task)
+	{
+		$this->authorize('update', $sprint);
+
+		if ($task->sprint_id !== $sprint->id || $task->project_id !== $project->id) {
+			return back()->withErrors(['error' => 'Task does not belong to this sprint']);
+		}
+
+		$maxBacklogPosition = $project->tasks()
+			->whereNull('sprint_id')
+			->max('position') ?? -1;
+
+		$task->update([
+			'sprint_id' => null,
+			'status' => 'Backlog',
+			'position' => $maxBacklogPosition + 1,
+		]);
 
 		return redirect()->route('projects.sprints.show', [$project->id, $sprint->id]);
 	}

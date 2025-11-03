@@ -2,6 +2,7 @@ import { HeaderSection } from "@/components/header-section";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Combobox } from "@/components/ui/combobox";
 import {
     Dialog,
@@ -33,7 +34,7 @@ import { format, parseISO } from "date-fns";
 import { ExternalLink, Github, GripVertical, Plus, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
-const KANBAN_COLUMNS = ["Planned", "Backlog", "Active", "Completed"] as const;
+const KANBAN_COLUMNS = ["Planned", "Active", "Completed"] as const;
 
 type StatusType = (typeof KANBAN_COLUMNS)[number];
 
@@ -86,11 +87,13 @@ function TaskCard({
     project,
     sprint,
     onUpdate,
+    onMoveToBacklog,
 }: {
     task: KanbanTask;
     project: Project;
     sprint: Sprint;
     onUpdate: () => void;
+    onMoveToBacklog?: () => void;
 }) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
         id: task.id,
@@ -329,6 +332,23 @@ function TaskCard({
                                 </Button>
                             </CardContent>
                         )}
+                    {onMoveToBacklog && typeof task.id === "number" && (
+                        <CardContent className="pt-0">
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-6 text-xs text-neutral-600"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (confirm("Move this task back to backlog?")) {
+                                        onMoveToBacklog();
+                                    }
+                                }}
+                            >
+                                Move to Backlog
+                            </Button>
+                        </CardContent>
+                    )}
                 </Card>
             </div>
 
@@ -416,6 +436,7 @@ function DroppableColumn({
     onCancelAdd,
     project,
     sprint,
+    onMoveToBacklog,
 }: {
     status: StatusType;
     tasks: KanbanTask[];
@@ -424,6 +445,7 @@ function DroppableColumn({
     onCancelAdd: () => void;
     project: Project;
     sprint: Sprint;
+    onMoveToBacklog?: (taskId: number) => void;
 }) {
     const { setNodeRef, isOver } = useDroppable({
         id: status,
@@ -457,6 +479,11 @@ function DroppableColumn({
                             project={project}
                             sprint={sprint}
                             onUpdate={() => router.reload({ only: ["tasks"] })}
+                            onMoveToBacklog={
+                                typeof task.id === "number" && onMoveToBacklog
+                                    ? () => onMoveToBacklog(task.id as number)
+                                    : undefined
+                            }
                         />
                     ))}
 
@@ -509,19 +536,35 @@ export default function SprintTasksPage({
     project,
     sprint,
     tasks = [],
+    backlogTasks = [],
 }: {
     project: Project;
     sprint: Sprint;
     tasks: Task[];
+    backlogTasks?: Task[];
 }) {
-    const [localTasks, setLocalTasks] = useState<KanbanTask[]>(tasks);
+    const [localTasks, setLocalTasks] = useState<KanbanTask[]>(() =>
+        tasks.filter((task) => task.status === "Planned" || task.status === "Active" || task.status === "Completed"),
+    );
     const [activeId, setActiveId] = useState<string | number | null>(null);
     const [addingToColumn, setAddingToColumn] = useState<StatusType | null>(null);
     const [isSaving, setIsSaving] = useState(false);
+    const [addFromBacklogOpen, setAddFromBacklogOpen] = useState(false);
+    const [selectedBacklogTaskIds, setSelectedBacklogTaskIds] = useState<number[]>([]);
 
     useEffect(() => {
-        setLocalTasks(tasks);
-    }, [tasks]);
+        (async () => {
+            const filteredTasks = tasks.filter(
+                (task) => task.status === "Planned" || task.status === "Active" || task.status === "Completed",
+            );
+            const taskIds = new Set(filteredTasks.map((t) => t.id));
+            const currentTaskIds = new Set(localTasks.map((t) => t.id));
+
+            if (taskIds.size !== currentTaskIds.size || ![...taskIds].every((id) => currentTaskIds.has(id))) {
+                setLocalTasks(filteredTasks);
+            }
+        })();
+    }, [tasks, localTasks]);
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -559,8 +602,8 @@ export default function SprintTasksPage({
             newStatus = over.id as StatusType;
         } else {
             const overTask = localTasks.find((t) => t.id === over.id);
-            if (overTask) {
-                newStatus = overTask.status;
+            if (overTask && KANBAN_COLUMNS.includes(overTask.status as StatusType)) {
+                newStatus = overTask.status as StatusType;
             }
         }
 
@@ -689,6 +732,45 @@ export default function SprintTasksPage({
 
     const activeTask = activeId ? localTasks.find((t) => t.id === activeId) : null;
 
+    const totalStoryPoints = localTasks.reduce((sum, task) => sum + (task.story_points || 0), 0);
+    const hasCapacityWarning = sprint.planned_points && totalStoryPoints > sprint.planned_points;
+
+    const handleAddFromBacklog = () => {
+        if (selectedBacklogTaskIds.length === 0) return;
+
+        router.post(
+            `/projects/${project.id}/sprints/${sprint.id}/tasks/add-from-backlog`,
+            { task_ids: selectedBacklogTaskIds },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setAddFromBacklogOpen(false);
+                    setSelectedBacklogTaskIds([]);
+                    router.reload({ only: ["tasks", "backlogTasks"] });
+                },
+            },
+        );
+    };
+
+    const handleMoveToBacklog = (taskId: number) => {
+        router.post(
+            `/projects/${project.id}/sprints/${sprint.id}/tasks/${taskId}/move-to-backlog`,
+            {},
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    router.reload({ only: ["tasks", "backlogTasks"] });
+                },
+            },
+        );
+    };
+
+    const toggleBacklogTask = (taskId: number) => {
+        setSelectedBacklogTaskIds((prev) =>
+            prev.includes(taskId) ? prev.filter((id) => id !== taskId) : [...prev, taskId],
+        );
+    };
+
     return (
         <AppLayout
             breadcrumbs={[
@@ -701,7 +783,19 @@ export default function SprintTasksPage({
             <HeaderSection
                 title={`${sprint.name} - Tasks`}
                 description={`${format(parseISO(sprint.start_date), "MMM dd, yyyy")} - ${format(parseISO(sprint.end_date), "MMM dd, yyyy")}${sprint.goal ? ` • ${sprint.goal}` : ""}${isSaving ? " (Saving...)" : ""}`}
+                rightHandItem={
+                    <Button onClick={() => setAddFromBacklogOpen(true)} variant="outline">
+                        Add from Backlog
+                    </Button>
+                }
             />
+
+            {hasCapacityWarning && (
+                <div className="mb-4 rounded-lg border border-orange-300 bg-orange-50 p-3 text-sm text-orange-800">
+                    ⚠️ Sprint capacity warning: Total story points ({totalStoryPoints}) exceeds planned capacity (
+                    {sprint.planned_points})
+                </div>
+            )}
 
             <DndContext
                 sensors={sensors}
@@ -709,7 +803,7 @@ export default function SprintTasksPage({
                 onDragStart={handleDragStart}
                 onDragEnd={handleDragEnd}
             >
-                <div className="mt-6 grid grid-cols-4 gap-4">
+                <div className="mt-6 grid grid-cols-3 gap-4">
                     {KANBAN_COLUMNS.map((status) => (
                         <DroppableColumn
                             key={status}
@@ -720,6 +814,7 @@ export default function SprintTasksPage({
                             onCancelAdd={() => setAddingToColumn(null)}
                             project={project}
                             sprint={sprint}
+                            onMoveToBacklog={handleMoveToBacklog}
                         />
                     ))}
                 </div>
@@ -746,6 +841,96 @@ export default function SprintTasksPage({
                     ) : null}
                 </DragOverlay>
             </DndContext>
+
+            <Dialog open={addFromBacklogOpen} onOpenChange={setAddFromBacklogOpen}>
+                <DialogContent className="max-h-[80vh] max-w-3xl overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle>Add Tasks from Backlog</DialogTitle>
+                        <DialogDescription>Select tasks to add to this sprint</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        {backlogTasks.length === 0 ? (
+                            <div className="py-8 text-center text-neutral-500">No tasks available in backlog</div>
+                        ) : (
+                            <div className="max-h-[400px] space-y-2 overflow-y-auto">
+                                {backlogTasks.map((task) => (
+                                    <Card key={task.id} className="rounded-lg">
+                                        <CardHeader className="pb-3">
+                                            <div className="flex items-start gap-3">
+                                                <Checkbox
+                                                    checked={selectedBacklogTaskIds.includes(task.id)}
+                                                    onCheckedChange={() => toggleBacklogTask(task.id)}
+                                                    className="mt-1"
+                                                />
+                                                <div className="flex-1">
+                                                    <CardTitle className="text-base font-medium">
+                                                        {task.title}
+                                                    </CardTitle>
+                                                    {task.description && (
+                                                        <p className="mt-1 line-clamp-2 text-sm text-neutral-600">
+                                                            {task.description}
+                                                        </p>
+                                                    )}
+                                                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                                                        <Badge
+                                                            variant="outline"
+                                                            className={`text-xs ${TYPE_COLORS[task.type]}`}
+                                                        >
+                                                            {task.type}
+                                                        </Badge>
+                                                        <Badge
+                                                            variant="outline"
+                                                            className={`text-xs ${PRIORITY_COLORS[task.priority]}`}
+                                                        >
+                                                            {task.priority}
+                                                        </Badge>
+                                                        {task.story_points && (
+                                                            <Badge variant="outline" className="text-xs">
+                                                                {task.story_points} pts
+                                                            </Badge>
+                                                        )}
+                                                        {task.assigned_user && (
+                                                            <Badge variant="outline" className="text-xs">
+                                                                {task.assigned_user.name}
+                                                            </Badge>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </CardHeader>
+                                    </Card>
+                                ))}
+                            </div>
+                        )}
+                        {selectedBacklogTaskIds.length > 0 && (
+                            <div className="rounded-lg border p-3 text-sm">
+                                <div className="font-medium">Selected: {selectedBacklogTaskIds.length} tasks</div>
+                                <div className="text-neutral-600">
+                                    Total Story Points:{" "}
+                                    <strong>
+                                        {backlogTasks
+                                            .filter((t) => selectedBacklogTaskIds.includes(t.id))
+                                            .reduce((sum, t) => sum + (t.story_points || 0), 0)}
+                                    </strong>
+                                </div>
+                                {sprint.planned_points && (
+                                    <div className="mt-1 text-neutral-600">
+                                        Planned Capacity: <strong>{sprint.planned_points}</strong>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setAddFromBacklogOpen(false)}>
+                            Cancel
+                        </Button>
+                        <Button onClick={handleAddFromBacklog} disabled={selectedBacklogTaskIds.length === 0}>
+                            Add Selected Tasks
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </AppLayout>
     );
 }

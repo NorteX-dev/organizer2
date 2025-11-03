@@ -32,6 +32,19 @@ Route::middleware(['auth'])->group(function () {
     
     
     Route::middleware(['team.project'])->group(function () {
+        Route::get('/backlog', function () {
+            $user = auth()->user();
+            $currentProject = $user->currentProject();
+            return redirect()->route('projects.backlog.index', $currentProject->id);
+        })->name('backlog.redirect');
+        Route::get('projects/{project}/backlog', [App\Http\Controllers\BacklogController::class, 'index'])->name('projects.backlog.index');
+        Route::post('projects/{project}/backlog', [App\Http\Controllers\BacklogController::class, 'store'])->name('projects.backlog.store');
+        Route::put('projects/{project}/backlog/{task}', [App\Http\Controllers\BacklogController::class, 'update'])->name('projects.backlog.update');
+        Route::delete('projects/{project}/backlog/{task}', [App\Http\Controllers\BacklogController::class, 'destroy'])->name('projects.backlog.destroy');
+        Route::post('projects/{project}/backlog/reorder', [App\Http\Controllers\BacklogController::class, 'reorder'])->name('projects.backlog.reorder');
+        Route::post('projects/{project}/backlog/{task}/move-up', [App\Http\Controllers\BacklogController::class, 'moveUp'])->name('projects.backlog.move-up');
+        Route::post('projects/{project}/backlog/{task}/move-down', [App\Http\Controllers\BacklogController::class, 'moveDown'])->name('projects.backlog.move-down');
+        
         Route::get('/sprints', function () {
             $user = auth()->user();
             $currentProject = $user->currentProject();
@@ -42,6 +55,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('projects/{project}/sprints/{sprint}/tasks', [App\Http\Controllers\TaskController::class, 'store'])->name('projects.sprints.tasks.store');
         Route::put('projects/{project}/sprints/{sprint}/tasks/{task}', [App\Http\Controllers\TaskController::class, 'update'])->name('projects.sprints.tasks.update');
         Route::post('projects/{project}/sprints/{sprint}/tasks/reorder', [App\Http\Controllers\TaskController::class, 'reorder'])->name('projects.sprints.tasks.reorder');
+        Route::post('projects/{project}/sprints/{sprint}/tasks/add-from-backlog', [App\Http\Controllers\TaskController::class, 'addFromBacklog'])->name('projects.sprints.tasks.add-from-backlog');
+        Route::post('projects/{project}/sprints/{sprint}/tasks/{task}/move-to-backlog', [App\Http\Controllers\TaskController::class, 'moveToBacklog'])->name('projects.sprints.tasks.move-to-backlog');
         
         Route::get('/documents', function () {
             $user = auth()->user();

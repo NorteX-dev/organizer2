@@ -18,7 +18,7 @@ import { useInitials } from "@/hooks/use-initials";
 import { cn, isSameUrl, resolveUrl } from "@/lib/utils";
 import { type BreadcrumbItem, type NavItem, type SharedData } from "@/types";
 import { Link, usePage } from "@inertiajs/react";
-import { FileText, LayoutDashboard, Menu } from "lucide-react";
+import { FileText, LayoutDashboard, Menu, ListTodo } from "lucide-react";
 import AppLogo from "./app-logo";
 import AppLogoIcon from "./app-logo-icon";
 
@@ -27,6 +27,11 @@ const mainNavItems: NavItem[] = [
         title: "Sprints",
         href: "/sprints",
         icon: LayoutDashboard,
+    },
+    {
+        title: "Backlog",
+        href: "/backlog",
+        icon: ListTodo,
     },
     {
         title: "Documents",
