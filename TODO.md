@@ -1,6 +1,4 @@
-# TODO - Lista zadań do spełnienia 100% wymagań projektu
-
-## 📋 1. Product Backlog (Rejestr Produktu)
+## 1. Product Backlog
 
 ### 1.1 Interfejs Product Backlog
 
@@ -28,7 +26,7 @@
 - [x] Dodać możliwość sortowania backlogu po priorytecie (filtrowanie)
 - [x] Dodać wizualizację priorytetów w liście backlogu (kolory, ikony)
 
-## 🏃 2. Sprint Planning i Przenoszenie zadań
+## 2. Sprint Planning i Przenoszenie zadań
 
 ### 2.1 Przenoszenie z Product Backlog do Sprint Backlog
 
@@ -53,7 +51,7 @@
 - [x] Ostrzegać użytkownika przy przekroczeniu planowanych story points
 - [x] Dodać możliwość ustawienia capacity sprintu
 
-## 🔗 3. Dekompozycja historyjek użytkownika
+## 3. Dekompozycja historyjek użytkownika
 
 ### 3.1 Relacje między zadaniami
 
@@ -79,7 +77,7 @@
 - [ ] Zaimplementować automatyczne sumowanie story points parent task z podzadań
 - [ ] Dodać możliwość przeciągnięcia zadania jako podzadanie innego zadania
 
-## 👥 4. System ról Scrum
+## 4. System ról Scrum
 
 ### 4.1 Struktura ról
 
@@ -108,7 +106,7 @@
 - [ ] Dodać możliwość zmiany ról (tylko dla admina)
 - [ ] Dodać wizualne oznaczenia ról w interfejsie (badges, kolory)
 
-## 📝 5. Retrospektywy
+## 5. Retrospektywy
 
 ### 5.1 Backend - Retrospektywy
 
@@ -136,7 +134,7 @@
 - [ ] Dodać możliwość dodawania komentarzy do punktów retrospektywy (opcjonalnie)
 - [ ] Dodać link do retrospektywy w widoku sprintu (po zakończeniu)
 
-## 💬 6. Komentarze do zadań
+## 6. Komentarze do zadań
 
 ### 6.1 Backend - Komentarze
 
@@ -157,7 +155,7 @@
 - [ ] Dodać możliwość edycji i usuwania własnych komentarzy
 - [ ] Dodać możliwość oznaczenia komentarza jako rozwiązanie problemu (opcjonalnie)
 
-## 🗣️ 7. WebSocket Chat (Opcjonalne, ale wymienione w opisie)
+## 7. WebSocket Chat (Opcjonalne, ale wymienione w opisie)
 
 ### 7.1 Backend - WebSocket
 
@@ -183,7 +181,7 @@
 - [ ] Dodać wskaźniki "pisze..." (typing indicators)
 - [ ] Dodać powiadomienia o nowych wiadomościach
 
-## 📊 8. Historia aktywności projektu
+## 8. Historia aktywności projektu
 
 ### 8.1 Implementacja ProjectActivity
 
@@ -206,7 +204,7 @@
 - [ ] Dodać paginację dla historii aktywności
 - [ ] Możliwie dodać feed aktywności w dashboardzie projektu
 
-## 🔒 9. Zabezpieczenia i walidacja
+## 9. Zabezpieczenia i walidacja
 
 ### 9.1 Zabezpieczenia
 
@@ -223,7 +221,7 @@
 - [ ] Dodać walidację story points (zakres wartości)
 - [ ] Dodać walidację relacji między zadaniami (parent-child nie może tworzyć cykli)
 
-## ✅ 10. Testy i weryfikacja
+## 10. Testy i weryfikacja
 
 ### 10.1 Testy jednostkowe
 
@@ -239,7 +237,7 @@
 - [ ] Testy dla retrospektyw
 - [ ] Testy dla komentarzy
 
-## 📌 Priorytety
+## Priorytety
 
 ### Wysoki priorytet (wymagane dla 100%):
 
