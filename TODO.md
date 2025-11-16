@@ -155,31 +155,9 @@
 - [ ] Dodać możliwość edycji i usuwania własnych komentarzy
 - [ ] Dodać możliwość oznaczenia komentarza jako rozwiązanie problemu (opcjonalnie)
 
-## 7. WebSocket Chat (Opcjonalne, ale wymienione w opisie)
+## 7. Implementacja systemu WebSocket do tablicy Kanban zadań sprintu.
 
-### 7.1 Backend - WebSocket
-
-- [ ] Zainstalować Laravel Broadcasting (Pusher, Laravel Echo Server lub podobne)
-- [ ] Skonfigurować broadcasting w `config/broadcasting.php`
-- [ ] Utworzyć eventy dla wiadomości czatu
-- [ ] Dodać route WebSocket dla czatu
-- [ ] Zaimplementować kanały czatu per projekt lub per zespół
-
-### 7.2 Model i struktura czatu
-
-- [ ] Utworzyć migrację `create_chat_messages_table`
-- [ ] Dodać model `ChatMessage`
-- [ ] Dodać relacje: ChatMessage belongsTo User, ChatMessage belongsTo Project/Team
-- [ ] Zaimplementować endpoint `POST /chat/messages` do wysyłania wiadomości
-
-### 7.3 Frontend - Czat
-
-- [ ] Zainstalować Laravel Echo i Pusher JS (lub alternatywę)
-- [ ] Stworzyć komponent czatu `ChatWindow`
-- [ ] Dodać widok czatu per projekt lub w layoutzie aplikacji
-- [ ] Zaimplementować real-time wyświetlanie wiadomości
-- [ ] Dodać wskaźniki "pisze..." (typing indicators)
-- [ ] Dodać powiadomienia o nowych wiadomościach
+- [ ] Zaimplementować w system w pelni czasu rzeczywistego aktualizacji kanbanu.
 
 ## 8. Historia aktywności projektu
 
@@ -219,27 +197,3 @@
 - [ ] Testy dla systemu ról i autoryzacji
 - [ ] Testy dla retrospektyw
 - [ ] Testy dla komentarzy
-
-## Priorytety
-
-### Wysoki priorytet (wymagane dla 100%):
-
-1. Product Backlog - interfejs i zarządzanie
-2. Przenoszenie zadań z backlogu do sprintów
-3. System ról Scrum
-4. Retrospektywy
-5. Komentarze do zadań
-
-### Średni priorytet:
-
-6. Dekompozycja historyjek
-7. Historia aktywności
-8. Testy automatyczne
-
-### Niski priorytet (opcjonalne):
-
-9. WebSocket Kanban
-10. Zaawansowane wizualizacje
-11. Dokumentacja użytkownika
-
----

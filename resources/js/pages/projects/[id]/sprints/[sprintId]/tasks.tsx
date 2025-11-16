@@ -1,4 +1,5 @@
 import { HeaderSection } from "@/components/header-section";
+import { TaskComments } from "@/components/task-comments";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,8 +15,9 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AppLayout from "@/layouts/app-layout";
-import type { GithubIssue, Project, Sprint, Task } from "@/types";
+import type { GithubIssue, Project, SharedData, Sprint, Task } from "@/types";
 import {
     DndContext,
     DragEndEvent,
@@ -29,7 +31,7 @@ import {
 } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Link, router } from "@inertiajs/react";
+import { Link, router, usePage } from "@inertiajs/react";
 import { format, parseISO } from "date-fns";
 import { ArrowRight, ExternalLink, Github, GripVertical, Plus, X } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -100,6 +102,7 @@ function TaskCard({
         data: { task },
     });
 
+    const { auth } = usePage<SharedData>().props;
     const [editDialogOpen, setEditDialogOpen] = useState(false);
     const [issues, setIssues] = useState<GithubIssue[]>([]);
     const [prs, setPrs] = useState<GithubIssue[]>([]);
@@ -307,7 +310,7 @@ function TaskCard({
                                             }}
                                         >
                                             {task.github_issue_number || task.github_pr_number ? "Edit" : "Add"} GitHub
-                                            References
+                                            References & Comments
                                         </Button>
                                     )}
                                     {onMoveToBacklog && typeof task.id === "number" && (
@@ -347,7 +350,7 @@ function TaskCard({
                                                 handleOpenDialog();
                                             }}
                                         >
-                                            Add GitHub References
+                                            GitHub & Comments
                                         </Button>
                                     )}
                                     {onMoveToBacklog && typeof task.id === "number" && (
@@ -372,73 +375,82 @@ function TaskCard({
             </div>
 
             <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-                <DialogContent>
+                <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
                     <DialogHeader>
-                        <DialogTitle>GitHub References</DialogTitle>
-                        <DialogDescription>Link this task to GitHub issues or pull requests.</DialogDescription>
+                        <DialogTitle>Task Details</DialogTitle>
+                        <DialogDescription>Manage GitHub references and comments for this task.</DialogDescription>
                     </DialogHeader>
-                    <div className="space-y-4 py-4">
-                        <div className="space-y-2">
-                            <Label>GitHub Issue</Label>
-                            {loadingRefs ? (
-                                <div className="text-sm text-muted-foreground">Loading issues...</div>
-                            ) : (
-                                <Combobox
-                                    options={[
-                                        { value: "", label: "None", type: undefined },
-                                        ...allOptions.filter((opt) => opt.type === "issue"),
-                                    ]}
-                                    value={selectedIssue || ""}
-                                    onSelect={setSelectedIssue}
-                                    placeholder="Select an issue..."
-                                    emptyText="No issues found"
-                                />
-                            )}
-                            {selectedIssueObj && (
-                                <a
-                                    href={selectedIssueObj.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex items-center gap-1 text-xs text-blue-600 hover:underline"
-                                >
-                                    View on GitHub <ExternalLink className="h-3 w-3" />
-                                </a>
-                            )}
-                        </div>
-                        <div className="space-y-2">
-                            <Label>GitHub Pull Request</Label>
-                            {loadingRefs ? (
-                                <div className="text-sm text-muted-foreground">Loading PRs...</div>
-                            ) : (
-                                <Combobox
-                                    options={[
-                                        { value: "", label: "None", type: undefined },
-                                        ...allOptions.filter((opt) => opt.type === "pr"),
-                                    ]}
-                                    value={selectedPR || ""}
-                                    onSelect={setSelectedPR}
-                                    placeholder="Select a PR..."
-                                    emptyText="No PRs found"
-                                />
-                            )}
-                            {selectedPRObj && (
-                                <a
-                                    href={selectedPRObj.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex items-center gap-1 text-xs text-blue-600 hover:underline"
-                                >
-                                    View on GitHub <ExternalLink className="h-3 w-3" />
-                                </a>
-                            )}
-                        </div>
-                    </div>
+                    <Tabs defaultValue="github" className="w-full">
+                        <TabsList className="grid w-full grid-cols-2">
+                            <TabsTrigger value="github">GitHub References</TabsTrigger>
+                            <TabsTrigger value="comments">Comments</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="github" className="space-y-4 py-4">
+                            <div className="space-y-2">
+                                <Label>GitHub Issue</Label>
+                                {loadingRefs ? (
+                                    <div className="text-sm text-muted-foreground">Loading issues...</div>
+                                ) : (
+                                    <Combobox
+                                        options={[
+                                            { value: "", label: "None", type: undefined },
+                                            ...allOptions.filter((opt) => opt.type === "issue"),
+                                        ]}
+                                        value={selectedIssue || ""}
+                                        onSelect={setSelectedIssue}
+                                        placeholder="Select an issue..."
+                                        emptyText="No issues found"
+                                    />
+                                )}
+                                {selectedIssueObj && (
+                                    <a
+                                        href={selectedIssueObj.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-1 text-xs text-blue-600 hover:underline"
+                                    >
+                                        View on GitHub <ExternalLink className="h-3 w-3" />
+                                    </a>
+                                )}
+                            </div>
+                            <div className="space-y-2">
+                                <Label>GitHub Pull Request</Label>
+                                {loadingRefs ? (
+                                    <div className="text-sm text-muted-foreground">Loading PRs...</div>
+                                ) : (
+                                    <Combobox
+                                        options={[
+                                            { value: "", label: "None", type: undefined },
+                                            ...allOptions.filter((opt) => opt.type === "pr"),
+                                        ]}
+                                        value={selectedPR || ""}
+                                        onSelect={setSelectedPR}
+                                        placeholder="Select a PR..."
+                                        emptyText="No PRs found"
+                                    />
+                                )}
+                                {selectedPRObj && (
+                                    <a
+                                        href={selectedPRObj.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-1 text-xs text-blue-600 hover:underline"
+                                    >
+                                        View on GitHub <ExternalLink className="h-3 w-3" />
+                                    </a>
+                                )}
+                            </div>
+                        </TabsContent>
+                        <TabsContent value="comments" className="py-4">
+                            <TaskComments taskId={task.id as number} projectId={project.id} currentUser={auth.user} />
+                        </TabsContent>
+                    </Tabs>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setEditDialogOpen(false)} disabled={saving}>
-                            Cancel
+                            Close
                         </Button>
                         <Button onClick={handleSave} disabled={saving || loadingRefs}>
-                            {saving ? "Saving..." : "Save"}
+                            {saving ? "Saving..." : "Save GitHub References & Comments"}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -710,6 +722,7 @@ export default function SprintTasksPage({
         const newTask: KanbanTask = {
             id: tempId,
             project_id: project.id,
+            parent_task_id: null,
             sprint_id: sprint.id,
             assigned_to: null,
             title,

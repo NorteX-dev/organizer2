@@ -59,6 +59,11 @@ Route::middleware(['auth'])->group(function () {
         Route::post('projects/{project}/sprints/{sprint}/tasks/add-from-backlog', [App\Http\Controllers\TaskController::class, 'addFromBacklog'])->name('projects.sprints.tasks.add-from-backlog');
         Route::post('projects/{project}/sprints/{sprint}/tasks/{task}/move-to-backlog', [App\Http\Controllers\TaskController::class, 'moveToBacklog'])->name('projects.sprints.tasks.move-to-backlog');
         
+        Route::get('projects/{project}/tasks/{task}/comments', [App\Http\Controllers\TaskCommentController::class, 'index'])->name('projects.tasks.comments.index');
+        Route::post('projects/{project}/tasks/{task}/comments', [App\Http\Controllers\TaskCommentController::class, 'store'])->name('projects.tasks.comments.store');
+        Route::put('projects/{project}/tasks/{task}/comments/{comment}', [App\Http\Controllers\TaskCommentController::class, 'update'])->name('projects.tasks.comments.update');
+        Route::delete('projects/{project}/tasks/{task}/comments/{comment}', [App\Http\Controllers\TaskCommentController::class, 'destroy'])->name('projects.tasks.comments.destroy');
+        
         Route::get('projects/{project}/sprints/{sprint}/retrospective', [App\Http\Controllers\RetrospectiveController::class, 'show'])->name('projects.sprints.retrospective.show');
         Route::post('projects/{project}/sprints/{sprint}/retrospective', [App\Http\Controllers\RetrospectiveController::class, 'store'])->name('projects.sprints.retrospective.store');
         Route::put('projects/{project}/sprints/{sprint}/retrospective/{retrospective}', [App\Http\Controllers\RetrospectiveController::class, 'update'])->name('projects.sprints.retrospective.update');

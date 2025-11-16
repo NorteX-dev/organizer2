@@ -145,3 +145,13 @@ export interface RetrospectiveVote {
     updated_at: string;
     user?: User;
 }
+
+export interface TaskComment {
+    id: number;
+    task_id: number;
+    user_id: number;
+    content: string;
+    created_at: string;
+    updated_at: string;
+    user?: User;
+}
