@@ -44,6 +44,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('projects/{project}/backlog/reorder', [App\Http\Controllers\BacklogController::class, 'reorder'])->name('projects.backlog.reorder');
         Route::post('projects/{project}/backlog/{task}/move-up', [App\Http\Controllers\BacklogController::class, 'moveUp'])->name('projects.backlog.move-up');
         Route::post('projects/{project}/backlog/{task}/move-down', [App\Http\Controllers\BacklogController::class, 'moveDown'])->name('projects.backlog.move-down');
+        Route::post('projects/{project}/backlog/{task}/subtasks', [App\Http\Controllers\BacklogController::class, 'createSubtasks'])->name('projects.backlog.create-subtasks');
         
         Route::get('/sprints', function () {
             $user = auth()->user();

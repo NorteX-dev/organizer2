@@ -102,7 +102,8 @@ class SprintController extends Controller
         $project->load('githubSyncs');
         
         $tasks = $sprint->tasks()
-            ->with(['assignedUser', 'labels'])
+            ->whereNull('parent_task_id')
+            ->with(['assignedUser', 'labels', 'subTasks.assignedUser', 'subTasks.labels'])
             ->whereIn('status', ['Planned', 'Active', 'Completed'])
             ->orderBy('status')
             ->orderBy('position')
@@ -110,7 +111,8 @@ class SprintController extends Controller
 
         $backlogTasks = $project->tasks()
             ->whereNull('sprint_id')
-            ->with(['assignedUser', 'labels'])
+            ->whereNull('parent_task_id')
+            ->with(['assignedUser', 'labels', 'subTasks.assignedUser', 'subTasks.labels'])
             ->orderBy('position')
             ->orderBy('created_at')
             ->get();
@@ -132,7 +134,8 @@ class SprintController extends Controller
         
         $backlogTasks = $project->tasks()
             ->whereNull('sprint_id')
-            ->with(['assignedUser', 'labels'])
+            ->whereNull('parent_task_id')
+            ->with(['assignedUser', 'labels', 'subTasks.assignedUser', 'subTasks.labels'])
             ->orderBy('position')
             ->orderBy('created_at')
             ->get();

@@ -18,7 +18,8 @@ class TaskController extends Controller
 		$this->authorize('view', $sprint);
 
 		$tasks = $sprint->tasks()
-			->with(['assignedUser', 'labels'])
+			->whereNull('parent_task_id')
+			->with(['assignedUser', 'labels', 'subTasks.assignedUser', 'subTasks.labels'])
 			->orderBy('status')
 			->orderBy('position')
 			->get();
@@ -169,28 +170,47 @@ class TaskController extends Controller
 		$validated = $request->validate([
 			'task_ids' => 'required|array',
 			'task_ids.*' => 'required|exists:tasks,id',
+			'include_subtasks' => 'nullable|boolean',
 		]);
+
+		$includeSubtasks = $validated['include_subtasks'] ?? false;
 
 		$tasks = Task::whereIn('id', $validated['task_ids'])
 			->where('project_id', $project->id)
 			->whereNull('sprint_id')
+			->whereNull('parent_task_id')
+			->with('subTasks')
 			->get();
 
 		if ($tasks->count() !== count($validated['task_ids'])) {
 			return back()->withErrors(['error' => 'Some tasks are not available in the backlog or belong to another project']);
 		}
 
-		DB::transaction(function () use ($tasks, $sprint) {
+		DB::transaction(function () use ($tasks, $sprint, $includeSubtasks) {
 			$maxPosition = $sprint->tasks()
 				->where('status', 'Planned')
 				->max('position') ?? -1;
 
-			foreach ($tasks as $index => $task) {
+			$positionOffset = 0;
+
+			foreach ($tasks as $task) {
 				$task->update([
 					'sprint_id' => $sprint->id,
 					'status' => 'Planned',
-					'position' => $maxPosition + $index + 1,
+					'position' => $maxPosition + $positionOffset + 1,
 				]);
+				$positionOffset++;
+
+				if ($includeSubtasks && $task->subTasks) {
+					foreach ($task->subTasks as $subtask) {
+						$subtask->update([
+							'sprint_id' => $sprint->id,
+							'status' => 'Planned',
+							'position' => $maxPosition + $positionOffset + 1,
+						]);
+						$positionOffset++;
+					}
+				}
 			}
 		});
 

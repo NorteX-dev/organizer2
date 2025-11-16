@@ -17,7 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import AppLayout from "@/layouts/app-layout";
 import type { Project, Task, User } from "@/types";
 import { router } from "@inertiajs/react";
-import { ArrowDown, ArrowUp, Pencil, Plus, Search, Trash2, X } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronDown, ChevronRight, Pencil, Plus, Search, Split, Trash2, X } from "lucide-react";
 import { useMemo, useState } from "react";
 
 const PRIORITY_COLORS = {
@@ -46,7 +46,10 @@ export default function BacklogPage({ project, tasks = [], users = [] }: Backlog
     const [filterPriority, setFilterPriority] = useState<string>("all");
     const [filterStatus, setFilterStatus] = useState<string>("all");
     const [modalOpen, setModalOpen] = useState(false);
+    const [subtasksModalOpen, setSubtasksModalOpen] = useState(false);
     const [editingTask, setEditingTask] = useState<Task | null>(null);
+    const [parentTaskForSubtasks, setParentTaskForSubtasks] = useState<Task | null>(null);
+    const [expandedTasks, setExpandedTasks] = useState<Set<number>>(new Set());
     const [form, setForm] = useState({
         title: "",
         description: "",
@@ -55,9 +58,17 @@ export default function BacklogPage({ project, tasks = [], users = [] }: Backlog
         story_points: "",
         assigned_to: "unassigned",
     });
+    const [subtasksForm, setSubtasksForm] = useState<Array<{
+        title: string;
+        description: string;
+        type: "story" | "task" | "bug";
+        priority: "low" | "medium" | "high" | "critical";
+        story_points: string;
+        assigned_to: string;
+    }>>([{ title: "", description: "", type: "task", priority: "medium", story_points: "", assigned_to: "unassigned" }]);
 
     const filteredTasks = useMemo(() => {
-        return tasks.filter((task) => {
+        const filterTask = (task: Task): boolean => {
             const matchesSearch =
                 searchQuery === "" ||
                 task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -67,8 +78,28 @@ export default function BacklogPage({ project, tasks = [], users = [] }: Backlog
             const matchesStatus = filterStatus === "all" || task.status === filterStatus;
 
             return matchesSearch && matchesType && matchesPriority && matchesStatus;
-        });
+        };
+
+        return tasks.filter(filterTask);
     }, [tasks, searchQuery, filterType, filterPriority, filterStatus]);
+
+    function toggleExpanded(taskId: number) {
+        setExpandedTasks((prev) => {
+            const newSet = new Set(prev);
+            if (newSet.has(taskId)) {
+                newSet.delete(taskId);
+            } else {
+                newSet.add(taskId);
+            }
+            return newSet;
+        });
+    }
+
+    function getTotalStoryPoints(task: Task): number {
+        const taskPoints = task.story_points || 0;
+        const subtasksPoints = (task.sub_tasks || []).reduce((sum, subtask) => sum + (subtask.story_points || 0), 0);
+        return taskPoints + subtasksPoints;
+    }
 
     function openCreate() {
         setForm({
@@ -135,6 +166,189 @@ export default function BacklogPage({ project, tasks = [], users = [] }: Backlog
             {
                 preserveScroll: true,
             },
+        );
+    }
+
+    function openCreateSubtasks(task: Task) {
+        setParentTaskForSubtasks(task);
+        setSubtasksForm([{ title: "", description: "", type: "task", priority: "medium", story_points: "", assigned_to: "unassigned" }]);
+        setSubtasksModalOpen(true);
+    }
+
+    function handleCreateSubtasks(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault();
+        if (!parentTaskForSubtasks) return;
+
+        const subtasks = subtasksForm
+            .filter((st) => st.title.trim() !== "")
+            .map((st) => ({
+                title: st.title,
+                description: st.description,
+                type: st.type,
+                priority: st.priority,
+                story_points: st.story_points ? parseInt(st.story_points) : null,
+                assigned_to: st.assigned_to && st.assigned_to !== "unassigned" ? parseInt(st.assigned_to) : null,
+            }));
+
+        router.post(`/projects/${project.id}/backlog/${parentTaskForSubtasks.id}/subtasks`, { subtasks }, {
+            preserveScroll: true,
+            onSuccess: () => {
+                setSubtasksModalOpen(false);
+                setParentTaskForSubtasks(null);
+            },
+        });
+    }
+
+    function addSubtaskField() {
+        setSubtasksForm([...subtasksForm, { title: "", description: "", type: "task", priority: "medium", story_points: "", assigned_to: "unassigned" }]);
+    }
+
+    function removeSubtaskField(index: number) {
+        setSubtasksForm(subtasksForm.filter((_, i) => i !== index));
+    }
+
+    function updateSubtaskField(index: number, field: string, value: string) {
+        setSubtasksForm(subtasksForm.map((st, i) => (i === index ? { ...st, [field]: value } : st)));
+    }
+
+    function renderTask(task: Task, level: number = 0) {
+        const hasSubtasks = (task.sub_tasks || []).length > 0;
+        const isExpanded = expandedTasks.has(task.id);
+        const position = getTaskPosition(task);
+        const isFirst = position === 0;
+        const isLast = position === tasks.length - 1;
+        const totalPoints = getTotalStoryPoints(task);
+
+        return (
+            <div key={task.id}>
+                <Card className={`rounded-lg ${level > 0 ? "ml-8 border-l-2 border-l-blue-200" : ""}`}>
+                    <CardHeader className="flex flex-row items-start justify-between pb-3">
+                        <div className="flex-1">
+                            <div className="mb-2 flex items-start gap-3">
+                                <div className="mt-1 flex gap-1">
+                                    {hasSubtasks && (
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            className="h-7 w-7 p-0"
+                                            onClick={() => toggleExpanded(task.id)}
+                                            title={isExpanded ? "Collapse" : "Expand"}
+                                        >
+                                            {isExpanded ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
+                                        </Button>
+                                    )}
+                                    {!hasSubtasks && level === 0 && (
+                                        <div className="h-7 w-7" />
+                                    )}
+                                    {level === 0 && (
+                                        <>
+                                            <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                className="h-7 w-7 p-0"
+                                                onClick={() => handleMoveUp(task.id)}
+                                                disabled={isFirst}
+                                                title="Move up"
+                                            >
+                                                <ArrowUp className="size-4" />
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                className="h-7 w-7 p-0"
+                                                onClick={() => handleMoveDown(task.id)}
+                                                disabled={isLast}
+                                                title="Move down"
+                                            >
+                                                <ArrowDown className="size-4" />
+                                            </Button>
+                                        </>
+                                    )}
+                                </div>
+                                <div className="flex-1">
+                                    <CardTitle className="text-lg font-medium">{task.title}</CardTitle>
+                                    {task.description && (
+                                        <CardDescription className="mt-1">
+                                            {task.description}
+                                        </CardDescription>
+                                    )}
+                                </div>
+                            </div>
+                            <div className={`ml-12 flex flex-wrap items-center gap-2`}>
+                                <Badge
+                                    variant="outline"
+                                    className={`text-xs ${TYPE_COLORS[task.type]}`}
+                                >
+                                    {task.type}
+                                </Badge>
+                                <Badge
+                                    variant="outline"
+                                    className={`text-xs ${PRIORITY_COLORS[task.priority]}`}
+                                >
+                                    {task.priority}
+                                </Badge>
+                                {totalPoints > 0 && (
+                                    <Badge variant="outline" className="text-xs">
+                                        {totalPoints} pts{hasSubtasks && ` (${task.story_points || 0} + ${totalPoints - (task.story_points || 0)})`}
+                                    </Badge>
+                                )}
+                                <Badge variant="outline" className="text-xs">
+                                    {task.status}
+                                </Badge>
+                                {task.assigned_user && (
+                                    <Badge variant="outline" className="text-xs">
+                                        {task.assigned_user.name}
+                                    </Badge>
+                                )}
+                                {task.labels && task.labels.length > 0 && (
+                                    <div className="flex gap-1">
+                                        {task.labels.map((label) => (
+                                            <Badge
+                                                key={label.id}
+                                                variant="outline"
+                                                className="text-xs"
+                                                style={{ borderColor: label.color }}
+                                            >
+                                                {label.name}
+                                            </Badge>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                        <div className="flex gap-2">
+                            {(task.type === "epic" || task.type === "story") && level === 0 && (
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => openCreateSubtasks(task)}
+                                    title="Break down into subtasks"
+                                >
+                                    <Split className="mr-2 size-4" />
+                                    Break Down
+                                </Button>
+                            )}
+                            <Button size="sm" variant="secondary" onClick={() => openEdit(task)}>
+                                <Pencil className="mr-2 size-4" />
+                                Edit
+                            </Button>
+                            <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => handleDelete(task.id)}
+                            >
+                                <Trash2 className="mr-2 size-4" />
+                                Delete
+                            </Button>
+                        </div>
+                    </CardHeader>
+                </Card>
+                {hasSubtasks && isExpanded && (
+                    <div className="mt-2 space-y-2">
+                        {(task.sub_tasks || []).map((subtask) => renderTask(subtask, level + 1))}
+                    </div>
+                )}
+            </div>
         );
     }
 
@@ -235,107 +449,7 @@ export default function BacklogPage({ project, tasks = [], users = [] }: Backlog
                 ) : (
                     filteredTasks
                         .sort((a, b) => a.position - b.position)
-                        .map((task) => {
-                            const position = getTaskPosition(task);
-                            const isFirst = position === 0;
-                            const isLast = position === tasks.length - 1;
-
-                            return (
-                                <Card key={task.id} className="rounded-lg">
-                                    <CardHeader className="flex flex-row items-start justify-between pb-3">
-                                        <div className="flex-1">
-                                            <div className="mb-2 flex items-start gap-3">
-                                                <div className="mt-1 flex gap-1">
-                                                    <Button
-                                                        size="sm"
-                                                        variant="ghost"
-                                                        className="h-7 w-7 p-0"
-                                                        onClick={() => handleMoveUp(task.id)}
-                                                        disabled={isFirst}
-                                                        title="Move up"
-                                                    >
-                                                        <ArrowUp className="size-4" />
-                                                    </Button>
-                                                    <Button
-                                                        size="sm"
-                                                        variant="ghost"
-                                                        className="h-7 w-7 p-0"
-                                                        onClick={() => handleMoveDown(task.id)}
-                                                        disabled={isLast}
-                                                        title="Move down"
-                                                    >
-                                                        <ArrowDown className="size-4" />
-                                                    </Button>
-                                                </div>
-                                                <div className="flex-1">
-                                                    <CardTitle className="text-lg font-medium">{task.title}</CardTitle>
-                                                    {task.description && (
-                                                        <CardDescription className="mt-1">
-                                                            {task.description}
-                                                        </CardDescription>
-                                                    )}
-                                                </div>
-                                            </div>
-                                            <div className="ml-12 flex flex-wrap items-center gap-2">
-                                                <Badge
-                                                    variant="outline"
-                                                    className={`text-xs ${TYPE_COLORS[task.type]}`}
-                                                >
-                                                    {task.type}
-                                                </Badge>
-                                                <Badge
-                                                    variant="outline"
-                                                    className={`text-xs ${PRIORITY_COLORS[task.priority]}`}
-                                                >
-                                                    {task.priority}
-                                                </Badge>
-                                                {task.story_points && (
-                                                    <Badge variant="outline" className="text-xs">
-                                                        {task.story_points} pts
-                                                    </Badge>
-                                                )}
-                                                <Badge variant="outline" className="text-xs">
-                                                    {task.status}
-                                                </Badge>
-                                                {task.assigned_user && (
-                                                    <Badge variant="outline" className="text-xs">
-                                                        {task.assigned_user.name}
-                                                    </Badge>
-                                                )}
-                                                {task.labels && task.labels.length > 0 && (
-                                                    <div className="flex gap-1">
-                                                        {task.labels.map((label) => (
-                                                            <Badge
-                                                                key={label.id}
-                                                                variant="outline"
-                                                                className="text-xs"
-                                                                style={{ borderColor: label.color }}
-                                                            >
-                                                                {label.name}
-                                                            </Badge>
-                                                        ))}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                        <div className="flex gap-2">
-                                            <Button size="sm" variant="secondary" onClick={() => openEdit(task)}>
-                                                <Pencil className="mr-2 size-4" />
-                                                Edit
-                                            </Button>
-                                            <Button
-                                                size="sm"
-                                                variant="destructive"
-                                                onClick={() => handleDelete(task.id)}
-                                            >
-                                                <Trash2 className="mr-2 size-4" />
-                                                Delete
-                                            </Button>
-                                        </div>
-                                    </CardHeader>
-                                </Card>
-                            );
-                        })
+                        .map((task) => renderTask(task, 0))
                 )}
             </div>
 
@@ -455,6 +569,153 @@ export default function BacklogPage({ project, tasks = [], users = [] }: Backlog
                                     Cancel
                                 </Button>
                                 <Button type="submit">{editingTask ? "Update" : "Create"}</Button>
+                            </DialogFooter>
+                        </form>
+                    </DialogContent>
+                </Dialog>
+            )}
+
+            {subtasksModalOpen && parentTaskForSubtasks && (
+                <Dialog open={subtasksModalOpen} onOpenChange={setSubtasksModalOpen}>
+                    <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                        <DialogHeader>
+                            <DialogTitle>Break Down: {parentTaskForSubtasks.title}</DialogTitle>
+                            <DialogDescription>
+                                Create subtasks for this {parentTaskForSubtasks.type}. You can add multiple subtasks at once.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <form onSubmit={handleCreateSubtasks}>
+                            <div className="space-y-6 py-4">
+                                {subtasksForm.map((subtask, index) => (
+                                    <Card key={index} className="p-4">
+                                        <div className="mb-4 flex items-center justify-between">
+                                            <h3 className="font-semibold">Subtask {index + 1}</h3>
+                                            {subtasksForm.length > 1 && (
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => removeSubtaskField(index)}
+                                                >
+                                                    <X className="size-4" />
+                                                </Button>
+                                            )}
+                                        </div>
+                                        <div className="space-y-4">
+                                            <div>
+                                                <Label htmlFor={`subtask-title-${index}`}>
+                                                    Title <span className="text-red-500">*</span>
+                                                </Label>
+                                                <Input
+                                                    id={`subtask-title-${index}`}
+                                                    className="mt-1"
+                                                    placeholder="Subtask title"
+                                                    required
+                                                    value={subtask.title}
+                                                    onChange={(e) => updateSubtaskField(index, "title", e.target.value)}
+                                                />
+                                            </div>
+                                            <div>
+                                                <Label htmlFor={`subtask-description-${index}`}>Description</Label>
+                                                <Textarea
+                                                    id={`subtask-description-${index}`}
+                                                    className="mt-1"
+                                                    placeholder="Subtask description"
+                                                    rows={2}
+                                                    value={subtask.description}
+                                                    onChange={(e) => updateSubtaskField(index, "description", e.target.value)}
+                                                />
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <Label htmlFor={`subtask-type-${index}`}>Type</Label>
+                                                    <Select
+                                                        value={subtask.type}
+                                                        onValueChange={(value: "story" | "task" | "bug") =>
+                                                            updateSubtaskField(index, "type", value)
+                                                        }
+                                                    >
+                                                        <SelectTrigger className="mt-1">
+                                                            <SelectValue />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="task">Task</SelectItem>
+                                                            <SelectItem value="story">Story</SelectItem>
+                                                            <SelectItem value="bug">Bug</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                                <div>
+                                                    <Label htmlFor={`subtask-priority-${index}`}>Priority</Label>
+                                                    <Select
+                                                        value={subtask.priority}
+                                                        onValueChange={(value: "low" | "medium" | "high" | "critical") =>
+                                                            updateSubtaskField(index, "priority", value)
+                                                        }
+                                                    >
+                                                        <SelectTrigger className="mt-1">
+                                                            <SelectValue />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="low">Low</SelectItem>
+                                                            <SelectItem value="medium">Medium</SelectItem>
+                                                            <SelectItem value="high">High</SelectItem>
+                                                            <SelectItem value="critical">Critical</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <Label htmlFor={`subtask-story-points-${index}`}>Story Points</Label>
+                                                    <Input
+                                                        id={`subtask-story-points-${index}`}
+                                                        type="number"
+                                                        min="0"
+                                                        className="mt-1"
+                                                        placeholder="0"
+                                                        value={subtask.story_points}
+                                                        onChange={(e) => updateSubtaskField(index, "story_points", e.target.value)}
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <Label htmlFor={`subtask-assigned-${index}`}>Assign To</Label>
+                                                    <Select
+                                                        value={subtask.assigned_to}
+                                                        onValueChange={(value) => updateSubtaskField(index, "assigned_to", value)}
+                                                    >
+                                                        <SelectTrigger className="mt-1">
+                                                            <SelectValue placeholder="Unassigned" />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="unassigned">Unassigned</SelectItem>
+                                                            {users.map((user) => (
+                                                                <SelectItem key={user.id} value={user.id.toString()}>
+                                                                    {user.name}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </Card>
+                                ))}
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={addSubtaskField}
+                                    className="w-full"
+                                >
+                                    <Plus className="mr-2 size-4" />
+                                    Add Another Subtask
+                                </Button>
+                            </div>
+                            <DialogFooter>
+                                <Button type="button" variant="outline" onClick={() => setSubtasksModalOpen(false)}>
+                                    Cancel
+                                </Button>
+                                <Button type="submit">Create Subtasks</Button>
                             </DialogFooter>
                         </form>
                     </DialogContent>

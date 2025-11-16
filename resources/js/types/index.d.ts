@@ -78,6 +78,7 @@ export interface Sprint {
 export interface Task {
     id: number;
     project_id: number;
+    parent_task_id: number | null;
     sprint_id: number | null;
     assigned_to: number | null;
     title: string;
@@ -93,6 +94,7 @@ export interface Task {
     updated_at: string;
     assigned_user?: User;
     labels?: Label[];
+    sub_tasks?: Task[];
 }
 
 export interface GithubIssue {

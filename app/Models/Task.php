@@ -13,6 +13,7 @@ class Task extends Model
 {
 	protected $fillable = [
 		"project_id",
+		"parent_task_id",
 		"sprint_id",
 		"assigned_to",
 		"title",
@@ -34,6 +35,16 @@ class Task extends Model
 	public function project(): BelongsTo
 	{
 		return $this->belongsTo(Project::class);
+	}
+
+	public function parentTask(): BelongsTo
+	{
+		return $this->belongsTo(Task::class, 'parent_task_id');
+	}
+
+	public function subTasks(): HasMany
+	{
+		return $this->hasMany(Task::class, 'parent_task_id')->orderBy('position');
 	}
 
 	public function sprint(): BelongsTo
@@ -74,5 +85,21 @@ class Task extends Model
 	public function isAssigned(): bool
 	{
 		return $this->assigned_to !== null;
+	}
+
+	public function isParent(): bool
+	{
+		return $this->subTasks()->exists();
+	}
+
+	public function hasParent(): bool
+	{
+		return $this->parent_task_id !== null;
+	}
+
+	public function getTotalStoryPoints(): int
+	{
+		$subTasksPoints = $this->subTasks()->sum('story_points') ?? 0;
+		return ($this->story_points ?? 0) + $subTasksPoints;
 	}
 }

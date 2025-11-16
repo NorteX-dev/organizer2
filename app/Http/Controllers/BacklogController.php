@@ -23,7 +23,8 @@ class BacklogController extends Controller
 
         $tasks = $project->tasks()
             ->whereNull('sprint_id')
-            ->with(['assignedUser', 'labels'])
+            ->whereNull('parent_task_id')
+            ->with(['assignedUser', 'labels', 'subTasks.assignedUser', 'subTasks.labels'])
             ->orderBy('position')
             ->orderBy('created_at')
             ->get();
@@ -52,7 +53,21 @@ class BacklogController extends Controller
             'priority' => 'nullable|in:low,medium,high,critical',
             'story_points' => 'nullable|integer|min:0',
             'assigned_to' => 'nullable|exists:users,id',
+            'parent_task_id' => 'nullable|exists:tasks,id',
         ]);
+
+        if (isset($validated['parent_task_id'])) {
+            $parentTask = Task::findOrFail($validated['parent_task_id']);
+            if ($parentTask->project_id !== $project->id || $parentTask->sprint_id !== null) {
+                return back()->withErrors(['error' => 'Parent task must belong to the same project and be in backlog']);
+            }
+            if ($parentTask->type === 'task' || $parentTask->type === 'bug') {
+                return back()->withErrors(['error' => 'Only epic and story tasks can have subtasks']);
+            }
+            if ($validated['type'] === 'epic') {
+                return back()->withErrors(['error' => 'Epic cannot be a subtask']);
+            }
+        }
 
         $maxPosition = $project->tasks()
             ->whereNull('sprint_id')
@@ -60,6 +75,7 @@ class BacklogController extends Controller
 
         $task = Task::create([
             'project_id' => $project->id,
+            'parent_task_id' => $validated['parent_task_id'] ?? null,
             'sprint_id' => null,
             'title' => $validated['title'],
             'description' => $validated['description'] ?? null,
@@ -95,7 +111,21 @@ class BacklogController extends Controller
             'priority' => 'sometimes|in:low,medium,high,critical',
             'story_points' => 'nullable|integer|min:0',
             'assigned_to' => 'nullable|exists:users,id',
+            'parent_task_id' => 'nullable|exists:tasks,id',
         ]);
+
+        if (isset($validated['parent_task_id'])) {
+            $parentTask = Task::findOrFail($validated['parent_task_id']);
+            if ($parentTask->project_id !== $project->id || $parentTask->sprint_id !== null) {
+                return back()->withErrors(['error' => 'Parent task must belong to the same project and be in backlog']);
+            }
+            if ($parentTask->type === 'task' || $parentTask->type === 'bug') {
+                return back()->withErrors(['error' => 'Only epic and story tasks can have subtasks']);
+            }
+            if (isset($validated['type']) && $validated['type'] === 'epic') {
+                return back()->withErrors(['error' => 'Epic cannot be a subtask']);
+            }
+        }
 
         $task->update($validated);
         $task->load(['assignedUser', 'labels']);
@@ -198,6 +228,57 @@ class BacklogController extends Controller
         }
 
         return back();
+    }
+
+    /**
+     * Create subtasks for a parent task.
+     */
+    public function createSubtasks(Request $request, Project $project, Task $task)
+    {
+        $this->authorize('update', $project);
+
+        if ($task->project_id !== $project->id || $task->sprint_id !== null) {
+            return back()->withErrors(['error' => 'Task does not belong to this backlog']);
+        }
+
+        if ($task->type !== 'epic' && $task->type !== 'story') {
+            return back()->withErrors(['error' => 'Only epic and story tasks can have subtasks']);
+        }
+
+        $validated = $request->validate([
+            'subtasks' => 'required|array|min:1',
+            'subtasks.*.title' => 'required|string|max:255',
+            'subtasks.*.description' => 'nullable|string',
+            'subtasks.*.type' => 'nullable|in:story,task,bug',
+            'subtasks.*.priority' => 'nullable|in:low,medium,high,critical',
+            'subtasks.*.story_points' => 'nullable|integer|min:0',
+            'subtasks.*.assigned_to' => 'nullable|exists:users,id',
+        ]);
+
+        DB::transaction(function () use ($project, $task, $validated) {
+            $maxPosition = $project->tasks()
+                ->whereNull('sprint_id')
+                ->whereNull('parent_task_id')
+                ->max('position') ?? -1;
+
+            foreach ($validated['subtasks'] as $index => $subtaskData) {
+                Task::create([
+                    'project_id' => $project->id,
+                    'parent_task_id' => $task->id,
+                    'sprint_id' => null,
+                    'title' => $subtaskData['title'],
+                    'description' => $subtaskData['description'] ?? null,
+                    'type' => $subtaskData['type'] ?? 'task',
+                    'status' => 'Backlog',
+                    'priority' => $subtaskData['priority'] ?? 'medium',
+                    'story_points' => $subtaskData['story_points'] ?? null,
+                    'assigned_to' => $subtaskData['assigned_to'] ?? null,
+                    'position' => $maxPosition + $index + 1,
+                ]);
+            }
+        });
+
+        return redirect()->route('projects.backlog.index', $project->id);
     }
 }
 

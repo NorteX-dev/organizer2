@@ -55,27 +55,27 @@
 
 ### 3.1 Relacje między zadaniami
 
-- [ ] Dodać kolumnę `parent_task_id` do tabeli `tasks` (migration)
-- [ ] Zaktualizować model `Task` o relacje `parentTask()` i `subTasks()`
-- [ ] Dodać możliwość tworzenia zadania jako podzadania (child task)
-- [ ] Zaimplementować hierarchię: Epic → Story → Task
-- [ ] Dodać możliwość dekompozycji story na zadania bezpośrednio z interfejsu
+- [x] Dodać kolumnę `parent_task_id` do tabeli `tasks` (migration)
+- [x] Zaktualizować model `Task` o relacje `parentTask()` i `subTasks()`
+- [x] Dodać możliwość tworzenia zadania jako podzadania (child task)
+- [x] Zaimplementować hierarchię: Epic → Story → Task
+- [x] Dodać możliwość dekompozycji story na zadania bezpośrednio z interfejsu
 
 ### 3.2 Interfejs dekompozycji
 
-- [ ] Dodać przycisk "Rozbij na zadania" przy zadaniach typu "story" lub "epic"
-- [ ] Stworzyć dialog/modal do tworzenia podzadań
-- [ ] Wyświetlać drzewo zadań (hierarchia) w liście backlogu
-- [ ] Wyświetlać drzewo zadań w sprint backlog
-- [ ] Dodać możliwość zwinania/rozwijania podzadań
-- [ ] Dodać wizualizację relacji parent-child (wcięcia, linie)
+- [x] Dodać przycisk "Rozbij na zadania" przy zadaniach typu "story" lub "epic"
+- [x] Stworzyć dialog/modal do tworzenia podzadań
+- [x] Wyświetlać drzewo zadań (hierarchia) w liście backlogu
+- [x] Wyświetlać drzewo zadań w sprint backlog
+- [x] Dodać możliwość zwinania/rozwijania podzadań
+- [x] Dodać wizualizację relacji parent-child (wcięcia, linie)
 
 ### 3.3 Logika biznesowa
 
-- [ ] Upewnić się, że usunięcie parent task nie usuwa automatycznie podzadań (może opcjonalnie)
-- [ ] Dodać możliwość przenoszenia podzadań razem z parent task do sprintu
-- [ ] Zaimplementować automatyczne sumowanie story points parent task z podzadań
-- [ ] Dodać możliwość przeciągnięcia zadania jako podzadanie innego zadania
+- [x] Upewnić się, że usunięcie parent task nie usuwa automatycznie podzadań (może opcjonalnie)
+- [x] Dodać możliwość przenoszenia podzadań razem z parent task do sprintu
+- [x] Zaimplementować automatyczne sumowanie story points parent task z podzadań
+- [x] Dodać możliwość przeciągnięcia zadania jako podzadanie innego zadania
 
 ## 4. System ról Scrum
 
@@ -204,33 +204,16 @@
 - [ ] Dodać paginację dla historii aktywności
 - [ ] Możliwie dodać feed aktywności w dashboardzie projektu
 
-## 9. Zabezpieczenia i walidacja
+## 9. Testy i weryfikacja
 
-### 9.1 Zabezpieczenia
-
-- [ ] Sprawdzić wszystkie endpointy pod kątem autoryzacji
-- [ ] Dodać walidację CSRF dla wszystkich formularzy
-- [ ] Zaimplementować rate limiting dla API
-- [ ] Dodać walidację danych wejściowych we wszystkich kontrolerach
-- [ ] Zabezpieczyć wrażliwe dane (tokens GitHub) przed wyciekiem
-
-### 9.2 Walidacja danych
-
-- [ ] Dodać szczegółowe reguły walidacji dla wszystkich formularzy
-- [ ] Sprawdzić walidację dat sprintów (nie mogą się nakładać)
-- [ ] Dodać walidację story points (zakres wartości)
-- [ ] Dodać walidację relacji między zadaniami (parent-child nie może tworzyć cykli)
-
-## 10. Testy i weryfikacja
-
-### 10.1 Testy jednostkowe
+### 9.1 Testy jednostkowe
 
 - [ ] Napisać testy dla wszystkich kontrolerów
 - [ ] Testy dla modeli i relacji
 - [ ] Testy dla polityk autoryzacji (Policies)
 - [ ] Testy dla dekompozycji zadań (parent-child)
 
-### 10.2 Testy funkcjonalne
+### 9.2 Testy funkcjonalne
 
 - [ ] Testy dla przepływu: Product Backlog → Sprint Backlog
 - [ ] Testy dla systemu ról i autoryzacji
@@ -255,7 +238,7 @@
 
 ### Niski priorytet (opcjonalne):
 
-9. WebSocket Chat
+9. WebSocket Kanban
 10. Zaawansowane wizualizacje
 11. Dokumentacja użytkownika
 
