@@ -2,11 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\TaskCreated;
+use App\Events\TaskDeleted;
+use App\Events\TaskReordered;
+use App\Events\TaskUpdated;
 use App\Models\Project;
 use App\Models\Sprint;
 use App\Models\Task;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\DB;
 
 class TaskController extends Controller
@@ -63,6 +68,8 @@ class TaskController extends Controller
 		]);
 
 		$task->load(['assignedUser', 'labels']);
+
+		event(new TaskCreated($sprint, $task));
 
 		return redirect()->route('projects.sprints.show', [$project->id, $sprint->id]);
 	}
@@ -121,6 +128,8 @@ class TaskController extends Controller
 
 		$task->load(['assignedUser', 'labels']);
 
+		event(new TaskUpdated($sprint, $task));
+
 		return redirect()->route('projects.sprints.show', [$project->id, $sprint->id]);
 	}
 
@@ -135,7 +144,9 @@ class TaskController extends Controller
 			'tasks.*.position' => 'required|integer|min:0',
 		]);
 
-		DB::transaction(function () use ($sprint, $validated) {
+		$reorderedTasks = [];
+		
+		DB::transaction(function () use ($sprint, $validated, &$reorderedTasks) {
 			foreach ($validated['tasks'] as $taskData) {
 				$task = Task::find($taskData['id']);
 
@@ -156,9 +167,16 @@ class TaskController extends Controller
 
 				foreach ($tasksInStatus as $index => $task) {
 					$task->update(['position' => $index]);
+					$reorderedTasks[] = [
+						'id' => $task->id,
+						'status' => $task->status,
+						'position' => $index,
+					];
 				}
 			}
 		});
+
+		event(new TaskReordered($sprint, $reorderedTasks));
 
 		return redirect()->route('projects.sprints.show', [$project->id, $sprint->id]);
 	}
@@ -186,7 +204,8 @@ class TaskController extends Controller
 			return back()->withErrors(['error' => 'Some tasks are not available in the backlog or belong to another project']);
 		}
 
-		DB::transaction(function () use ($tasks, $sprint, $includeSubtasks) {
+		$addedTasks = [];
+		DB::transaction(function () use ($tasks, $sprint, $includeSubtasks, &$addedTasks) {
 			$maxPosition = $sprint->tasks()
 				->where('status', 'Planned')
 				->max('position') ?? -1;
@@ -199,6 +218,8 @@ class TaskController extends Controller
 					'status' => 'Planned',
 					'position' => $maxPosition + $positionOffset + 1,
 				]);
+				$task->load(['assignedUser', 'labels']);
+				$addedTasks[] = $task;
 				$positionOffset++;
 
 				if ($includeSubtasks && $task->subTasks) {
@@ -213,6 +234,10 @@ class TaskController extends Controller
 				}
 			}
 		});
+
+		foreach ($addedTasks as $task) {
+			event(new TaskCreated($sprint, $task));
+		}
 
 		return redirect()->route('projects.sprints.show', [$project->id, $sprint->id]);
 	}
@@ -229,11 +254,14 @@ class TaskController extends Controller
 			->whereNull('sprint_id')
 			->max('position') ?? -1;
 
+		$taskId = $task->id;
 		$task->update([
 			'sprint_id' => null,
 			'status' => 'Backlog',
 			'position' => $maxBacklogPosition + 1,
 		]);
+
+		event(new TaskDeleted($sprint, $taskId));
 
 		return redirect()->route('projects.sprints.show', [$project->id, $sprint->id]);
 	}

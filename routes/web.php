@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\GitHubController;
+use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -22,6 +23,8 @@ Route::post('/logout', function () {
     request()->session()->regenerateToken();
     return redirect('/');
 })->name('logout');
+
+Broadcast::routes(['middleware' => ['web', 'auth']]);
 
 Route::middleware(['auth'])->group(function () {
     

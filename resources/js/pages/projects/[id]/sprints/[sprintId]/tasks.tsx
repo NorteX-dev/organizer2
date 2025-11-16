@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AppLayout from "@/layouts/app-layout";
+import Echo from "@/lib/echo";
 import type { GithubIssue, Project, SharedData, Sprint, Task } from "@/types";
 import {
     DndContext,
@@ -34,7 +35,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { Link, router, usePage } from "@inertiajs/react";
 import { format, parseISO } from "date-fns";
 import { ArrowRight, ExternalLink, Github, GripVertical, Plus, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const KANBAN_COLUMNS = ["Planned", "Active", "Completed"] as const;
 
@@ -584,6 +585,7 @@ export default function SprintTasksPage({
     const [isSaving, setIsSaving] = useState(false);
     const [addFromBacklogOpen, setAddFromBacklogOpen] = useState(false);
     const [selectedBacklogTaskIds, setSelectedBacklogTaskIds] = useState<number[]>([]);
+    const isLocalChangeRef = useRef(false);
 
     useEffect(() => {
         (async () => {
@@ -598,6 +600,128 @@ export default function SprintTasksPage({
             }
         })();
     }, [tasks, localTasks]);
+
+    useEffect(() => {
+        const channel = Echo.private(`sprint.${sprint.id}`);
+
+        const reorderHandler = (data: { tasks: Array<{ id: number; status: string; position: number }> }) => {
+            if (isLocalChangeRef.current) {
+                isLocalChangeRef.current = false;
+                return;
+            }
+
+            const tasks = data?.tasks || [];
+            if (!Array.isArray(tasks)) {
+                return;
+            }
+
+            setLocalTasks((currentTasks) => {
+                const taskMap = new Map(currentTasks.map((t) => [t.id, t]));
+
+                tasks.forEach((taskData) => {
+                    const existingTask = taskMap.get(taskData.id);
+                    if (existingTask && typeof existingTask.id === "number") {
+                        taskMap.set(taskData.id, {
+                            ...existingTask,
+                            status: taskData.status as StatusType,
+                            position: taskData.position,
+                        });
+                    }
+                });
+
+                const updatedTasks = Array.from(taskMap.values());
+                return KANBAN_COLUMNS.flatMap((status) => {
+                    const tasksInStatus = updatedTasks
+                        .filter((t) => t.status === status)
+                        .sort((a, b) => a.position - b.position);
+                    return tasksInStatus;
+                });
+            });
+
+            router.reload({ only: ["tasks"] });
+        };
+
+        const createdHandler = (data: { task: Task }) => {
+            if (isLocalChangeRef.current) {
+                isLocalChangeRef.current = false;
+                return;
+            }
+
+            const newTask = data.task;
+            if (
+                newTask &&
+                (newTask.status === "Planned" || newTask.status === "Active" || newTask.status === "Completed")
+            ) {
+                setLocalTasks((currentTasks) => {
+                    if (currentTasks.some((t) => t.id === newTask.id)) {
+                        return currentTasks;
+                    }
+                    return [...currentTasks, newTask as KanbanTask];
+                });
+                router.reload({ only: ["tasks"] });
+            }
+        };
+
+        const updatedHandler = (data: { task: Task }) => {
+            if (isLocalChangeRef.current) {
+                isLocalChangeRef.current = false;
+                return;
+            }
+
+            const updatedTask = data.task;
+            if (updatedTask) {
+                setLocalTasks((currentTasks) => {
+                    const taskIndex = currentTasks.findIndex((t) => t.id === updatedTask.id);
+                    if (taskIndex === -1) {
+                        if (
+                            updatedTask.status === "Planned" ||
+                            updatedTask.status === "Active" ||
+                            updatedTask.status === "Completed"
+                        ) {
+                            return [...currentTasks, updatedTask as KanbanTask];
+                        }
+                        return currentTasks;
+                    }
+
+                    const newTasks = [...currentTasks];
+                    if (
+                        updatedTask.status === "Planned" ||
+                        updatedTask.status === "Active" ||
+                        updatedTask.status === "Completed"
+                    ) {
+                        newTasks[taskIndex] = updatedTask as KanbanTask;
+                    } else {
+                        newTasks.splice(taskIndex, 1);
+                    }
+                    return newTasks;
+                });
+                router.reload({ only: ["tasks"] });
+            }
+        };
+
+        const deletedHandler = (data: { task_id: number }) => {
+            if (isLocalChangeRef.current) {
+                isLocalChangeRef.current = false;
+                return;
+            }
+
+            setLocalTasks((currentTasks) => currentTasks.filter((t) => t.id !== data.task_id));
+            router.reload({ only: ["tasks"] });
+        };
+
+        channel.listen(".task.reordered", reorderHandler);
+        channel.listen(".task.created", createdHandler);
+        channel.listen(".task.updated", updatedHandler);
+        channel.listen(".task.deleted", deletedHandler);
+
+        return () => {
+            channel.stopListening(".task.reordered");
+            channel.stopListening(".task.created");
+            channel.stopListening(".task.updated");
+            channel.stopListening(".task.deleted");
+            Echo.leave(`sprint.${sprint.id}`);
+        };
+    }, [sprint.id]);
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -683,6 +807,7 @@ export default function SprintTasksPage({
 
         setLocalTasks(reorderedTasks);
         setIsSaving(true);
+        isLocalChangeRef.current = true;
 
         const tasksToReorder = reorderedTasks
             .filter((task) => typeof task.id === "number")
@@ -699,7 +824,6 @@ export default function SprintTasksPage({
                 preserveScroll: true,
                 onSuccess: () => {
                     setIsSaving(false);
-                    router.reload({ only: ["tasks"] });
                 },
                 onError: () => {
                     setIsSaving(false);
@@ -740,6 +864,7 @@ export default function SprintTasksPage({
         };
 
         setLocalTasks((tasks) => [...tasks, newTask]);
+        isLocalChangeRef.current = true;
 
         router.post(
             `/projects/${project.id}/sprints/${sprint.id}/tasks`,
@@ -753,7 +878,6 @@ export default function SprintTasksPage({
                 preserveScroll: true,
                 onSuccess: () => {
                     setIsSaving(false);
-                    router.reload({ only: ["tasks"] });
                 },
                 onError: () => {
                     setIsSaving(false);
@@ -772,6 +896,8 @@ export default function SprintTasksPage({
     const handleAddFromBacklog = () => {
         if (selectedBacklogTaskIds.length === 0) return;
 
+        isLocalChangeRef.current = true;
+
         router.post(
             `/projects/${project.id}/sprints/${sprint.id}/tasks/add-from-backlog`,
             { task_ids: selectedBacklogTaskIds },
@@ -780,13 +906,15 @@ export default function SprintTasksPage({
                 onSuccess: () => {
                     setAddFromBacklogOpen(false);
                     setSelectedBacklogTaskIds([]);
-                    router.reload({ only: ["tasks", "backlogTasks"] });
                 },
             },
         );
     };
 
     const handleMoveToBacklog = (taskId: number) => {
+        isLocalChangeRef.current = true;
+        setLocalTasks((tasks) => tasks.filter((t) => t.id !== taskId));
+
         router.post(
             `/projects/${project.id}/sprints/${sprint.id}/tasks/${taskId}/move-to-backlog`,
             {},

@@ -157,7 +157,7 @@
 
 ## 7. Implementacja systemu WebSocket do tablicy Kanban zadań sprintu.
 
-- [ ] Zaimplementować w system w pelni czasu rzeczywistego aktualizacji kanbanu.
+- [x] Zaimplementuj system czasu rzeczywistego aktualizujący tablicę kanban.
 
 ## 8. Historia aktywności projektu
 
