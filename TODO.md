@@ -100,7 +100,7 @@
 
 ### 4.3 Interfejs zarządzania rolami
 
-- [ ] Dodać możliwość przypisywania ról użytkownikom w zespole
+- [ ] Dodać możliwość przypisywania ról użytkownikozm w zespole
 - [ ] Stworzyć interfejs w sekcji zarządzania zespołem do przypisywania ról
 - [ ] Wyświetlać role użytkowników w interfejsie
 - [ ] Dodać możliwość zmiany ról (tylko dla admina)

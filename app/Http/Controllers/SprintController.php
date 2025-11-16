@@ -116,12 +116,15 @@ class SprintController extends Controller
             ->orderBy('position')
             ->orderBy('created_at')
             ->get();
+
+        $hasRetrospective = $sprint->retrospective()->exists();
         
         return Inertia::render('projects/[id]/sprints/[sprintId]/tasks', [
             'project' => $project,
             'sprint' => $sprint,
             'tasks' => $tasks,
             'backlogTasks' => $backlogTasks,
+            'hasRetrospective' => $hasRetrospective,
         ]);
     }
 

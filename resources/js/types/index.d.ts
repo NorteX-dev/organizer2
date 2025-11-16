@@ -51,7 +51,7 @@ export interface Team {
     name: string;
     created_at: string;
     updated_at: string;
-    users?: User[];
+    users?: (User & { pivot?: { role: string } })[];
 }
 
 export interface Project {
@@ -120,4 +120,28 @@ export interface Document {
     position: number;
     created_at: string;
     updated_at: string;
+}
+
+export interface Retrospective {
+    id: number;
+    sprint_id: number;
+    created_by: number;
+    went_well: string | null;
+    went_wrong: string | null;
+    to_improve: string | null;
+    created_at: string;
+    updated_at: string;
+    creator?: User;
+    votes?: RetrospectiveVote[];
+}
+
+export interface RetrospectiveVote {
+    id: number;
+    retrospective_id: number;
+    user_id: number;
+    vote_type: "went_well" | "went_wrong" | "to_improve";
+    upvote: boolean;
+    created_at: string;
+    updated_at: string;
+    user?: User;
 }

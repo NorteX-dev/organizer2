@@ -21,7 +21,11 @@ class ProjectPolicy
 	 */
 	public function view(User $user, Project $project): bool
 	{
-		return $user->teams()->where("teams.id", $project->team_id)->exists();
+		$team = $project->team;
+		if (!$team) {
+			return false;
+		}
+		return $user->teams()->where("teams.id", $team->id)->exists();
 	}
 
 	/**
@@ -29,7 +33,11 @@ class ProjectPolicy
 	 */
 	public function create(User $user): bool
 	{
-		return $user->currentTeam() !== null;
+		$team = $user->currentTeam();
+		if (!$team) {
+			return false;
+		}
+		return $user->hasAnyRole($team, ['admin', 'product_owner', 'scrum_master']);
 	}
 
 	/**
@@ -37,7 +45,11 @@ class ProjectPolicy
 	 */
 	public function update(User $user, Project $project): bool
 	{
-		return $user->teams()->where("teams.id", $project->team_id)->exists();
+		$team = $project->team;
+		if (!$team) {
+			return false;
+		}
+		return $user->hasAnyRole($team, ['admin', 'product_owner', 'scrum_master']);
 	}
 
 	/**
@@ -45,7 +57,23 @@ class ProjectPolicy
 	 */
 	public function delete(User $user, Project $project): bool
 	{
-		return $user->teams()->where("teams.id", $project->team_id)->exists();
+		$team = $project->team;
+		if (!$team) {
+			return false;
+		}
+		return $user->hasRole($team, 'admin');
+	}
+
+	/**
+	 * Determine whether the user can manage backlog.
+	 */
+	public function manageBacklog(User $user, Project $project): bool
+	{
+		$team = $project->team;
+		if (!$team) {
+			return false;
+		}
+		return $user->hasAnyRole($team, ['admin', 'product_owner']);
 	}
 
 	/**

@@ -44,7 +44,7 @@ class BacklogController extends Controller
      */
     public function store(Request $request, Project $project)
     {
-        $this->authorize('update', $project);
+        $this->authorize('manageBacklog', $project);
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -97,7 +97,7 @@ class BacklogController extends Controller
      */
     public function update(Request $request, Project $project, Task $task)
     {
-        $this->authorize('update', $project);
+        $this->authorize('manageBacklog', $project);
 
         if ($task->project_id !== $project->id || $task->sprint_id !== null) {
             return redirect()->route('projects.backlog.index', $project->id)
@@ -138,7 +138,7 @@ class BacklogController extends Controller
      */
     public function destroy(Project $project, Task $task)
     {
-        $this->authorize('update', $project);
+        $this->authorize('manageBacklog', $project);
 
         if ($task->project_id !== $project->id || $task->sprint_id !== null) {
             return redirect()->route('projects.backlog.index', $project->id)
@@ -155,7 +155,7 @@ class BacklogController extends Controller
      */
     public function reorder(Request $request, Project $project)
     {
-        $this->authorize('update', $project);
+        $this->authorize('manageBacklog', $project);
 
         $validated = $request->validate([
             'tasks' => 'required|array',
@@ -183,7 +183,7 @@ class BacklogController extends Controller
      */
     public function moveUp(Project $project, Task $task)
     {
-        $this->authorize('update', $project);
+        $this->authorize('manageBacklog', $project);
 
         if ($task->project_id !== $project->id || $task->sprint_id !== null) {
             return back()->withErrors(['error' => 'Task does not belong to this backlog']);
@@ -209,7 +209,7 @@ class BacklogController extends Controller
      */
     public function moveDown(Project $project, Task $task)
     {
-        $this->authorize('update', $project);
+        $this->authorize('manageBacklog', $project);
 
         if ($task->project_id !== $project->id || $task->sprint_id !== null) {
             return back()->withErrors(['error' => 'Task does not belong to this backlog']);
@@ -235,7 +235,7 @@ class BacklogController extends Controller
      */
     public function createSubtasks(Request $request, Project $project, Task $task)
     {
-        $this->authorize('update', $project);
+        $this->authorize('manageBacklog', $project);
 
         if ($task->project_id !== $project->id || $task->sprint_id !== null) {
             return back()->withErrors(['error' => 'Task does not belong to this backlog']);

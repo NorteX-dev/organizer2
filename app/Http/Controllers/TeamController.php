@@ -50,7 +50,7 @@ class TeamController extends Controller
         ]);
 
         
-        $team->users()->attach(Auth::id());
+        $team->users()->attach(Auth::id(), ['role' => 'admin']);
 
         return redirect()->route('teams.index')
             ->with('success', 'Team created successfully.');
@@ -64,9 +64,12 @@ class TeamController extends Controller
         $this->authorize('view', $team);
 
         $team->load('users');
+        $currentUser = Auth::user();
+        $isAdmin = $currentUser->hasRole($team, 'admin');
 
         return Inertia::render('teams/show', [
             'team' => $team,
+            'isAdmin' => $isAdmin,
         ]);
     }
 
@@ -78,9 +81,12 @@ class TeamController extends Controller
         $this->authorize('update', $team);
 
         $team->load('users');
+        $currentUser = Auth::user();
+        $isAdmin = $currentUser->hasRole($team, 'admin');
 
         return Inertia::render('teams/[id]/edit', [
             'team' => $team,
+            'isAdmin' => $isAdmin,
         ]);
     }
 
@@ -133,7 +139,7 @@ class TeamController extends Controller
             return back()->withErrors(['email' => 'User is already a member of this team.']);
         }
 
-        $team->users()->attach($user->id);
+        $team->users()->attach($user->id, ['role' => 'developer']);
 
         return back()->with('success', 'Member added successfully.');
     }
@@ -166,5 +172,29 @@ class TeamController extends Controller
         session()->forget('current_project_id');
 
         return back()->with('success', 'Team switched successfully.');
+    }
+
+    /**
+     * Update a member's role in the team.
+     */
+    public function updateRole(Request $request, Team $team, User $user)
+    {
+        $currentUser = Auth::user();
+        
+        if (!$currentUser->hasRole($team, 'admin')) {
+            abort(403, 'Only admins can change roles.');
+        }
+
+        $request->validate([
+            'role' => ['required', 'string', Rule::in(['product_owner', 'scrum_master', 'developer', 'admin'])],
+        ]);
+
+        if (!$team->users()->where('user_id', $user->id)->exists()) {
+            return back()->withErrors(['error' => 'User is not a member of this team.']);
+        }
+
+        $team->users()->updateExistingPivot($user->id, ['role' => $request->role]);
+
+        return back()->with('success', 'Role updated successfully.');
     }
 }

@@ -39,7 +39,7 @@ class TeamPolicy
      */
     public function update(User $user, Team $team)
     {
-        return $user->teams()->where('team_id', $team->id)->exists();
+        return $user->hasRole($team, 'admin');
     }
 
     /**
@@ -47,6 +47,6 @@ class TeamPolicy
      */
     public function delete(User $user, Team $team)
     {
-        return $user->teams()->where('team_id', $team->id)->exists();
+        return $user->hasRole($team, 'admin');
     }
 }

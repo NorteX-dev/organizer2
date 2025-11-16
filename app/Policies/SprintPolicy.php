@@ -22,7 +22,11 @@ class SprintPolicy
      */
     public function view(User $user, Sprint $sprint): bool
     {
-        return $user->teams->contains($sprint->project->team_id);
+        $team = $sprint->project->team;
+        if (!$team) {
+            return false;
+        }
+        return $user->teams()->where("teams.id", $team->id)->exists();
     }
 
     /**
@@ -30,8 +34,11 @@ class SprintPolicy
      */
     public function create(User $user): bool
     {
-        
-        return !!$user->currentTeam();
+        $team = $user->currentTeam();
+        if (!$team) {
+            return false;
+        }
+        return $user->hasAnyRole($team, ['admin', 'scrum_master']);
     }
 
     /**
@@ -39,7 +46,11 @@ class SprintPolicy
      */
     public function update(User $user, Sprint $sprint): bool
     {
-        return $user->teams->contains($sprint->project->team_id);
+        $team = $sprint->project->team;
+        if (!$team) {
+            return false;
+        }
+        return $user->hasAnyRole($team, ['admin', 'scrum_master']);
     }
 
     /**
@@ -47,7 +58,11 @@ class SprintPolicy
      */
     public function delete(User $user, Sprint $sprint): bool
     {
-        return $user->teams->contains($sprint->project->team_id);
+        $team = $sprint->project->team;
+        if (!$team) {
+            return false;
+        }
+        return $user->hasRole($team, 'admin');
     }
 
     /**

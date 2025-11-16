@@ -14,7 +14,18 @@ class Team extends Model
 	 */
 	public function users(): BelongsToMany
 	{
-		return $this->belongsToMany(User::class)->withTimestamps();
+		return $this->belongsToMany(User::class)->withPivot('role')->withTimestamps();
+	}
+
+	/**
+	 * Get users with a specific role.
+	 */
+	public function usersWithRole(string $role): BelongsToMany
+	{
+		return $this->belongsToMany(User::class)
+			->wherePivot('role', $role)
+			->withPivot('role')
+			->withTimestamps();
 	}
 
 	/**

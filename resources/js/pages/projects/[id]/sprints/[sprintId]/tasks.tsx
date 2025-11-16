@@ -29,9 +29,9 @@ import {
 } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { router } from "@inertiajs/react";
+import { Link, router } from "@inertiajs/react";
 import { format, parseISO } from "date-fns";
-import { ExternalLink, Github, GripVertical, Plus, X } from "lucide-react";
+import { ArrowRight, ExternalLink, Github, GripVertical, Plus, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const KANBAN_COLUMNS = ["Planned", "Active", "Completed"] as const;
@@ -556,11 +556,13 @@ export default function SprintTasksPage({
     sprint,
     tasks = [],
     backlogTasks = [],
+    hasRetrospective = false,
 }: {
     project: Project;
     sprint: Sprint;
     tasks: Task[];
     backlogTasks?: Task[];
+    hasRetrospective?: boolean;
 }) {
     const [localTasks, setLocalTasks] = useState<KanbanTask[]>(() =>
         tasks.filter((task) => task.status === "Planned" || task.status === "Active" || task.status === "Completed"),
@@ -803,9 +805,19 @@ export default function SprintTasksPage({
                 title={`${sprint.name} - Tasks`}
                 description={`${format(parseISO(sprint.start_date), "MMM dd, yyyy")} - ${format(parseISO(sprint.end_date), "MMM dd, yyyy")}${sprint.goal ? ` • ${sprint.goal}` : ""}${isSaving ? " (Saving...)" : ""}`}
                 rightHandItem={
-                    <Button onClick={() => setAddFromBacklogOpen(true)} variant="outline">
-                        Add from Backlog
-                    </Button>
+                    <div className="flex gap-2">
+                        {sprint.status === "completed" && (
+                            <Link href={`/projects/${project.id}/sprints/${sprint.id}/retrospective`}>
+                                <Button variant="outline">
+                                    {hasRetrospective ? "View Retrospective" : "Create Retrospective"}
+                                    <ArrowRight className="ml-2 h-4 w-4" />
+                                </Button>
+                            </Link>
+                        )}
+                        <Button onClick={() => setAddFromBacklogOpen(true)} variant="outline">
+                            Add from Backlog
+                        </Button>
+                    </div>
                 }
             />
 

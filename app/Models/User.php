@@ -59,7 +59,40 @@ class User extends Authenticatable
      */
     public function teams(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
-        return $this->belongsToMany(Team::class)->withTimestamps();
+        return $this->belongsToMany(Team::class)->withPivot('role')->withTimestamps();
+    }
+
+    /**
+     * Get the user's role in a specific team.
+     */
+    public function getRoleInTeam(Team $team): ?string
+    {
+        $pivot = $this->teams()->where('teams.id', $team->id)->first()?->pivot;
+        return $pivot?->role ?? null;
+    }
+
+    /**
+     * Check if the user has a specific role in a team.
+     */
+    public function hasRole(Team $team, string $role): bool
+    {
+        $userRole = $this->getRoleInTeam($team);
+        if ($userRole === 'admin') {
+            return true;
+        }
+        return $userRole === $role;
+    }
+
+    /**
+     * Check if the user has any of the specified roles in a team.
+     */
+    public function hasAnyRole(Team $team, array $roles): bool
+    {
+        $userRole = $this->getRoleInTeam($team);
+        if ($userRole === 'admin') {
+            return true;
+        }
+        return in_array($userRole, $roles);
     }
 
     /**

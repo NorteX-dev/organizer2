@@ -59,6 +59,11 @@ Route::middleware(['auth'])->group(function () {
         Route::post('projects/{project}/sprints/{sprint}/tasks/add-from-backlog', [App\Http\Controllers\TaskController::class, 'addFromBacklog'])->name('projects.sprints.tasks.add-from-backlog');
         Route::post('projects/{project}/sprints/{sprint}/tasks/{task}/move-to-backlog', [App\Http\Controllers\TaskController::class, 'moveToBacklog'])->name('projects.sprints.tasks.move-to-backlog');
         
+        Route::get('projects/{project}/sprints/{sprint}/retrospective', [App\Http\Controllers\RetrospectiveController::class, 'show'])->name('projects.sprints.retrospective.show');
+        Route::post('projects/{project}/sprints/{sprint}/retrospective', [App\Http\Controllers\RetrospectiveController::class, 'store'])->name('projects.sprints.retrospective.store');
+        Route::put('projects/{project}/sprints/{sprint}/retrospective/{retrospective}', [App\Http\Controllers\RetrospectiveController::class, 'update'])->name('projects.sprints.retrospective.update');
+        Route::post('retrospectives/{retrospective}/vote', [App\Http\Controllers\RetrospectiveController::class, 'vote'])->name('retrospectives.vote');
+        
         Route::get('/documents', function () {
             $user = auth()->user();
             $currentProject = $user->currentProject();
@@ -74,6 +79,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('teams', App\Http\Controllers\TeamController::class);
     Route::post('teams/{team}/members', [App\Http\Controllers\TeamController::class, 'addMember'])->name('teams.members.add');
     Route::delete('teams/{team}/members/{user}', [App\Http\Controllers\TeamController::class, 'removeMember'])->name('teams.members.remove');
+    Route::put('teams/{team}/members/{user}/role', [App\Http\Controllers\TeamController::class, 'updateRole'])->name('teams.members.update-role');
     Route::post('teams/{team}/switch', [App\Http\Controllers\TeamController::class, 'switch'])->name('teams.switch');
 });
 

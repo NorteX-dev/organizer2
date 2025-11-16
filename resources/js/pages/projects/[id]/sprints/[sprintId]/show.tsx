@@ -1,5 +1,8 @@
+import { Button } from "@/components/ui/button";
 import AppLayout from "@/layouts/app-layout";
 import type { Project, Sprint } from "@/types";
+import { Link } from "@inertiajs/react";
+import { ArrowRight } from "lucide-react";
 
 export default function SprintsShowPage({ project, sprint }: { project: Project; sprint: Sprint }) {
     return (
@@ -12,6 +15,17 @@ export default function SprintsShowPage({ project, sprint }: { project: Project;
                 <div className="mb-2">End: {sprint.end_date}</div>
                 <div className="mb-2">Planned Points: {sprint.planned_points}</div>
                 <div className="mb-2">Completed Points: {sprint.completed_points}</div>
+                
+                {sprint.status === "completed" && (
+                    <div className="mt-6">
+                        <Link href={`/projects/${project.id}/sprints/${sprint.id}/retrospective`}>
+                            <Button>
+                                View Retrospective
+                                <ArrowRight className="ml-2 h-4 w-4" />
+                            </Button>
+                        </Link>
+                    </div>
+                )}
             </div>
         </AppLayout>
     );
