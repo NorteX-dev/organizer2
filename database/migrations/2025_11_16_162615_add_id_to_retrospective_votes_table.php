@@ -12,6 +12,16 @@ return new class extends Migration
      */
     public function up(): void
     {
+        $driver = DB::getDriverName();
+        
+        if ($driver === 'sqlite') {
+            return;
+        }
+        
+        if (Schema::hasColumn('retrospective_votes', 'id')) {
+            return;
+        }
+        
         Schema::table('retrospective_votes', function (Blueprint $table) {
             $table->dropPrimary(['retrospective_id', 'user_id', 'vote_type']);
         });

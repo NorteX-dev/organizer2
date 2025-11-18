@@ -5,12 +5,10 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Concerns\LogsActivity;
 use App\Models\GithubSync;
 use App\Models\Project;
-use App\Models\Team;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 

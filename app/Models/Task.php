@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Task extends Model
 {
+	use HasFactory;
+
 	protected $fillable = [
 		"project_id",
 		"parent_task_id",

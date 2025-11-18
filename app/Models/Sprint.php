@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Sprint extends Model
 {
+	use HasFactory;
+
 	protected $fillable = [
 		"project_id",
 		"name",

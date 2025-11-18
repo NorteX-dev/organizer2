@@ -7,9 +7,12 @@ return new class extends Migration
 {
 	public function up(): void
 	{
-		DB::statement('ALTER TABLE tasks DROP CONSTRAINT IF EXISTS tasks_status_check');
+		$driver = DB::getDriverName();
 		
-		DB::statement("ALTER TABLE tasks ADD CONSTRAINT tasks_status_check CHECK (status IN ('Planned', 'Backlog', 'Active', 'Completed'))");
+		if ($driver !== 'sqlite') {
+			DB::statement('ALTER TABLE tasks DROP CONSTRAINT IF EXISTS tasks_status_check');
+			DB::statement("ALTER TABLE tasks ADD CONSTRAINT tasks_status_check CHECK (status IN ('Planned', 'Backlog', 'Active', 'Completed'))");
+		}
 		
 		DB::statement("UPDATE tasks SET status = CASE 
 			WHEN status = 'backlog' THEN 'Backlog'
@@ -23,9 +26,12 @@ return new class extends Migration
 
 	public function down(): void
 	{
-		DB::statement('ALTER TABLE tasks DROP CONSTRAINT IF EXISTS tasks_status_check');
+		$driver = DB::getDriverName();
 		
-		DB::statement("ALTER TABLE tasks ADD CONSTRAINT tasks_status_check CHECK (status IN ('backlog', 'todo', 'in_progress', 'review', 'done'))");
+		if ($driver !== 'sqlite') {
+			DB::statement('ALTER TABLE tasks DROP CONSTRAINT IF EXISTS tasks_status_check');
+			DB::statement("ALTER TABLE tasks ADD CONSTRAINT tasks_status_check CHECK (status IN ('backlog', 'todo', 'in_progress', 'review', 'done'))");
+		}
 		
 		DB::statement("UPDATE tasks SET status = CASE 
 			WHEN status = 'Backlog' THEN 'backlog'
