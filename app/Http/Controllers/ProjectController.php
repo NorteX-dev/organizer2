@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\LogsActivity;
 use App\Models\GithubSync;
 use App\Models\Project;
 use App\Models\Team;
@@ -15,7 +16,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class ProjectController extends Controller
 {
-    use AuthorizesRequests;
+    use AuthorizesRequests, LogsActivity;
 
     protected function ensureCurrentTeam()
     {
@@ -74,6 +75,11 @@ class ProjectController extends Controller
         }
         $validated['team_id'] = $team->id;
         $project = Project::create($validated);
+        
+        $this->logActivity($project, 'project.created', $project, [
+            'name' => $project->name,
+        ]);
+        
         return redirect()->route('projects.edit', $project->id)->with('success', 'Project created successfully.');
     }
 
@@ -111,7 +117,18 @@ class ProjectController extends Controller
             'default_sprint_length' => 'nullable|integer',
             'status' => 'nullable|string',
         ]);
+        
+        $metadata = [];
+        if (!empty($validated)) {
+            $metadata['updated_fields'] = array_keys($validated);
+        }
+        
         $project->update($validated);
+        
+        $this->logActivity($project, 'project.updated', $project, array_merge([
+            'name' => $project->name,
+        ], $metadata));
+        
         return redirect()->route('projects.index')->with('success', 'Project updated successfully.');
     }
 
@@ -123,7 +140,15 @@ class ProjectController extends Controller
         }
         
         $this->authorize('delete', $project);
+        
+        $projectName = $project->name;
+        $projectId = $project->id;
         $project->delete();
+        
+        $this->logDeletedActivity($project, 'project.deleted', Project::class, $projectId, [
+            'name' => $projectName,
+        ]);
+        
         return redirect()->route('projects.index')->with('success', 'Project deleted successfully.');
     }
 
@@ -266,6 +291,65 @@ class ProjectController extends Controller
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to fetch GitHub data: ' . $e->getMessage()], 500);
         }
+    }
+
+    /**
+     * Display project activities history.
+     */
+    public function activities(Request $request, Project $project)
+    {
+        $this->authorize('view', $project);
+        
+        $query = $project->activities()
+            ->with(['user', 'subject'])
+            ->orderBy('created_at', 'desc');
+        
+        $filters = $request->only(['action', 'user_id', 'date_from', 'date_to']);
+        
+        if (isset($filters['action']) && $filters['action']) {
+            $query->where('action', $filters['action']);
+        }
+        
+        if (isset($filters['user_id']) && $filters['user_id']) {
+            $query->where('user_id', $filters['user_id']);
+        }
+        
+        if (isset($filters['date_from']) && $filters['date_from']) {
+            $query->whereDate('created_at', '>=', $filters['date_from']);
+        }
+        
+        if (isset($filters['date_to']) && $filters['date_to']) {
+            $query->whereDate('created_at', '<=', $filters['date_to']);
+        }
+        
+        $perPage = $request->get('per_page', 20);
+        $activities = $query->paginate($perPage)->withQueryString();
+        
+        $team = $project->team;
+        $users = $team ? $team->users : collect();
+        
+        $availableActions = [
+            'task.created',
+            'task.updated',
+            'task.deleted',
+            'task.added_to_sprint',
+            'task.moved_to_backlog',
+            'task.subtask_created',
+            'sprint.created',
+            'sprint.updated',
+            'sprint.deleted',
+            'project.created',
+            'project.updated',
+            'project.deleted',
+        ];
+        
+        return Inertia::render('projects/[id]/activities', [
+            'project' => $project,
+            'activities' => $activities,
+            'users' => $users,
+            'filters' => $filters,
+            'availableActions' => $availableActions,
+        ]);
     }
 
     /**

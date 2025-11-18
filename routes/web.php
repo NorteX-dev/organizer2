@@ -81,6 +81,13 @@ Route::middleware(['auth'])->group(function () {
         Route::post('projects/{project}/documents', [App\Http\Controllers\DocumentController::class, 'store'])->name('projects.documents.store');
         Route::put('projects/{project}/documents/{document}', [App\Http\Controllers\DocumentController::class, 'update'])->name('projects.documents.update');
         Route::delete('projects/{project}/documents/{document}', [App\Http\Controllers\DocumentController::class, 'destroy'])->name('projects.documents.destroy');
+        
+        Route::get('/activities', function () {
+            $user = auth()->user();
+            $currentProject = $user->currentProject();
+            return redirect()->route('projects.activities.index', $currentProject->id);
+        })->name('activities.redirect');
+        Route::get('projects/{project}/activities', [App\Http\Controllers\ProjectController::class, 'activities'])->name('projects.activities.index');
     });
 
     

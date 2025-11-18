@@ -155,3 +155,17 @@ export interface TaskComment {
     updated_at: string;
     user?: User;
 }
+
+export interface ProjectActivity {
+    id: number;
+    project_id: number;
+    user_id: number | null;
+    action: string;
+    subject_type: string;
+    subject_id: number;
+    metadata: Record<string, unknown>;
+    created_at: string;
+    updated_at: string;
+    user?: User;
+    subject?: Task | Sprint | Project;
+}

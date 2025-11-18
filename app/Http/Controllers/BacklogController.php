@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\LogsActivity;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
@@ -12,7 +13,7 @@ use Inertia\Inertia;
 
 class BacklogController extends Controller
 {
-    use AuthorizesRequests;
+    use AuthorizesRequests, LogsActivity;
 
     /**
      * Display the product backlog for a project.
@@ -89,6 +90,11 @@ class BacklogController extends Controller
 
         $task->load(['assignedUser', 'labels']);
 
+        $this->logActivity($project, 'task.created', $task, [
+            'title' => $task->title,
+            'in_backlog' => true,
+        ]);
+
         return redirect()->route('projects.backlog.index', $project->id);
     }
 
@@ -127,8 +133,22 @@ class BacklogController extends Controller
             }
         }
 
+        $oldAssignedTo = $task->assigned_to;
         $task->update($validated);
         $task->load(['assignedUser', 'labels']);
+
+        $metadata = [];
+        if (isset($validated['assigned_to']) && $oldAssignedTo !== $validated['assigned_to']) {
+            $metadata['assigned_changed'] = ['from' => $oldAssignedTo, 'to' => $validated['assigned_to']];
+        }
+        if (!empty($validated)) {
+            $metadata['updated_fields'] = array_keys($validated);
+        }
+
+        $this->logActivity($project, 'task.updated', $task, array_merge([
+            'title' => $task->title,
+            'in_backlog' => true,
+        ], $metadata));
 
         return redirect()->route('projects.backlog.index', $project->id);
     }
@@ -145,7 +165,14 @@ class BacklogController extends Controller
                 ->withErrors(['error' => 'Task does not belong to this backlog']);
         }
 
+        $taskTitle = $task->title;
+        $taskId = $task->id;
         $task->delete();
+
+        $this->logDeletedActivity($project, 'task.deleted', Task::class, $taskId, [
+            'title' => $taskTitle,
+            'in_backlog' => true,
+        ]);
 
         return redirect()->route('projects.backlog.index', $project->id);
     }
@@ -255,14 +282,15 @@ class BacklogController extends Controller
             'subtasks.*.assigned_to' => 'nullable|exists:users,id',
         ]);
 
-        DB::transaction(function () use ($project, $task, $validated) {
+        $createdSubtasks = [];
+        DB::transaction(function () use ($project, $task, $validated, &$createdSubtasks) {
             $maxPosition = $project->tasks()
                 ->whereNull('sprint_id')
                 ->whereNull('parent_task_id')
                 ->max('position') ?? -1;
 
             foreach ($validated['subtasks'] as $index => $subtaskData) {
-                Task::create([
+                $subtask = Task::create([
                     'project_id' => $project->id,
                     'parent_task_id' => $task->id,
                     'sprint_id' => null,
@@ -275,8 +303,17 @@ class BacklogController extends Controller
                     'assigned_to' => $subtaskData['assigned_to'] ?? null,
                     'position' => $maxPosition + $index + 1,
                 ]);
+                $createdSubtasks[] = $subtask;
             }
         });
+
+        foreach ($createdSubtasks as $subtask) {
+            $this->logActivity($project, 'task.subtask_created', $subtask, [
+                'title' => $subtask->title,
+                'parent_task_id' => $task->id,
+                'parent_task_title' => $task->title,
+            ]);
+        }
 
         return redirect()->route('projects.backlog.index', $project->id);
     }

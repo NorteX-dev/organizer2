@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\LogsActivity;
 use App\Models\Project;
 use App\Models\Sprint;
 use App\Models\Task;
@@ -12,7 +13,7 @@ use Inertia\Inertia;
 
 class SprintController extends Controller
 {
-    use AuthorizesRequests;
+    use AuthorizesRequests, LogsActivity;
 
     /**
      * Display a listing of the resource.
@@ -88,6 +89,14 @@ class SprintController extends Controller
                 });
             }
         }
+
+        $sprint->load('tasks');
+        $this->logActivity($project, 'sprint.created', $sprint, [
+            'name' => $sprint->name,
+            'start_date' => $sprint->start_date->toDateString(),
+            'end_date' => $sprint->end_date->toDateString(),
+            'tasks_count' => $sprint->tasks->count(),
+        ]);
         
         return redirect()->route('projects.sprints.index', $project->id);
     }
@@ -165,7 +174,22 @@ class SprintController extends Controller
             'planned_points' => 'nullable|integer',
             'completed_points' => 'nullable|integer',
         ]);
+        
+        $oldStatus = $sprint->status;
         $sprint->update($fields);
+        
+        $metadata = [];
+        if (isset($fields['status']) && $oldStatus !== $fields['status']) {
+            $metadata['status_changed'] = ['from' => $oldStatus, 'to' => $fields['status']];
+        }
+        if (!empty($fields)) {
+            $metadata['updated_fields'] = array_keys($fields);
+        }
+        
+        $this->logActivity($project, 'sprint.updated', $sprint, array_merge([
+            'name' => $sprint->name,
+        ], $metadata));
+        
         return redirect()->route('projects.sprints.index', $project->id);
     }
 
@@ -175,7 +199,15 @@ class SprintController extends Controller
     public function destroy(Project $project, Sprint $sprint)
     {
         $this->authorize('delete', $sprint);
+        
+        $sprintName = $sprint->name;
+        $sprintId = $sprint->id;
         $sprint->delete();
+        
+        $this->logDeletedActivity($project, 'sprint.deleted', Sprint::class, $sprintId, [
+            'name' => $sprintName,
+        ]);
+        
         return redirect()->route('projects.sprints.index', $project->id);
     }
 }

@@ -6,6 +6,7 @@ use App\Events\TaskCreated;
 use App\Events\TaskDeleted;
 use App\Events\TaskReordered;
 use App\Events\TaskUpdated;
+use App\Http\Controllers\Concerns\LogsActivity;
 use App\Models\Project;
 use App\Models\Sprint;
 use App\Models\Task;
@@ -16,7 +17,7 @@ use Illuminate\Support\Facades\DB;
 
 class TaskController extends Controller
 {
-	use AuthorizesRequests;
+	use AuthorizesRequests, LogsActivity;
 
 	public function index(Project $project, Sprint $sprint)
 	{
@@ -71,6 +72,12 @@ class TaskController extends Controller
 
 		event(new TaskCreated($sprint, $task));
 
+		$this->logActivity($project, 'task.created', $task, [
+			'title' => $task->title,
+			'sprint_id' => $sprint->id,
+			'sprint_name' => $sprint->name,
+		]);
+
 		return redirect()->route('projects.sprints.show', [$project->id, $sprint->id]);
 	}
 
@@ -97,7 +104,9 @@ class TaskController extends Controller
 		]);
 
 		$oldStatus = $task->status;
+		$oldAssignedTo = $task->assigned_to;
 		$newStatus = $validated['status'] ?? $oldStatus;
+		$newAssignedTo = $validated['assigned_to'] ?? $oldAssignedTo;
 
 		if (isset($validated['status']) && $oldStatus !== $newStatus) {
 			DB::transaction(function () use ($task, $validated, $oldStatus, $newStatus, $sprint) {
@@ -128,7 +137,24 @@ class TaskController extends Controller
 
 		$task->load(['assignedUser', 'labels']);
 
+		$metadata = [];
+		if (isset($validated['status']) && $oldStatus !== $newStatus) {
+			$metadata['status_changed'] = ['from' => $oldStatus, 'to' => $newStatus];
+		}
+		if (isset($validated['assigned_to']) && $oldAssignedTo !== $newAssignedTo) {
+			$metadata['assigned_changed'] = ['from' => $oldAssignedTo, 'to' => $newAssignedTo];
+		}
+		if (!empty($validated)) {
+			$metadata['updated_fields'] = array_keys($validated);
+		}
+
 		event(new TaskUpdated($sprint, $task));
+
+		$this->logActivity($project, 'task.updated', $task, array_merge([
+			'title' => $task->title,
+			'sprint_id' => $sprint->id,
+			'sprint_name' => $sprint->name,
+		], $metadata));
 
 		return redirect()->route('projects.sprints.show', [$project->id, $sprint->id]);
 	}
@@ -237,6 +263,11 @@ class TaskController extends Controller
 
 		foreach ($addedTasks as $task) {
 			event(new TaskCreated($sprint, $task));
+			$this->logActivity($project, 'task.added_to_sprint', $task, [
+				'title' => $task->title,
+				'sprint_id' => $sprint->id,
+				'sprint_name' => $sprint->name,
+			]);
 		}
 
 		return redirect()->route('projects.sprints.show', [$project->id, $sprint->id]);
@@ -255,6 +286,7 @@ class TaskController extends Controller
 			->max('position') ?? -1;
 
 		$taskId = $task->id;
+		$taskTitle = $task->title;
 		$task->update([
 			'sprint_id' => null,
 			'status' => 'Backlog',
@@ -262,6 +294,12 @@ class TaskController extends Controller
 		]);
 
 		event(new TaskDeleted($sprint, $taskId));
+
+		$this->logActivity($project, 'task.moved_to_backlog', $task, [
+			'title' => $taskTitle,
+			'sprint_id' => $sprint->id,
+			'sprint_name' => $sprint->name,
+		]);
 
 		return redirect()->route('projects.sprints.show', [$project->id, $sprint->id]);
 	}

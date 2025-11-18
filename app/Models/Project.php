@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Project extends Model
@@ -49,9 +48,9 @@ class Project extends Model
 		return $this->hasMany(GithubSync::class);
 	}
 
-	public function activities(): MorphMany
+	public function activities(): HasMany
 	{
-		return $this->morphMany(ProjectActivity::class, "subject");
+		return $this->hasMany(ProjectActivity::class);
 	}
 
 	public function activeSprint(): ?Sprint
