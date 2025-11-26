@@ -36,10 +36,10 @@ export function ProjectSelector({ projects, currentProject }: ProjectSelectorPro
     return (
         <Select value={currentProject?.id?.toString() || ""} onValueChange={handleProjectSwitch}>
             <SelectTrigger className="h-9 w-[200px]">
-                <SelectValue placeholder="Select project">
+                <SelectValue placeholder="Wybierz projekt">
                     <div className="flex items-center gap-2">
                         <LayoutGrid className="h-4 w-4" />
-                        <span className="truncate">{currentProject?.name || "Select project"}</span>
+                        <span className="truncate">{currentProject?.name || "Wybierz projekt"}</span>
                     </div>
                 </SelectValue>
             </SelectTrigger>
@@ -50,14 +50,14 @@ export function ProjectSelector({ projects, currentProject }: ProjectSelectorPro
                             <SelectItem value="edit-project">
                                 <div className="flex items-center gap-2">
                                     <Edit className="h-4 w-4" />
-                                    <span>Edit project</span>
+                                    <span>Edytuj projekt</span>
                                 </div>
                             </SelectItem>
                         )}
                         <SelectItem value="create-new">
                             <div className="flex items-center gap-2">
                                 <Plus className="h-4 w-4" />
-                                <span>Create new project</span>
+                                <span>Utwórz nowy projekt</span>
                             </div>
                         </SelectItem>
                     </>
@@ -75,14 +75,14 @@ export function ProjectSelector({ projects, currentProject }: ProjectSelectorPro
                             <SelectItem value="edit-project">
                                 <div className="flex items-center gap-2">
                                     <Edit className="h-4 w-4" />
-                                    <span>Edit project</span>
+                                    <span>Edytuj projekt</span>
                                 </div>
                             </SelectItem>
                         )}
                         <SelectItem value="create-new">
                             <div className="flex items-center gap-2">
                                 <Plus className="h-4 w-4" />
-                                <span>Create new project</span>
+                                <span>Utwórz nowy projekt</span>
                             </div>
                         </SelectItem>
                     </>

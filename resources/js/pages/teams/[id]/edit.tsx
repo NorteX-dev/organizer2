@@ -30,30 +30,30 @@ export default function TeamsEdit({ team }: TeamsEditProps) {
                     className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
                 >
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Teams
+                    Powrót do zespołów
                 </Link>
             </div>
 
-            <HeaderSection title="Edit Team" description="Edit team details." className="mt-0" />
+            <HeaderSection title="Edytuj zespół" description="Edytuj szczegóły zespołu." className="mt-0" />
 
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <Users className="h-5 w-5" />
-                        Edit Team
+                        Edytuj zespół
                     </CardTitle>
-                    <CardDescription>Update your team information and settings.</CardDescription>
+                    <CardDescription>Zaktualizuj informacje i ustawienia zespołu.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="space-y-2">
-                            <Label htmlFor="name">Team Name</Label>
+                            <Label htmlFor="name">Nazwa zespołu</Label>
                             <Input
                                 id="name"
                                 type="text"
                                 value={data.name}
                                 onChange={(e) => setData("name", e.target.value)}
-                                placeholder="Enter team name"
+                                placeholder="Wprowadź nazwę zespołu"
                                 className={errors.name ? "border-destructive" : ""}
                             />
                             {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
@@ -61,10 +61,10 @@ export default function TeamsEdit({ team }: TeamsEditProps) {
 
                         <div className="flex gap-3">
                             <Button type="submit" disabled={processing}>
-                                {processing ? "Updating..." : "Update Team"}
+                                {processing ? "Aktualizowanie..." : "Zaktualizuj zespół"}
                             </Button>
                             <Link href="/teams">
-                                <Button variant="outline">Cancel</Button>
+                                <Button variant="outline">Anuluj</Button>
                             </Link>
                         </div>
                     </form>

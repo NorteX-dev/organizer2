@@ -39,15 +39,15 @@ export function TeamSelector({ teams: teamsData, currentTeam }: TeamSelectorProp
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
                 <DropdownMenuLabel className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
-                    Teams
+                    Zespoły
                 </DropdownMenuLabel>
                 <div className="px-2 py-1">
                     <Select value={currentTeam?.id?.toString() || ""} onValueChange={handleTeamSwitch}>
                         <SelectTrigger className="h-8 w-full">
-                            <SelectValue placeholder="Select team">
+                            <SelectValue placeholder="Wybierz zespół">
                                 <div className="flex items-center gap-2">
                                     <Users className="h-4 w-4" />
-                                    <span className="truncate">{currentTeam?.name || "Select team"}</span>
+                                    <span className="truncate">{currentTeam?.name || "Wybierz zespół"}</span>
                                 </div>
                             </SelectValue>
                         </SelectTrigger>
@@ -58,14 +58,14 @@ export function TeamSelector({ teams: teamsData, currentTeam }: TeamSelectorProp
                                         <SelectItem value="edit-team">
                                             <div className="flex items-center gap-2">
                                                 <Edit className="h-4 w-4" />
-                                                <span>Edit team</span>
+                                                <span>Edytuj zespół</span>
                                             </div>
                                         </SelectItem>
                                     )}
                                     <SelectItem value="create-new">
                                         <div className="flex items-center gap-2">
                                             <Plus className="h-4 w-4" />
-                                            <span>Create new team</span>
+                                            <span>Utwórz nowy zespół</span>
                                         </div>
                                     </SelectItem>
                                 </>
@@ -83,14 +83,14 @@ export function TeamSelector({ teams: teamsData, currentTeam }: TeamSelectorProp
                                         <SelectItem value="edit-team">
                                             <div className="flex items-center gap-2">
                                                 <Edit className="h-4 w-4" />
-                                                <span>Edit team</span>
+                                                <span>Edytuj zespół</span>
                                             </div>
                                         </SelectItem>
                                     )}
                                     <SelectItem value="create-new">
                                         <div className="flex items-center gap-2">
                                             <Plus className="h-4 w-4" />
-                                            <span>Create new team</span>
+                                            <span>Utwórz nowy zespół</span>
                                         </div>
                                     </SelectItem>
                                 </>

@@ -8,27 +8,27 @@ export default function SprintsShowPage({ project, sprint }: { project: Project;
     return (
         <AppLayout
             breadcrumbs={[
-                { title: "Projects", href: "/projects" },
-                { title: `Project ${project.id}`, href: `/projects/${project.id}/sprints` },
+                { title: "Projekty", href: "/projects" },
+                { title: `Projekt ${project.id}`, href: `/projects/${project.id}/sprints` },
                 { title: sprint.name, href: "" },
             ]}
         >
             <div className="mx-auto mt-10 max-w-2xl">
                 <h2 className="mb-4 text-3xl font-bold">{sprint.name}</h2>
-                <div className="mb-2">Goal: {sprint.goal}</div>
+                <div className="mb-2">Cel: {sprint.goal}</div>
                 <div className="mb-2">
                     Status: <span className="capitalize">{sprint.status}</span>
                 </div>
-                <div className="mb-2">Start: {sprint.start_date}</div>
-                <div className="mb-2">End: {sprint.end_date}</div>
-                <div className="mb-2">Planned Points: {sprint.planned_points}</div>
-                <div className="mb-2">Completed Points: {sprint.completed_points}</div>
+                <div className="mb-2">Rozpoczęcie: {sprint.start_date}</div>
+                <div className="mb-2">Zakończenie: {sprint.end_date}</div>
+                <div className="mb-2">Zaplanowane punkty: {sprint.planned_points}</div>
+                <div className="mb-2">Zakończone punkty: {sprint.completed_points}</div>
 
                 {sprint.status === "completed" && (
                     <div className="mt-6">
                         <Link href={`/projects/${project.id}/sprints/${sprint.id}/retrospective`}>
                             <Button>
-                                View Retrospective
+                                Zobacz retrospektywę
                                 <ArrowRight className="ml-2 h-4 w-4" />
                             </Button>
                         </Link>

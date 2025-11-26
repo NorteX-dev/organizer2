@@ -7,7 +7,7 @@ export default function ErrorPage({ message }: { message: string }) {
         <AppLayout>
             <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Error</AlertTitle>
+                <AlertTitle>Błąd</AlertTitle>
                 <AlertDescription>{message}</AlertDescription>
             </Alert>
         </AppLayout>

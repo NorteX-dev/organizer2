@@ -24,15 +24,15 @@ export default function SprintsEditPage({ project, sprint }: { project: Project;
     return (
         <AppLayout
             breadcrumbs={[
-                { title: "Projects", href: "/projects" },
-                { title: `Project ${project.id}`, href: `/projects/${project.id}/sprints` },
+                { title: "Projekty", href: "/projects" },
+                { title: `Projekt ${project.id}`, href: `/projects/${project.id}/sprints` },
                 { title: sprint.name, href: `` },
             ]}
         >
-            <h2 className="mb-4 text-2xl font-bold">Edit Sprint</h2>
+            <h2 className="mb-4 text-2xl font-bold">Edytuj sprint</h2>
             <form className="space-y-3" onSubmit={handleSubmit}>
                 <Label htmlFor="name" className="text-right">
-                    Name
+                    Nazwa
                 </Label>
                 <Input
                     id="name"
@@ -41,7 +41,7 @@ export default function SprintsEditPage({ project, sprint }: { project: Project;
                     onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                 />
                 <Label htmlFor="goal" className="text-right">
-                    Goal
+                    Cel
                 </Label>
                 <Input
                     id="goal"
@@ -50,7 +50,7 @@ export default function SprintsEditPage({ project, sprint }: { project: Project;
                     onChange={(e) => setForm((f) => ({ ...f, goal: e.target.value }))}
                 />
                 <Label htmlFor="start_date" className="text-right">
-                    Start Date
+                    Data rozpoczęcia
                 </Label>
                 <Input
                     id="start_date"
@@ -60,7 +60,7 @@ export default function SprintsEditPage({ project, sprint }: { project: Project;
                     onChange={(e) => setForm((f) => ({ ...f, start_date: e.target.value }))}
                 />
                 <Label htmlFor="end_date" className="text-right">
-                    End Date
+                    Data zakończenia
                 </Label>
                 <Input
                     id="end_date"
@@ -70,7 +70,7 @@ export default function SprintsEditPage({ project, sprint }: { project: Project;
                     onChange={(e) => setForm((f) => ({ ...f, end_date: e.target.value }))}
                 />
                 <Label htmlFor="planned_points" className="text-right">
-                    Planned Points
+                    Zaplanowane punkty
                 </Label>
                 <Input
                     id="planned_points"
@@ -80,7 +80,7 @@ export default function SprintsEditPage({ project, sprint }: { project: Project;
                     onChange={(e) => setForm((f) => ({ ...f, planned_points: Number(e.target.value) }))}
                 />
                 <Label htmlFor="completed_points" className="text-right">
-                    Completed Points
+                    Zakończone punkty
                 </Label>
                 <Input
                     id="completed_points"
@@ -94,16 +94,16 @@ export default function SprintsEditPage({ project, sprint }: { project: Project;
                 </Label>
                 <Select value={form.status} onValueChange={(v) => setForm((f) => ({ ...f, status: v }))}>
                     <SelectTrigger>
-                        <SelectValue placeholder="Select status..." />
+                        <SelectValue placeholder="Wybierz status..." />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="planning">Planning</SelectItem>
-                        <SelectItem value="active">Active</SelectItem>
-                        <SelectItem value="completed">Completed</SelectItem>
+                        <SelectItem value="planning">Planowanie</SelectItem>
+                        <SelectItem value="active">Aktywny</SelectItem>
+                        <SelectItem value="completed">Zakończony</SelectItem>
                     </SelectContent>
                 </Select>
                 <Button className="col-span-3" type="submit">
-                    Save Changes
+                    Zapisz zmiany
                 </Button>
             </form>
         </AppLayout>

@@ -106,21 +106,21 @@ export default function ProjectEditPage({ project: initial, latestGithubSync: in
         };
         router.put(`/projects/${project.id}`, payload, {
             onFinish: () => setLoading(false),
-            onError: () => setError("Error updating project."),
+            onError: () => setError("Błąd podczas aktualizacji projektu."),
         });
     }
     function handleDelete() {
-        if (!confirm("Delete this project?")) return;
+        if (!confirm("Usunąć ten projekt?")) return;
         setLoading(true);
         router.delete(`/projects/${project.id}`, {
             onSuccess: () => router.visit("/projects"),
-            onError: () => setError("Error deleting project."),
+            onError: () => setError("Błąd podczas usuwania projektu."),
         });
     }
 
     function handleSyncGithub() {
         if (!project.github_repo) {
-            setError("Please enter a GitHub repository URL first.");
+            setError("Najpierw wprowadź adres URL repozytorium GitHub.");
             return;
         }
 
@@ -141,7 +141,7 @@ export default function ProjectEditPage({ project: initial, latestGithubSync: in
                     });
                 },
                 onError: (errors) => {
-                    setError(errors.error || "Failed to sync GitHub repository.");
+                    setError(errors.error || "Nie udało się zsynchronizować repozytorium GitHub.");
                     setSyncing(false);
                 },
             },
@@ -150,43 +150,43 @@ export default function ProjectEditPage({ project: initial, latestGithubSync: in
     return (
         <AppLayout
             breadcrumbs={[
-                { title: "Projects", href: "/projects" },
+                { title: "Projekty", href: "/projects" },
                 { title: project.name, href: `/projects/${project.id}/edit` },
             ]}
         >
-            <Head title={`Edit Project: ${project.name}`} />
+            <Head title={`Edytuj projekt: ${project.name}`} />
             <div className="mt-8">
-                <h1 className="mb-4 text-2xl font-bold">Edit Project</h1>
+                <h1 className="mb-4 text-2xl font-bold">Edytuj projekt</h1>
                 <form className="space-y-5" onSubmit={handleSave}>
                     <Tabs value={activeTab} onValueChange={handleTabChange}>
                         <TabsList>
-                            <TabsTrigger value="details">Details</TabsTrigger>
-                            <TabsTrigger value="integration">Integration</TabsTrigger>
+                            <TabsTrigger value="details">Szczegóły</TabsTrigger>
+                            <TabsTrigger value="integration">Integracja</TabsTrigger>
                         </TabsList>
                         <TabsContent value="details" className="space-y-5 pt-4">
                             <div className="space-y-2">
-                                <Label htmlFor="name">Name</Label>
+                                <Label htmlFor="name">Nazwa</Label>
                                 <Input
                                     id="name"
                                     name="name"
                                     value={project.name ?? ""}
                                     onChange={handleChange}
                                     required
-                                    placeholder="Enter a name for the project"
+                                    placeholder="Wprowadź nazwę projektu"
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="description">Description</Label>
+                                <Label htmlFor="description">Opis</Label>
                                 <Textarea
                                     id="description"
                                     name="description"
                                     value={project.description ?? ""}
                                     onChange={handleChange}
-                                    placeholder="Enter a description for the project"
+                                    placeholder="Wprowadź opis projektu"
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="default_sprint_length">Default Sprint Length</Label>
+                                <Label htmlFor="default_sprint_length">Domyślna długość sprintu</Label>
                                 <Input
                                     id="default_sprint_length"
                                     name="default_sprint_length"
@@ -202,13 +202,13 @@ export default function ProjectEditPage({ project: initial, latestGithubSync: in
                                     name="status"
                                     value={project.status ?? ""}
                                     onChange={handleChange}
-                                    placeholder="Enter a status for the project"
+                                    placeholder="Wprowadź status projektu"
                                 />
                             </div>
                         </TabsContent>
                         <TabsContent value="integration" className="space-y-5 pt-4">
                             <div className="space-y-2">
-                                <Label htmlFor="github_repo">GitHub Repo</Label>
+                                <Label htmlFor="github_repo">Repozytorium GitHub</Label>
                                 <Input
                                     id="github_repo"
                                     name="github_repo"
@@ -216,12 +216,14 @@ export default function ProjectEditPage({ project: initial, latestGithubSync: in
                                     placeholder="https://github.com/your-username/your-repo"
                                     onChange={handleChange}
                                 />
-                                <p className="text-xs text-muted-foreground">Only public repositories are supported</p>
+                                <p className="text-xs text-muted-foreground">
+                                    Obsługiwane są tylko publiczne repozytoria
+                                </p>
                             </div>
                             {project.github_repo && (
                                 <div className="space-y-2">
                                     <div className="flex items-center justify-between">
-                                        <Label>GitHub Sync Status</Label>
+                                        <Label>Status synchronizacji GitHub</Label>
                                         <Button
                                             type="button"
                                             variant="outline"
@@ -230,7 +232,7 @@ export default function ProjectEditPage({ project: initial, latestGithubSync: in
                                             disabled={syncing}
                                         >
                                             <RefreshCw className={`mr-2 h-4 w-4 ${syncing ? "animate-spin" : ""}`} />
-                                            {syncing ? "Syncing..." : "Sync Now"}
+                                            {syncing ? "Synchronizowanie..." : "Synchronizuj teraz"}
                                         </Button>
                                     </div>
                                     {latestSync ? (
@@ -239,17 +241,19 @@ export default function ProjectEditPage({ project: initial, latestGithubSync: in
                                                 <Github className="h-5 w-5 text-muted-foreground" />
                                                 <div className="flex-1">
                                                     <div className="font-medium">
-                                                        {latestSync.data?.name || "Synced repository"}
+                                                        {latestSync.data?.name || "Zsynchronizowane repozytorium"}
                                                     </div>
                                                     <div className="text-sm text-muted-foreground">
-                                                        Last synced: {format(new Date(latestSync.synced_at), "PPpp")}
+                                                        Ostatnia synchronizacja:{" "}
+                                                        {format(new Date(latestSync.synced_at), "PPpp")}
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                     ) : (
                                         <div className="rounded-lg border border-dashed bg-muted/30 p-4 text-center text-sm text-muted-foreground">
-                                            No sync data yet. Click "Sync Now" to fetch repository information.
+                                            Brak danych synchronizacji. Kliknij "Synchronizuj teraz", aby pobrać
+                                            informacje o repozytorium.
                                         </div>
                                     )}
                                 </div>
@@ -259,7 +263,7 @@ export default function ProjectEditPage({ project: initial, latestGithubSync: in
                     {error && <div className="text-sm text-red-500">{error}</div>}
                     <div className="flex gap-2 pt-2">
                         <Button type="submit" disabled={loading}>
-                            Save
+                            Zapisz
                         </Button>
                         <Button
                             type="button"
@@ -268,7 +272,7 @@ export default function ProjectEditPage({ project: initial, latestGithubSync: in
                             onClick={handleDelete}
                             className="cursor-pointer"
                         >
-                            Delete
+                            Usuń
                         </Button>
                     </div>
                 </form>

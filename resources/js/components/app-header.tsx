@@ -24,7 +24,7 @@ import AppLogoIcon from "./app-logo-icon";
 
 const mainNavItems: NavItem[] = [
     {
-        title: "Sprints",
+        title: "Sprinty",
         href: "/sprints",
         icon: LayoutDashboard,
     },
@@ -34,12 +34,12 @@ const mainNavItems: NavItem[] = [
         icon: ListTodo,
     },
     {
-        title: "Documents",
+        title: "Dokumenty",
         href: "/documents",
         icon: FileText,
     },
     {
-        title: "Activity",
+        title: "Aktywność",
         href: "/activities",
         icon: Activity,
     },
@@ -74,7 +74,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                 side="left"
                                 className="flex h-full w-64 flex-col items-stretch justify-between bg-sidebar"
                             >
-                                <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+                                <SheetTitle className="sr-only">Menu nawigacyjne</SheetTitle>
                                 <SheetHeader className="flex justify-start text-left">
                                     <AppLogoIcon className="h-6 w-6 fill-current text-black dark:text-white" />
                                 </SheetHeader>

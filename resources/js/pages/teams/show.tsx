@@ -33,10 +33,10 @@ const ROLE_COLORS: Record<string, string> = {
 };
 
 const ROLE_LABELS: Record<string, string> = {
-    admin: "Admin",
+    admin: "Administrator",
     product_owner: "Product Owner",
     scrum_master: "Scrum Master",
-    developer: "Developer",
+    developer: "Deweloper",
 };
 
 export default function TeamsShow({ team, isAdmin = false }: TeamsShowProps) {
@@ -55,7 +55,7 @@ export default function TeamsShow({ team, isAdmin = false }: TeamsShowProps) {
     };
 
     const handleRemoveMember = (user: User) => {
-        if (confirm(`Are you sure you want to remove ${user.name} from this team?`)) {
+        if (confirm(`Czy na pewno chcesz usunąć ${user.name} z tego zespołu?`)) {
             router.delete(`/teams/${team.id}/members/${user.id}`);
         }
     };
@@ -93,11 +93,11 @@ export default function TeamsShow({ team, isAdmin = false }: TeamsShowProps) {
                     className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
                 >
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Teams
+                    Powrót do zespołów
                 </Link>
             </div>
 
-            <HeaderSection title={`${team.name} Team`} description="Manage your team's projects." className="mt-0" />
+            <HeaderSection title={`Zespół ${team.name}`} description="Zarządzaj projektami swojego zespołu." className="mt-0" />
 
             <div className="grid gap-6 lg:grid-cols-2">
                 {/* Add Member */}
@@ -105,26 +105,26 @@ export default function TeamsShow({ team, isAdmin = false }: TeamsShowProps) {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <UserPlus className="h-5 w-5" />
-                            Add Member
+                            Dodaj członka
                         </CardTitle>
-                        <CardDescription>Invite a new member to join this team.</CardDescription>
+                        <CardDescription>Zaproś nowego członka do tego zespołu.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={handleAddMember} className="space-y-4">
                             <div className="space-y-2">
-                                <Label htmlFor="email">Email Address</Label>
+                                <Label htmlFor="email">Adres e-mail</Label>
                                 <Input
                                     id="email"
                                     type="email"
                                     value={data.email}
                                     onChange={(e) => setData("email", e.target.value)}
-                                    placeholder="Enter member's email"
+                                    placeholder="Wprowadź e-mail członka"
                                     className={errors.email ? "border-destructive" : ""}
                                 />
                                 {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
                             </div>
                             <Button type="submit" disabled={processing}>
-                                {processing ? "Adding..." : "Add Member"}
+                                {processing ? "Dodawanie..." : "Dodaj członka"}
                             </Button>
                         </form>
                     </CardContent>
@@ -135,10 +135,10 @@ export default function TeamsShow({ team, isAdmin = false }: TeamsShowProps) {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <Users className="h-5 w-5" />
-                            Team Members
+                            Członkowie zespołu
                         </CardTitle>
                         <CardDescription>
-                            {team.users?.length || 0} member{(team.users?.length || 0) !== 1 ? "s" : ""}
+                            {team.users?.length || 0} {team.users?.length === 1 ? "członek" : team.users?.length === 0 || (team.users?.length || 0) % 10 >= 2 && (team.users?.length || 0) % 10 <= 4 && ((team.users?.length || 0) % 100 < 10 || (team.users?.length || 0) % 100 >= 20) ? "członków" : "członków"}
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -177,7 +177,7 @@ export default function TeamsShow({ team, isAdmin = false }: TeamsShowProps) {
                                                     variant="outline"
                                                     size="icon"
                                                     onClick={() => handleOpenRoleDialog(user)}
-                                                    title="Change role"
+                                                    title="Zmień rolę"
                                                 >
                                                     <Edit className="h-4 w-4" />
                                                 </Button>
@@ -197,7 +197,7 @@ export default function TeamsShow({ team, isAdmin = false }: TeamsShowProps) {
                                 );
                             })}
                             {(!team.users || team.users.length === 0) && (
-                                <p className="text-center text-sm text-muted-foreground">No members yet</p>
+                                <p className="text-center text-sm text-muted-foreground">Brak członków</p>
                             )}
                         </div>
                     </CardContent>
@@ -208,7 +208,7 @@ export default function TeamsShow({ team, isAdmin = false }: TeamsShowProps) {
                 <Link href={`/teams/${team.id}/edit`}>
                     <Button variant="outline">
                         <Users className="mr-2 h-4 w-4" />
-                        Edit Team Settings
+                        Edytuj ustawienia zespołu
                     </Button>
                 </Link>
             </div>
@@ -217,30 +217,30 @@ export default function TeamsShow({ team, isAdmin = false }: TeamsShowProps) {
                 <Dialog open={roleDialogOpen} onOpenChange={setRoleDialogOpen}>
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle>Change Role for {selectedUser.name}</DialogTitle>
-                            <DialogDescription>Select a new role for this team member.</DialogDescription>
+                            <DialogTitle>Zmień rolę dla {selectedUser.name}</DialogTitle>
+                            <DialogDescription>Wybierz nową rolę dla tego członka zespołu.</DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4 py-4">
                             <div>
-                                <Label htmlFor="role">Role</Label>
+                                <Label htmlFor="role">Rola</Label>
                                 <Select value={selectedRole} onValueChange={setSelectedRole}>
                                     <SelectTrigger className="mt-1">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="developer">Developer</SelectItem>
+                                        <SelectItem value="developer">Deweloper</SelectItem>
                                         <SelectItem value="scrum_master">Scrum Master</SelectItem>
                                         <SelectItem value="product_owner">Product Owner</SelectItem>
-                                        <SelectItem value="admin">Admin</SelectItem>
+                                        <SelectItem value="admin">Administrator</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
                         </div>
                         <DialogFooter>
                             <Button variant="outline" onClick={() => setRoleDialogOpen(false)}>
-                                Cancel
+                                Anuluj
                             </Button>
-                            <Button onClick={handleUpdateRole}>Update Role</Button>
+                            <Button onClick={handleUpdateRole}>Zaktualizuj rolę</Button>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>

@@ -121,7 +121,7 @@ export default function RetrospectivePage({ project, sprint, retrospective, user
                     {content ? (
                         <div className="text-sm whitespace-pre-wrap">{content}</div>
                     ) : (
-                        <p className="text-sm text-muted-foreground italic">No content yet.</p>
+                        <p className="text-sm text-muted-foreground italic">Brak treści.</p>
                     )}
                 </CardContent>
             </Card>
@@ -131,33 +131,33 @@ export default function RetrospectivePage({ project, sprint, retrospective, user
     return (
         <AppLayout
             breadcrumbs={[
-                { title: "Projects", href: "/projects" },
+                { title: "Projekty", href: "/projects" },
                 { title: project.name, href: `/projects/${project.id}/edit` },
-                { title: "Sprints", href: `/projects/${project.id}/sprints` },
+                { title: "Sprinty", href: `/projects/${project.id}/sprints` },
                 { title: sprint.name, href: `/projects/${project.id}/sprints/${sprint.id}` },
-                { title: "Retrospective", href: "" },
+                { title: "Retrospektywa", href: "" },
             ]}
         >
             <div className="mb-6">
                 <Button variant="ghost" onClick={() => router.visit(`/projects/${project.id}/sprints/${sprint.id}`)}>
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Sprint
+                    Powrót do sprintu
                 </Button>
             </div>
 
             <HeaderSection
-                title={`Retrospective: ${sprint.name}`}
+                title={`Retrospektywa: ${sprint.name}`}
                 rightHandItem={
                     <Button onClick={() => setEditDialogOpen(true)}>
                         {retrospective ? (
                             <>
                                 <Edit className="mr-2 h-4 w-4" />
-                                Edit Retrospective
+                                Edytuj retrospektywę
                             </>
                         ) : (
                             <>
                                 <Plus className="mr-2 h-4 w-4" />
-                                Create Retrospective
+                                Utwórz retrospektywę
                             </>
                         )}
                     </Button>
@@ -168,7 +168,7 @@ export default function RetrospectivePage({ project, sprint, retrospective, user
                 <Card className="mb-6 border-yellow-200 bg-yellow-50">
                     <CardContent className="pt-6">
                         <p className="text-sm text-yellow-800">
-                            This sprint is not completed yet. Retrospectives can only be created for completed sprints.
+                            Ten sprint nie został jeszcze zakończony. Retrospektywy można tworzyć tylko dla zakończonych sprintów.
                         </p>
                     </CardContent>
                 </Card>
@@ -176,19 +176,19 @@ export default function RetrospectivePage({ project, sprint, retrospective, user
 
             <div className="space-y-6">
                 {renderSection(
-                    "What Went Well",
+                    "Co poszło dobrze",
                     retrospective?.went_well || null,
                     "went_well",
                     <ChevronUp className="h-5 w-5 text-green-600" />,
                 )}
                 {renderSection(
-                    "What Went Wrong",
+                    "Co poszło źle",
                     retrospective?.went_wrong || null,
                     "went_wrong",
                     <ChevronDown className="h-5 w-5 text-red-600" />,
                 )}
                 {renderSection(
-                    "What to Improve",
+                    "Co poprawić",
                     retrospective?.to_improve || null,
                     "to_improve",
                     <Edit className="h-5 w-5 text-blue-600" />,
@@ -199,43 +199,43 @@ export default function RetrospectivePage({ project, sprint, retrospective, user
                 <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
                     <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
                         <DialogHeader>
-                            <DialogTitle>{retrospective ? "Edit Retrospective" : "Create Retrospective"}</DialogTitle>
+                            <DialogTitle>{retrospective ? "Edytuj retrospektywę" : "Utwórz retrospektywę"}</DialogTitle>
                             <DialogDescription>
                                 {retrospective
-                                    ? "Update the retrospective points below."
-                                    : "Add points for what went well, what went wrong, and what to improve."}
+                                    ? "Zaktualizuj punkty retrospektywy poniżej."
+                                    : "Dodaj punkty dotyczące tego, co poszło dobrze, co poszło źle i co poprawić."}
                             </DialogDescription>
                         </DialogHeader>
                         <form onSubmit={handleSubmit}>
                             <div className="space-y-6 py-4">
                                 <div>
-                                    <Label htmlFor="went_well">What Went Well</Label>
+                                    <Label htmlFor="went_well">Co poszło dobrze</Label>
                                     <Textarea
                                         id="went_well"
                                         className="mt-1"
-                                        placeholder="List the positive aspects of this sprint..."
+                                        placeholder="Wymień pozytywne aspekty tego sprintu..."
                                         rows={6}
                                         value={form.went_well}
                                         onChange={(e) => setForm((f) => ({ ...f, went_well: e.target.value }))}
                                     />
                                 </div>
                                 <div>
-                                    <Label htmlFor="went_wrong">What Went Wrong</Label>
+                                    <Label htmlFor="went_wrong">Co poszło źle</Label>
                                     <Textarea
                                         id="went_wrong"
                                         className="mt-1"
-                                        placeholder="List the challenges and issues encountered..."
+                                        placeholder="Wymień wyzwania i problemy napotkane..."
                                         rows={6}
                                         value={form.went_wrong}
                                         onChange={(e) => setForm((f) => ({ ...f, went_wrong: e.target.value }))}
                                     />
                                 </div>
                                 <div>
-                                    <Label htmlFor="to_improve">What to Improve</Label>
+                                    <Label htmlFor="to_improve">Co poprawić</Label>
                                     <Textarea
                                         id="to_improve"
                                         className="mt-1"
-                                        placeholder="List actionable improvements for the next sprint..."
+                                        placeholder="Wymień konkretne ulepszenia na następny sprint..."
                                         rows={6}
                                         value={form.to_improve}
                                         onChange={(e) => setForm((f) => ({ ...f, to_improve: e.target.value }))}
@@ -244,9 +244,9 @@ export default function RetrospectivePage({ project, sprint, retrospective, user
                             </div>
                             <DialogFooter>
                                 <Button type="button" variant="outline" onClick={() => setEditDialogOpen(false)}>
-                                    Cancel
+                                    Anuluj
                                 </Button>
-                                <Button type="submit">{retrospective ? "Update" : "Create"}</Button>
+                                <Button type="submit">{retrospective ? "Zaktualizuj" : "Utwórz"}</Button>
                             </DialogFooter>
                         </form>
                     </DialogContent>

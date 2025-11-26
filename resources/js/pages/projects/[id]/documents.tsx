@@ -40,7 +40,7 @@ export default function DocumentsPage({ project, documents: initialDocuments }: 
 
     function handleSave() {
         if (!form.title.trim()) {
-            alert("Please enter a title");
+            alert("Wprowadź tytuł");
             return;
         }
 
@@ -86,7 +86,7 @@ export default function DocumentsPage({ project, documents: initialDocuments }: 
     }
 
     function handleDelete(document: DocumentType) {
-        if (!confirm(`Delete "${document.title}"?`)) return;
+        if (!confirm(`Usunąć "${document.title}"?`)) return;
 
         router.delete(`/projects/${project.id}/documents/${document.id}`, {
             preserveScroll: true,
@@ -105,22 +105,22 @@ export default function DocumentsPage({ project, documents: initialDocuments }: 
     return (
         <AppLayout
             breadcrumbs={[
-                { title: "Projects", href: "/projects" },
+                { title: "Projekty", href: "/projects" },
                 { title: project.name, href: `/projects/${project.id}/edit` },
-                { title: "Documents", href: `/projects/${project.id}/documents` },
+                { title: "Dokumenty", href: `/projects/${project.id}/documents` },
             ]}
         >
             <div className="flex h-[calc(100vh-12rem)]">
                 <aside className="w-64 border-r border-sidebar-border/80 pr-4">
                     <div className="mb-4 flex items-center justify-between">
-                        <h2 className="text-lg font-semibold">Documents</h2>
+                        <h2 className="text-lg font-semibold">Dokumenty</h2>
                         <Button size="sm" variant="outline" onClick={handleCreateNew}>
                             <Plus className="h-4 w-4" />
                         </Button>
                     </div>
                     <div className="space-y-1 overflow-y-auto">
                         {documents.length === 0 ? (
-                            <p className="text-sm text-muted-foreground">No documents yet</p>
+                            <p className="text-sm text-muted-foreground">Brak dokumentów</p>
                         ) : (
                             documents.map((doc) => (
                                 <div
@@ -156,27 +156,27 @@ export default function DocumentsPage({ project, documents: initialDocuments }: 
                     {isCreating || selectedDocument ? (
                         <div className="space-y-4">
                             <div className="space-y-2">
-                                <Label htmlFor="title">Title</Label>
+                                <Label htmlFor="title">Tytuł</Label>
                                 <Input
                                     id="title"
                                     value={form.title}
                                     onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-                                    placeholder="Document title"
+                                    placeholder="Tytuł dokumentu"
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="content">Content</Label>
+                                <Label htmlFor="content">Treść</Label>
                                 <Textarea
                                     id="content"
                                     value={form.content}
                                     onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
-                                    placeholder="Document content..."
+                                    placeholder="Treść dokumentu..."
                                     className="min-h-[300px] font-mono text-sm"
                                 />
                             </div>
                             <div className="flex gap-2">
                                 <Button onClick={handleSave} disabled={saving}>
-                                    {saving ? "Saving..." : isCreating ? "Create" : "Save"}
+                                    {saving ? "Zapisywanie..." : isCreating ? "Utwórz" : "Zapisz"}
                                 </Button>
                                 {!isCreating && (
                                     <Button
@@ -187,7 +187,7 @@ export default function DocumentsPage({ project, documents: initialDocuments }: 
                                             setForm({ title: "", content: "" });
                                         }}
                                     >
-                                        Cancel
+                                        Anuluj
                                     </Button>
                                 )}
                             </div>
@@ -196,7 +196,7 @@ export default function DocumentsPage({ project, documents: initialDocuments }: 
                         <div className="flex h-full items-center justify-center text-muted-foreground">
                             <div className="text-center">
                                 <FileText className="mx-auto mb-4 h-12 w-12" />
-                                <p>Select a document from the sidebar or create a new one</p>
+                                <p>Wybierz dokument z paska bocznego lub utwórz nowy</p>
                             </div>
                         </div>
                     )}

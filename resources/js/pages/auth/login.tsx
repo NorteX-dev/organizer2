@@ -9,14 +9,17 @@ interface LoginProps {
 
 export default function Login({ error }: LoginProps) {
     return (
-        <AuthLayout title="Log in to your account" description="Sign in with your GitHub account to continue">
-            <Head title="Log in" />
+        <AuthLayout
+            title="Zaloguj się do swojego konta"
+            description="Zaloguj się za pomocą konta GitHub, aby kontynuować"
+        >
+            <Head title="Logowanie" />
 
             <div className="flex flex-col gap-6">
                 <Button asChild className="w-full" size="lg" data-test="login-button">
                     <a href="/auth/github">
                         <Github className="mr-2 h-5 w-5" />
-                        Continue with GitHub
+                        Kontynuuj z GitHub
                     </a>
                 </Button>
 

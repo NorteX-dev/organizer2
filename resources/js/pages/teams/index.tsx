@@ -13,21 +13,21 @@ interface TeamsIndexProps {
 
 export default function TeamsIndex({ teams: teamsData, currentTeam }: TeamsIndexProps) {
     const handleDeleteTeam = (team: Team) => {
-        if (confirm(`Are you sure you want to delete "${team.name}"? This action cannot be undone.`)) {
+        if (confirm(`Czy na pewno chcesz usunąć "${team.name}"? Tej akcji nie można cofnąć.`)) {
             router.delete(`/teams/${team.id}`);
         }
     };
 
     return (
-        <AppLayout breadcrumbs={[{ title: "Projects", href: "/projects" }]}>
+        <AppLayout breadcrumbs={[{ title: "Projekty", href: "/projects" }]}>
             <HeaderSection
-                title="Teams"
-                description="Manage your teams and collaborate with others."
+                title="Zespoły"
+                description="Zarządzaj zespołami i współpracuj z innymi."
                 rightHandItem={
                     <Link href="/teams/create">
                         <Button>
                             <Plus className="mr-2 h-4 w-4" />
-                            Create Team
+                            Utwórz zespół
                         </Button>
                     </Link>
                 }
@@ -37,14 +37,14 @@ export default function TeamsIndex({ teams: teamsData, currentTeam }: TeamsIndex
                     <Card>
                         <CardContent className="flex flex-col items-center justify-center py-12">
                             <Users className="mb-4 h-12 w-12 text-muted-foreground" />
-                            <h3 className="mb-2 text-lg font-semibold">No teams yet</h3>
+                            <h3 className="mb-2 text-lg font-semibold">Brak zespołów</h3>
                             <p className="mb-4 text-center text-muted-foreground">
-                                Create your first team to start collaborating with others.
+                                Utwórz swój pierwszy zespół, aby rozpocząć współpracę z innymi.
                             </p>
                             <Link href="/teams/create">
                                 <Button>
                                     <Plus className="mr-2 h-4 w-4" />
-                                    Create Team
+                                    Utwórz zespół
                                 </Button>
                             </Link>
                         </CardContent>
@@ -61,12 +61,12 @@ export default function TeamsIndex({ teams: teamsData, currentTeam }: TeamsIndex
                                         </CardTitle>
                                         {currentTeam?.id === team.id && (
                                             <span className="rounded-full bg-primary px-2 py-1 text-xs text-primary-foreground">
-                                                Current
+                                                Aktualny
                                             </span>
                                         )}
                                     </div>
                                     <CardDescription>
-                                        {team.users?.length || 0} member{(team.users?.length || 0) !== 1 ? "s" : ""}
+                                        {team.users?.length || 0} {team.users?.length === 1 ? "członek" : team.users?.length === 0 || (team.users?.length || 0) % 10 >= 2 && (team.users?.length || 0) % 10 <= 4 && ((team.users?.length || 0) % 100 < 10 || (team.users?.length || 0) % 100 >= 20) ? "członków" : "członków"}
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent>
@@ -74,7 +74,7 @@ export default function TeamsIndex({ teams: teamsData, currentTeam }: TeamsIndex
                                         <Link href={`/teams/${team.id}`} className="flex-1">
                                             <Button variant="outline" className="w-full">
                                                 <Settings className="mr-2 h-4 w-4" />
-                                                Manage
+                                                Zarządzaj
                                             </Button>
                                         </Link>
                                         <Button

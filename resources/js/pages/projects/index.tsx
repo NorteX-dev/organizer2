@@ -27,20 +27,20 @@ export default function ProjectsIndexPage({ projects }: { projects: Project[] })
             },
             onError: () => {
                 setLoading(false);
-                setError("There was an error creating the project.");
+                setError("Wystąpił błąd podczas tworzenia projektu.");
             },
         });
     }
 
     function handleDeleteProject(e: any, projectId: number) {
         e.preventDefault();
-        if (!confirm("Are you sure you want to delete this project?")) return;
+        if (!confirm("Czy na pewno chcesz usunąć ten projekt?")) return;
         setLoading(true);
         setError(null);
         router.delete(`/projects/${projectId}`, {
             preserveScroll: true,
             onError: () => {
-                setError("There was an error deleting the project.");
+                setError("Wystąpił błąd podczas usuwania projektu.");
                 setLoading(false);
             },
             onSuccess: () => {
@@ -50,23 +50,23 @@ export default function ProjectsIndexPage({ projects }: { projects: Project[] })
     }
 
     return (
-        <AppLayout breadcrumbs={[{ title: "Projects", href: "/projects" }]}>
-            <Head title="Projects" />
+        <AppLayout breadcrumbs={[{ title: "Projekty", href: "/projects" }]}>
+            <Head title="Projekty" />
             <HeaderSection
-                title="Projects"
-                description="Manage your team's projects."
+                title="Projekty"
+                description="Zarządzaj projektami swojego zespołu."
                 rightHandItem={
                     <Dialog open={open} onOpenChange={setOpen}>
                         <DialogTrigger asChild>
-                            <Button variant="default">New Project</Button>
+                            <Button variant="default">Nowy projekt</Button>
                         </DialogTrigger>
                         <DialogContent>
                             <DialogHeader>
-                                <DialogTitle>New Project</DialogTitle>
+                                <DialogTitle>Nowy projekt</DialogTitle>
                             </DialogHeader>
                             <form className="space-y-4" onSubmit={handleSubmit}>
                                 <div>
-                                    <Label className="mb-2 block text-sm font-medium">Name</Label>
+                                    <Label className="mb-2 block text-sm font-medium">Nazwa</Label>
                                     <Input
                                         className="input w-full"
                                         required
@@ -84,7 +84,7 @@ export default function ProjectsIndexPage({ projects }: { projects: Project[] })
                                 </div>
                                 {error && <div className="text-sm text-red-500">{error}</div>}
                                 <Button type="submit" disabled={loading}>
-                                    Create
+                                    Utwórz
                                 </Button>
                             </form>
                         </DialogContent>
@@ -94,14 +94,14 @@ export default function ProjectsIndexPage({ projects }: { projects: Project[] })
             <div>
                 <div className="grid gap-2">
                     {projects.length === 0 ? (
-                        <div className="text-muted-foreground">No projects found.</div>
+                        <div className="text-muted-foreground">Nie znaleziono projektów.</div>
                     ) : (
                         <table className="w-full rounded bg-white shadow">
                             <thead>
                                 <tr>
-                                    <th className="px-3 py-2 text-left">Name</th>
+                                    <th className="px-3 py-2 text-left">Nazwa</th>
                                     <th className="px-3 py-2 text-left">Status</th>
-                                    <th className="w-6 px-3 py-2">Actions</th>
+                                    <th className="w-6 px-3 py-2">Akcje</th>
                                 </tr>
                             </thead>
                             <tbody>

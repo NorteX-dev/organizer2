@@ -39,6 +39,12 @@ import { useEffect, useRef, useState } from "react";
 
 const KANBAN_COLUMNS = ["Planned", "Active", "Completed"] as const;
 
+const STATUS_LABELS: Record<string, string> = {
+    Planned: "Zaplanowane",
+    Active: "Aktywne",
+    Completed: "Zakończone",
+};
+
 type StatusType = (typeof KANBAN_COLUMNS)[number];
 
 interface KanbanTask extends Omit<Task, "id"> {
@@ -53,11 +59,25 @@ const PRIORITY_COLORS = {
     critical: "bg-red-50 text-red-700 border-red-200",
 };
 
+const PRIORITY_LABELS: Record<string, string> = {
+    low: "Niski",
+    medium: "Średni",
+    high: "Wysoki",
+    critical: "Krytyczny",
+};
+
 const TYPE_COLORS = {
     story: "bg-purple-50 text-purple-700 border-purple-200",
     task: "bg-blue-50 text-blue-700 border-blue-200",
     bug: "bg-red-50 text-red-700 border-red-200",
     epic: "bg-indigo-50 text-indigo-700 border-indigo-200",
+};
+
+const TYPE_LABELS: Record<string, string> = {
+    story: "Story",
+    task: "Zadanie",
+    bug: "Błąd / Bug",
+    epic: "Epic",
 };
 
 function normalizeGithubUrl(repo: string | null | undefined): string | null {
@@ -202,16 +222,16 @@ function TaskCard({
                             </div>
                             {task.story_points && (
                                 <Badge variant="outline" className="shrink-0 text-xs">
-                                    {task.story_points} pts
+                                    {task.story_points} pkt
                                 </Badge>
                             )}
                         </div>
                         <div className="ml-6 flex flex-wrap gap-1.5">
                             <Badge variant="outline" className={`text-xs ${TYPE_COLORS[task.type]}`}>
-                                {task.type}
+                                {TYPE_LABELS[task.type] || task.type}
                             </Badge>
                             <Badge variant="outline" className={`text-xs ${PRIORITY_COLORS[task.priority]}`}>
-                                {task.priority}
+                                {PRIORITY_LABELS[task.priority] || task.priority}
                             </Badge>
                         </div>
                     </CardHeader>
@@ -228,7 +248,7 @@ function TaskCard({
                             )}
                             {task.assigned_user && (
                                 <div className="mb-2 flex items-center gap-2 text-xs text-neutral-600">
-                                    <span className="font-medium">Assigned to:</span>
+                                    <span className="font-medium">Przypisane do:</span>
                                     <span>{task.assigned_user.name}</span>
                                 </div>
                             )}
@@ -246,13 +266,13 @@ function TaskCard({
                                                     onClick={(e) => e.stopPropagation()}
                                                 >
                                                     <Github className="h-3 w-3" />
-                                                    Issue #{task.github_issue_number}
+                                                    Zgłoszenie #{task.github_issue_number}
                                                     <ExternalLink className="h-3 w-3" />
                                                 </a>
                                             ) : (
                                                 <span className="inline-flex items-center gap-1 text-blue-600">
                                                     <Github className="h-3 w-3" />
-                                                    Issue #{task.github_issue_number}
+                                                    Zgłoszenie #{task.github_issue_number}
                                                 </span>
                                             );
                                         })()}
@@ -310,7 +330,7 @@ function TaskCard({
                                                 handleOpenDialog();
                                             }}
                                         >
-                                            GitHub & Comments
+                                            GitHub i Komentarze
                                         </Button>
                                     )}
                                     {onMoveToBacklog && typeof task.id === "number" && (
@@ -320,12 +340,12 @@ function TaskCard({
                                             className="h-6 rounded-md border border-neutral-200 text-xs dark:border-neutral-700"
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                if (confirm("Move this task back to backlog?")) {
+                                                if (confirm("Przenieść to zadanie z powrotem do backlogu?")) {
                                                     onMoveToBacklog();
                                                 }
                                             }}
                                         >
-                                            Move to Backlog
+                                            Przenieś do Backlogu
                                         </Button>
                                     )}
                                 </div>
@@ -350,7 +370,7 @@ function TaskCard({
                                                 handleOpenDialog();
                                             }}
                                         >
-                                            GitHub & Comments
+                                            GitHub i Komentarze
                                         </Button>
                                     )}
                                     {onMoveToBacklog && typeof task.id === "number" && (
@@ -360,12 +380,12 @@ function TaskCard({
                                             className="h-6 rounded-md border border-neutral-200 text-xs dark:border-neutral-700"
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                if (confirm("Move this task back to backlog?")) {
+                                                if (confirm("Przenieść to zadanie z powrotem do backlogu?")) {
                                                     onMoveToBacklog();
                                                 }
                                             }}
                                         >
-                                            Move to Backlog
+                                            Przenieś do Backlogu
                                         </Button>
                                     )}
                                 </div>
@@ -377,29 +397,31 @@ function TaskCard({
             <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
                 <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
                     <DialogHeader>
-                        <DialogTitle>Task Details</DialogTitle>
-                        <DialogDescription>Manage GitHub references and comments for this task.</DialogDescription>
+                        <DialogTitle>Szczegóły zadania</DialogTitle>
+                        <DialogDescription>
+                            Zarządzaj referencjami GitHub i komentarzami dla tego zadania.
+                        </DialogDescription>
                     </DialogHeader>
                     <Tabs defaultValue="github" className="w-full">
                         <TabsList className="grid w-full grid-cols-2">
-                            <TabsTrigger value="github">GitHub References</TabsTrigger>
-                            <TabsTrigger value="comments">Comments</TabsTrigger>
+                            <TabsTrigger value="github">Referencje GitHub</TabsTrigger>
+                            <TabsTrigger value="comments">Komentarze</TabsTrigger>
                         </TabsList>
                         <TabsContent value="github" className="space-y-4 py-4">
                             <div className="space-y-2">
-                                <Label>GitHub Issue</Label>
+                                <Label>Zgłoszenie GitHub</Label>
                                 {loadingRefs ? (
-                                    <div className="text-sm text-muted-foreground">Loading issues...</div>
+                                    <div className="text-sm text-muted-foreground">Ładowanie zgłoszeń...</div>
                                 ) : (
                                     <Combobox
                                         options={[
-                                            { value: "", label: "None", type: undefined },
+                                            { value: "", label: "Brak", type: undefined },
                                             ...allOptions.filter((opt) => opt.type === "issue"),
                                         ]}
                                         value={selectedIssue || ""}
                                         onSelect={setSelectedIssue}
-                                        placeholder="Select an issue..."
-                                        emptyText="No issues found"
+                                        placeholder="Wybierz zgłoszenie..."
+                                        emptyText="Nie znaleziono zgłoszeń"
                                     />
                                 )}
                                 {selectedIssueObj && (
@@ -409,24 +431,24 @@ function TaskCard({
                                         rel="noopener noreferrer"
                                         className="flex items-center gap-1 text-xs text-blue-600 hover:underline"
                                     >
-                                        View on GitHub <ExternalLink className="h-3 w-3" />
+                                        Zobacz na GitHub <ExternalLink className="h-3 w-3" />
                                     </a>
                                 )}
                             </div>
                             <div className="space-y-2">
-                                <Label>GitHub Pull Request</Label>
+                                <Label>Pull Request GitHub</Label>
                                 {loadingRefs ? (
-                                    <div className="text-sm text-muted-foreground">Loading PRs...</div>
+                                    <div className="text-sm text-muted-foreground">Ładowanie PR...</div>
                                 ) : (
                                     <Combobox
                                         options={[
-                                            { value: "", label: "None", type: undefined },
+                                            { value: "", label: "Brak", type: undefined },
                                             ...allOptions.filter((opt) => opt.type === "pr"),
                                         ]}
                                         value={selectedPR || ""}
                                         onSelect={setSelectedPR}
-                                        placeholder="Select a PR..."
-                                        emptyText="No PRs found"
+                                        placeholder="Wybierz PR..."
+                                        emptyText="Nie znaleziono PR"
                                     />
                                 )}
                                 {selectedPRObj && (
@@ -436,7 +458,7 @@ function TaskCard({
                                         rel="noopener noreferrer"
                                         className="flex items-center gap-1 text-xs text-blue-600 hover:underline"
                                     >
-                                        View on GitHub <ExternalLink className="h-3 w-3" />
+                                        Zobacz na GitHub <ExternalLink className="h-3 w-3" />
                                     </a>
                                 )}
                             </div>
@@ -447,10 +469,10 @@ function TaskCard({
                     </Tabs>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setEditDialogOpen(false)} disabled={saving}>
-                            Close
+                            Zamknij
                         </Button>
                         <Button onClick={handleSave} disabled={saving || loadingRefs}>
-                            {saving ? "Saving..." : "Save GitHub References & Comments"}
+                            {saving ? "Zapisywanie..." : "Zapisz referencje GitHub i komentarze"}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -485,7 +507,7 @@ function DroppableColumn({
     return (
         <div key={status} className="flex flex-col">
             <div className="mb-3 flex items-center justify-between rounded-lg bg-neutral-50 px-4 py-2">
-                <h3 className="font-semibold text-neutral-700">{status}</h3>
+                <h3 className="font-semibold text-neutral-700">{STATUS_LABELS[status] || status}</h3>
                 <div className="flex items-center gap-2">
                     <Badge variant="secondary" className="text-xs">
                         {tasks.length}
@@ -544,14 +566,14 @@ function AddTaskForm({ onAdd, onCancel }: { onAdd: (title: string) => void; onCa
                 <CardContent className="pt-4">
                     <Input
                         autoFocus
-                        placeholder="Enter task title..."
+                        placeholder="Wprowadź tytuł zadania..."
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                         className="mb-3"
                     />
                     <div className="flex gap-2">
                         <Button type="submit" size="sm" className="flex-1">
-                            Add Task
+                            Dodaj zadanie
                         </Button>
                         <Button type="button" size="sm" variant="ghost" onClick={onCancel}>
                             <X className="h-4 w-4" />
@@ -935,27 +957,27 @@ export default function SprintTasksPage({
     return (
         <AppLayout
             breadcrumbs={[
-                { title: "Projects", href: "/projects" },
+                { title: "Projekty", href: "/projects" },
                 { title: project.name, href: `/projects/${project.id}/edit` },
-                { title: "Sprints", href: `/projects/${project.id}/sprints` },
+                { title: "Sprinty", href: `/projects/${project.id}/sprints` },
                 { title: sprint.name, href: `/projects/${project.id}/sprints/${sprint.id}` },
             ]}
         >
             <HeaderSection
-                title={`${sprint.name} - Tasks`}
-                description={`${format(parseISO(sprint.start_date), "MMM dd, yyyy")} - ${format(parseISO(sprint.end_date), "MMM dd, yyyy")}${sprint.goal ? ` • ${sprint.goal}` : ""}${isSaving ? " (Saving...)" : ""}`}
+                title={`${sprint.name} - Zadania`}
+                description={`${format(parseISO(sprint.start_date), "MMM dd, yyyy")} - ${format(parseISO(sprint.end_date), "MMM dd, yyyy")}${sprint.goal ? ` • ${sprint.goal}` : ""}${isSaving ? " (Zapisywanie...)" : ""}`}
                 rightHandItem={
                     <div className="flex gap-2">
                         {sprint.status === "completed" && (
                             <Link href={`/projects/${project.id}/sprints/${sprint.id}/retrospective`}>
                                 <Button variant="outline">
-                                    {hasRetrospective ? "View Retrospective" : "Create Retrospective"}
+                                    {hasRetrospective ? "Zobacz retrospektywę" : "Utwórz retrospektywę"}
                                     <ArrowRight className="ml-2 h-4 w-4" />
                                 </Button>
                             </Link>
                         )}
                         <Button onClick={() => setAddFromBacklogOpen(true)} variant="outline">
-                            Add from Backlog
+                            Dodaj z Backlogu
                         </Button>
                     </div>
                 }
@@ -963,8 +985,8 @@ export default function SprintTasksPage({
 
             {hasCapacityWarning && (
                 <div className="mb-4 rounded-lg border border-orange-300 bg-orange-50 p-3 text-sm text-orange-800">
-                    ⚠️ Sprint capacity warning: Total story points ({totalStoryPoints}) exceeds planned capacity (
-                    {sprint.planned_points})
+                    ⚠️ Ostrzeżenie o pojemności sprintu: Łączne punkty historii ({totalStoryPoints}) przekraczają
+                    zaplanowaną pojemność ({sprint.planned_points})
                 </div>
             )}
 
@@ -1003,7 +1025,7 @@ export default function SprintTasksPage({
                                     </div>
                                     {activeTask.story_points && (
                                         <Badge variant="outline" className="shrink-0 text-xs">
-                                            {activeTask.story_points} pts
+                                            {activeTask.story_points} pkt
                                         </Badge>
                                     )}
                                 </div>
@@ -1016,12 +1038,12 @@ export default function SprintTasksPage({
             <Dialog open={addFromBacklogOpen} onOpenChange={setAddFromBacklogOpen}>
                 <DialogContent className="max-h-[80vh] max-w-3xl overflow-y-auto">
                     <DialogHeader>
-                        <DialogTitle>Add Tasks from Backlog</DialogTitle>
-                        <DialogDescription>Select tasks to add to this sprint</DialogDescription>
+                        <DialogTitle>Dodaj zadania z backlogu</DialogTitle>
+                        <DialogDescription>Wybierz zadania do dodania do tego sprintu</DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
                         {backlogTasks.length === 0 ? (
-                            <div className="py-8 text-center text-neutral-500">No tasks available in backlog</div>
+                            <div className="py-8 text-center text-neutral-500">Brak dostępnych zadań w backlogu</div>
                         ) : (
                             <div className="max-h-[400px] space-y-2 overflow-y-auto">
                                 {backlogTasks.map((task) => (
@@ -1047,17 +1069,17 @@ export default function SprintTasksPage({
                                                             variant="outline"
                                                             className={`text-xs ${TYPE_COLORS[task.type]}`}
                                                         >
-                                                            {task.type}
+                                                            {TYPE_LABELS[task.type] || task.type}
                                                         </Badge>
                                                         <Badge
                                                             variant="outline"
                                                             className={`text-xs ${PRIORITY_COLORS[task.priority]}`}
                                                         >
-                                                            {task.priority}
+                                                            {PRIORITY_LABELS[task.priority] || task.priority}
                                                         </Badge>
                                                         {task.story_points && (
                                                             <Badge variant="outline" className="text-xs">
-                                                                {task.story_points} pts
+                                                                {task.story_points} pkt
                                                             </Badge>
                                                         )}
                                                         {task.assigned_user && (
@@ -1075,9 +1097,9 @@ export default function SprintTasksPage({
                         )}
                         {selectedBacklogTaskIds.length > 0 && (
                             <div className="rounded-lg border p-3 text-sm">
-                                <div className="font-medium">Selected: {selectedBacklogTaskIds.length} tasks</div>
+                                <div className="font-medium">Wybrano: {selectedBacklogTaskIds.length} zadań</div>
                                 <div className="text-neutral-600">
-                                    Total Story Points:{" "}
+                                    Łączne punkty historii:{" "}
                                     <strong>
                                         {backlogTasks
                                             .filter((t) => selectedBacklogTaskIds.includes(t.id))
@@ -1086,7 +1108,7 @@ export default function SprintTasksPage({
                                 </div>
                                 {sprint.planned_points && (
                                     <div className="mt-1 text-neutral-600">
-                                        Planned Capacity: <strong>{sprint.planned_points}</strong>
+                                        Zaplanowana pojemność: <strong>{sprint.planned_points}</strong>
                                     </div>
                                 )}
                             </div>
@@ -1094,10 +1116,10 @@ export default function SprintTasksPage({
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setAddFromBacklogOpen(false)}>
-                            Cancel
+                            Anuluj
                         </Button>
                         <Button onClick={handleAddFromBacklog} disabled={selectedBacklogTaskIds.length === 0}>
-                            Add Selected Tasks
+                            Dodaj wybrane zadania
                         </Button>
                     </DialogFooter>
                 </DialogContent>

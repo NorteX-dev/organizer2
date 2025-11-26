@@ -64,7 +64,7 @@ export function TaskComments({ taskId, projectId, currentUser }: TaskCommentsPro
                 await loadComments();
             } else {
                 const error = await response.json();
-                alert(error.error || "Failed to add comment");
+                alert(error.error || "Nie udało się dodać komentarza");
             }
         } catch (error) {
             console.error("Failed to add comment:", error);
@@ -104,7 +104,7 @@ export function TaskComments({ taskId, projectId, currentUser }: TaskCommentsPro
                 await loadComments();
             } else {
                 const error = await response.json();
-                alert(error.error || "Failed to update comment");
+                alert(error.error || "Nie udało się zaktualizować komentarza");
             }
         } catch (error) {
             console.error("Failed to update comment:", error);
@@ -114,7 +114,7 @@ export function TaskComments({ taskId, projectId, currentUser }: TaskCommentsPro
     };
 
     const handleDelete = async (commentId: number) => {
-        if (!confirm("Are you sure you want to delete this comment?") || submitting) return;
+        if (!confirm("Czy na pewno chcesz usunąć ten komentarz?") || submitting) return;
 
         setSubmitting(true);
         try {
@@ -130,7 +130,7 @@ export function TaskComments({ taskId, projectId, currentUser }: TaskCommentsPro
                 await loadComments();
             } else {
                 const error = await response.json();
-                alert(error.error || "Failed to delete comment");
+                alert(error.error || "Nie udało się usunąć komentarza");
             }
         } catch (error) {
             console.error("Failed to delete comment:", error);
@@ -152,9 +152,9 @@ export function TaskComments({ taskId, projectId, currentUser }: TaskCommentsPro
         <div className="space-y-4">
             <div className="space-y-3">
                 {loading ? (
-                    <div className="text-sm text-neutral-500">Loading comments...</div>
+                    <div className="text-sm text-neutral-500">Ładowanie komentarzy...</div>
                 ) : comments.length === 0 ? (
-                    <div className="text-sm text-neutral-500">No comments yet. Be the first to comment!</div>
+                    <div className="text-sm text-neutral-500">Brak komentarzy. Bądź pierwszy, który skomentuje!</div>
                 ) : (
                     comments.map((comment) => (
                         <div key={comment.id} className="flex gap-3">
@@ -168,7 +168,7 @@ export function TaskComments({ taskId, projectId, currentUser }: TaskCommentsPro
                                     <div>
                                         <div className="flex items-center gap-2">
                                             <span className="text-sm font-medium">
-                                                {comment.user?.name || "Unknown User"}
+                                                {comment.user?.name || "Nieznany użytkownik"}
                                             </span>
                                             <span className="text-xs text-neutral-500">
                                                 {format(parseISO(comment.created_at), "MMM d, yyyy 'at' h:mm a")}
@@ -228,7 +228,7 @@ export function TaskComments({ taskId, projectId, currentUser }: TaskCommentsPro
                                         value={editContent}
                                         onChange={(e) => setEditContent(e.target.value)}
                                         className="min-h-[80px] text-sm"
-                                        placeholder="Edit your comment..."
+                                        placeholder="Edytuj swój komentarz..."
                                     />
                                 ) : (
                                     <p className="text-sm whitespace-pre-wrap text-neutral-700">{comment.content}</p>
@@ -243,13 +243,13 @@ export function TaskComments({ taskId, projectId, currentUser }: TaskCommentsPro
                 <Textarea
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
-                    placeholder="Add a comment..."
+                    placeholder="Dodaj komentarz..."
                     className="min-h-[100px] text-sm"
                     disabled={submitting}
                 />
                 <div className="flex justify-end">
                     <Button type="submit" size="sm" disabled={!newComment.trim() || submitting}>
-                        {submitting ? "Posting..." : "Post Comment"}
+                        {submitting ? "Publikowanie..." : "Opublikuj komentarz"}
                     </Button>
                 </div>
             </form>

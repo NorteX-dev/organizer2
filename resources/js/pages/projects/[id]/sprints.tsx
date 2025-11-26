@@ -49,7 +49,7 @@ export default function SprintsPage({ project, sprints = [] }: { project: Projec
         });
     }
     function handleDelete(sprintId: number) {
-        if (!confirm("Delete this sprint?")) return;
+        if (!confirm("Usunąć ten sprint?")) return;
         router.delete(`/projects/${project.id}/sprints/${sprintId}`);
     }
     const statusGroups: { [k: string]: Sprint[] } = { planned: [], active: [], completed: [] };
@@ -60,16 +60,16 @@ export default function SprintsPage({ project, sprints = [] }: { project: Projec
     return (
         <AppLayout
             breadcrumbs={[
-                { title: "Projects", href: "/projects" },
+                { title: "Projekty", href: "/projects" },
                 { title: project.name, href: `/projects/${project.id}/edit` },
-                { title: `Sprints`, href: `/projects/${project.id}/sprints` },
+                { title: `Sprinty`, href: `/projects/${project.id}/sprints` },
             ]}
         >
             <HeaderSection
-                title="Sprints"
+                title="Sprinty"
                 rightHandItem={
                     <Button onClick={openCreate} className="cursor-pointer">
-                        Create Sprint
+                        Utwórz sprint
                     </Button>
                 }
             />
@@ -105,7 +105,7 @@ export default function SprintsPage({ project, sprints = [] }: { project: Projec
                                             }
                                         >
                                             <Pencil className="mr-2 size-4" />
-                                            Edit
+                                            Edytuj
                                         </Button>
                                         <Button
                                             size="sm"
@@ -114,7 +114,7 @@ export default function SprintsPage({ project, sprints = [] }: { project: Projec
                                             onClick={() => handleDelete(sprint.id)}
                                         >
                                             <Trash2 className="mr-2 size-4" />
-                                            Delete
+                                            Usuń
                                         </Button>
                                         <Button
                                             size="sm"
@@ -123,7 +123,7 @@ export default function SprintsPage({ project, sprints = [] }: { project: Projec
                                             onClick={() => router.get(`/projects/${project.id}/sprints/${sprint.id}`)}
                                         >
                                             <Info className="mr-2 size-4" />
-                                            Details
+                                            Zadania
                                         </Button>
                                     </CardFooter>
                                 </Card>
@@ -135,15 +135,15 @@ export default function SprintsPage({ project, sprints = [] }: { project: Projec
             {modalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
                     <form className="w-full max-w-md rounded bg-white p-6" onSubmit={handleSubmit}>
-                        <h3 className="mb-6 text-lg font-bold">Create Sprint</h3>
+                        <h3 className="mb-6 text-lg font-bold">Utwórz sprint</h3>
                         <div className="mb-4">
                             <Label htmlFor="name" className="mb-1 block">
-                                Name <span className="text-red-500">*</span>
+                                Nazwa <span className="text-red-500">*</span>
                             </Label>
                             <Input
                                 id="name"
                                 className="input w-full"
-                                placeholder="Name"
+                                placeholder="Nazwa"
                                 required
                                 value={form.name}
                                 onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
@@ -151,25 +151,25 @@ export default function SprintsPage({ project, sprints = [] }: { project: Projec
                         </div>
                         <div className="mb-4">
                             <Label htmlFor="goal" className="mb-1 block">
-                                Goal
+                                Cel
                             </Label>
                             <Input
                                 id="goal"
                                 className="input w-full"
-                                placeholder="Goal"
+                                placeholder="Cel"
                                 value={form.goal}
                                 onChange={(e) => setForm((f) => ({ ...f, goal: e.target.value }))}
                             />
                         </div>
                         <div className="mb-4">
                             <Label htmlFor="start_date" className="mb-1 block">
-                                Start Date <span className="text-red-500">*</span>
+                                Data rozpoczęcia <span className="text-red-500">*</span>
                             </Label>
                             <Input
                                 id="start_date"
                                 type="date"
                                 className="input w-full"
-                                placeholder="Start Date"
+                                placeholder="Data rozpoczęcia"
                                 required
                                 value={form.start_date}
                                 onChange={(e) => setForm((f) => ({ ...f, start_date: e.target.value }))}
@@ -177,13 +177,13 @@ export default function SprintsPage({ project, sprints = [] }: { project: Projec
                         </div>
                         <div className="mb-4">
                             <Label htmlFor="end_date" className="mb-1 block">
-                                End Date <span className="text-red-500">*</span>
+                                Data zakończenia <span className="text-red-500">*</span>
                             </Label>
                             <Input
                                 id="end_date"
                                 type="date"
                                 className="input w-full"
-                                placeholder="End Date"
+                                placeholder="Data zakończenia"
                                 required
                                 value={form.end_date}
                                 onChange={(e) => setForm((f) => ({ ...f, end_date: e.target.value }))}
@@ -191,13 +191,13 @@ export default function SprintsPage({ project, sprints = [] }: { project: Projec
                         </div>
                         <div className="mb-6">
                             <Label htmlFor="planned_points" className="mb-1 block">
-                                Planned Points <span className="text-red-500">*</span>
+                                Zaplanowane punkty <span className="text-red-500">*</span>
                             </Label>
                             <Input
                                 id="planned_points"
                                 className="input w-full"
                                 type="number"
-                                placeholder="Planned Points"
+                                placeholder="Zaplanowane punkty"
                                 value={form.planned_points}
                                 onChange={(e) => setForm((f) => ({ ...f, planned_points: e.target.value }))}
                                 required
@@ -205,10 +205,10 @@ export default function SprintsPage({ project, sprints = [] }: { project: Projec
                         </div>
                         <div className="mt-4 flex justify-end gap-2">
                             <Button type="button" onClick={() => setModalOpen(false)}>
-                                Cancel
+                                Anuluj
                             </Button>
                             <Button type="submit" className="btn btn-primary">
-                                Create
+                                Utwórz
                             </Button>
                         </div>
                     </form>

@@ -71,45 +71,45 @@ export default function SprintsCreatePage({ project, backlogTasks = [] }: Sprint
     return (
         <AppLayout
             breadcrumbs={[
-                { title: "Projects", href: "/projects" },
+                { title: "Projekty", href: "/projects" },
                 { title: project.name, href: `/projects/${project.id}/sprints` },
-                { title: "Create Sprint", href: "" },
+                { title: "Utwórz sprint", href: "" },
             ]}
         >
             <div className="grid gap-6 lg:grid-cols-2">
                 <div>
-                    <h2 className="mb-4 text-2xl font-bold">Create Sprint</h2>
+                    <h2 className="mb-4 text-2xl font-bold">Utwórz sprint</h2>
                     <form className="space-y-4" onSubmit={handleSubmit}>
                         <div className="grid gap-2">
                             <Label htmlFor="name">
-                                Name <span className="text-red-500">*</span>
+                                Nazwa <span className="text-red-500">*</span>
                             </Label>
                             <Input
                                 id="name"
-                                placeholder="Name"
+                                placeholder="Nazwa"
                                 required
                                 value={form.name}
                                 onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                             />
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="goal">Goal</Label>
+                            <Label htmlFor="goal">Cel</Label>
                             <Input
                                 id="goal"
-                                placeholder="Goal"
+                                placeholder="Cel"
                                 value={form.goal}
                                 onChange={(e) => setForm((f) => ({ ...f, goal: e.target.value }))}
                             />
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="start_date">
-                                Start Date <span className="text-red-500">*</span>
+                                Data rozpoczęcia <span className="text-red-500">*</span>
                             </Label>
                             <Input
                                 id="start_date"
                                 type="date"
                                 className="input w-full"
-                                placeholder="Start Date"
+                                placeholder="Data rozpoczęcia"
                                 required
                                 value={form.start_date}
                                 onChange={(e) => setForm((f) => ({ ...f, start_date: e.target.value }))}
@@ -117,70 +117,70 @@ export default function SprintsCreatePage({ project, backlogTasks = [] }: Sprint
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="end_date">
-                                End Date <span className="text-red-500">*</span>
+                                Data zakończenia <span className="text-red-500">*</span>
                             </Label>
                             <Input
                                 id="end_date"
                                 type="date"
                                 className="input w-full"
-                                placeholder="End Date"
+                                placeholder="Data zakończenia"
                                 required
                                 value={form.end_date}
                                 onChange={(e) => setForm((f) => ({ ...f, end_date: e.target.value }))}
                             />
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="planned_points">Planned Points</Label>
+                            <Label htmlFor="planned_points">Zaplanowane punkty</Label>
                             <Input
                                 id="planned_points"
                                 type="number"
                                 min="0"
                                 className="input w-full"
-                                placeholder="Planned Points"
+                                placeholder="Zaplanowane punkty"
                                 value={form.planned_points}
                                 onChange={(e) => setForm((f) => ({ ...f, planned_points: e.target.value }))}
                             />
                         </div>
                         {selectedTaskIds.length > 0 && (
                             <div className="rounded-lg border p-4">
-                                <div className="mb-2 text-sm font-medium">Selected Tasks Summary</div>
+                                <div className="mb-2 text-sm font-medium">Podsumowanie wybranych zadań</div>
                                 <div className="text-sm text-neutral-600">
-                                    <div>Tasks: {selectedTaskIds.length}</div>
+                                    <div>Zadania: {selectedTaskIds.length}</div>
                                     <div>
-                                        Total Story Points: <strong>{totalStoryPoints}</strong>
+                                        Łączne punkty historii: <strong>{totalStoryPoints}</strong>
                                     </div>
                                     {form.planned_points && (
                                         <div>
-                                            Planned Capacity: <strong>{form.planned_points}</strong>
+                                            Zaplanowana pojemność: <strong>{form.planned_points}</strong>
                                         </div>
                                     )}
                                     {hasCapacityWarning && (
                                         <div className="mt-2 text-orange-600">
-                                            ⚠️ Selected tasks exceed planned capacity!
+                                            ⚠️ Wybrane zadania przekraczają zaplanowaną pojemność!
                                         </div>
                                     )}
                                 </div>
                             </div>
                         )}
                         <Button className="btn btn-primary w-full" type="submit">
-                            Create Sprint
+                            Utwórz sprint
                         </Button>
                     </form>
                 </div>
 
                 <div>
                     <div className="mb-4 flex items-center justify-between">
-                        <h3 className="text-xl font-semibold">Product Backlog</h3>
+                        <h3 className="text-xl font-semibold">Backlog produktu</h3>
                         {backlogTasks.length > 0 && (
                             <Button type="button" variant="outline" size="sm" onClick={toggleAll}>
-                                {selectedTaskIds.length === backlogTasks.length ? "Deselect All" : "Select All"}
+                                {selectedTaskIds.length === backlogTasks.length ? "Odznacz wszystkie" : "Zaznacz wszystkie"}
                             </Button>
                         )}
                     </div>
                     {backlogTasks.length === 0 ? (
                         <Card>
                             <CardContent className="py-8 text-center text-neutral-500">
-                                No tasks available in backlog
+                                Brak dostępnych zadań w backlogu
                             </CardContent>
                         </Card>
                     ) : (
@@ -216,7 +216,7 @@ export default function SprintsCreatePage({ project, backlogTasks = [] }: Sprint
                                                     </Badge>
                                                     {task.story_points && (
                                                         <Badge variant="outline" className="text-xs">
-                                                            {task.story_points} pts
+                                                            {task.story_points} pkt
                                                         </Badge>
                                                     )}
                                                     {task.assigned_user && (
