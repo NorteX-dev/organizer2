@@ -49,6 +49,11 @@ class Task extends Model
         return $this->hasMany(Task::class, "parent_task_id")->orderBy("position");
     }
 
+    public function labels(): HasMany
+    {
+        return $this->hasMany(Label::class);
+    }
+
     public function sprint(): BelongsTo
     {
         return $this->belongsTo(Sprint::class);

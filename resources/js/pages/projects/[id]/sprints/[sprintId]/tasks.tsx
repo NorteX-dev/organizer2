@@ -310,8 +310,7 @@ function TaskCard({
                                                 handleOpenDialog();
                                             }}
                                         >
-                                            {task.github_issue_number || task.github_pr_number ? "Edit" : "Add"} GitHub
-                                            References & Comments
+                                            GitHub & Comments
                                         </Button>
                                     )}
                                     {onMoveToBacklog && typeof task.id === "number" && (

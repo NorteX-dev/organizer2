@@ -28,6 +28,11 @@ class Project extends Model
         return $this->hasMany(Sprint::class);
     }
 
+    public function labels(): HasMany
+    {
+        return $this->hasMany(Label::class);
+    }
+
     public function tasks(): HasMany
     {
         return $this->hasMany(Task::class);
