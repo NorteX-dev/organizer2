@@ -79,7 +79,7 @@ export default function BacklogPage({ project, tasks = [], users = [] }: Backlog
             const matchesPriority = filterPriority === "all" || task.priority === filterPriority;
             const matchesStatus = filterStatus === "all" || task.status === filterStatus;
 
-            return matchesSearch && matchesType && matchesPriority && matchesStatus;
+            return (matchesSearch && matchesType && matchesPriority && matchesStatus) as boolean;
         };
 
         return tasks.filter(filterTask);

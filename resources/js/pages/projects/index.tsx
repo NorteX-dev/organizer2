@@ -4,12 +4,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import AppLayout from "@/layouts/app-layout";
-import type { Project, Team } from "@/types";
+import type { Project } from "@/types";
 import { Head, Link, router } from "@inertiajs/react";
 import { PencilIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 
-export default function ProjectsIndexPage({ projects, team }: { projects: Project[]; team: Team }) {
+export default function ProjectsIndexPage({ projects }: { projects: Project[] }) {
     const [open, setOpen] = useState(false);
     const [form, setForm] = useState({ name: "", status: "" });
     const [loading, setLoading] = useState(false);

@@ -130,7 +130,7 @@ export default function TeamsShow({ team, isAdmin = false }: TeamsShowProps) {
                     </CardContent>
                 </Card>
 
-                {/* Team Members */}
+                {/* Członkowie */}
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">

@@ -70,7 +70,7 @@ function formatActivityDescription(activity: ProjectActivity): string {
         case "task.deleted":
         case "task.added_to_sprint":
         case "task.moved_to_backlog":
-        case "task.subtask_created":
+        case "task.subtask_created": {
             const title = (metadata.title as string) || "Zadanie";
             if (action === "task.updated" && metadata.status_changed) {
                 const statusChange = metadata.status_changed as { from: string; to: string };
@@ -83,12 +83,13 @@ function formatActivityDescription(activity: ProjectActivity): string {
                 return `${title} (podzadanie: ${metadata.parent_task_title as string})`;
             }
             if (action === "task.added_to_sprint" && metadata.sprint_name) {
-                return `${title} → ${metadata.sprint_name as string}`;
+                return `${title} -> ${metadata.sprint_name as string}`;
             }
             if (action === "task.moved_to_backlog" && metadata.sprint_name) {
-                return `${title} ← ${metadata.sprint_name as string}`;
+                return `${title} <- ${metadata.sprint_name as string}`;
             }
             return title;
+        }
 
         case "sprint.created":
         case "sprint.updated":

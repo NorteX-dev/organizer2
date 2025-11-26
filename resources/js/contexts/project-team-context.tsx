@@ -40,7 +40,6 @@ function getProjectTeamData(): ProjectTeamContextValue {
             currentProject: data.currentProject || null,
         };
     } catch (error) {
-        console.error("Failed to parse project-team-data:", error);
         return {
             teams: [],
             currentTeam: null,
