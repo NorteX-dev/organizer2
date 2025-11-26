@@ -18,7 +18,7 @@ import { useInitials } from "@/hooks/use-initials";
 import { cn, isSameUrl, resolveUrl } from "@/lib/utils";
 import { type BreadcrumbItem, type NavItem, type SharedData } from "@/types";
 import { Link, usePage } from "@inertiajs/react";
-import { Activity, FileText, LayoutDashboard, Menu, ListTodo } from "lucide-react";
+import { Activity, FileText, LayoutDashboard, ListTodo, Menu } from "lucide-react";
 import AppLogo from "./app-logo";
 import AppLogoIcon from "./app-logo-icon";
 

@@ -8,34 +8,31 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Team extends Model
 {
-	use HasFactory;
+    use HasFactory;
 
-	protected $fillable = ["name"];
+    protected $fillable = ["name"];
 
-	/**
-	 * The users that belong to the team.
-	 */
-	public function users(): BelongsToMany
-	{
-		return $this->belongsToMany(User::class)->withPivot('role')->withTimestamps();
-	}
+    /**
+     * The users that belong to the team.
+     */
+    public function users(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class)->withPivot("role")->withTimestamps();
+    }
 
-	/**
-	 * Get users with a specific role.
-	 */
-	public function usersWithRole(string $role): BelongsToMany
-	{
-		return $this->belongsToMany(User::class)
-			->wherePivot('role', $role)
-			->withPivot('role')
-			->withTimestamps();
-	}
+    /**
+     * Get users with a specific role.
+     */
+    public function usersWithRole(string $role): BelongsToMany
+    {
+        return $this->belongsToMany(User::class)->wherePivot("role", $role)->withPivot("role")->withTimestamps();
+    }
 
-	/**
-	 * Projects owned by the team.
-	 */
-	public function projects(): \Illuminate\Database\Eloquent\Relations\HasMany
-	{
-		return $this->hasMany(Project::class);
-	}
+    /**
+     * Projects owned by the team.
+     */
+    public function projects(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Project::class);
+    }
 }

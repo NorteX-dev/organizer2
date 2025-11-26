@@ -11,97 +11,92 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Task extends Model
 {
-	use HasFactory;
+    use HasFactory;
 
-	protected $fillable = [
-		"project_id",
-		"parent_task_id",
-		"sprint_id",
-		"assigned_to",
-		"title",
-		"description",
-		"type",
-		"status",
-		"priority",
-		"story_points",
-		"position",
-		"github_issue_number",
-		"github_pr_number",
-	];
+    protected $fillable = [
+        "project_id",
+        "parent_task_id",
+        "sprint_id",
+        "assigned_to",
+        "title",
+        "description",
+        "type",
+        "status",
+        "priority",
+        "story_points",
+        "position",
+        "github_issue_number",
+        "github_pr_number",
+    ];
 
-	protected $casts = [
-		"story_points" => "integer",
-		"position" => "integer",
-	];
+    protected $casts = [
+        "story_points" => "integer",
+        "position" => "integer",
+    ];
 
-	public function project(): BelongsTo
-	{
-		return $this->belongsTo(Project::class);
-	}
+    public function project(): BelongsTo
+    {
+        return $this->belongsTo(Project::class);
+    }
 
-	public function parentTask(): BelongsTo
-	{
-		return $this->belongsTo(Task::class, 'parent_task_id');
-	}
+    public function parentTask(): BelongsTo
+    {
+        return $this->belongsTo(Task::class, "parent_task_id");
+    }
 
-	public function subTasks(): HasMany
-	{
-		return $this->hasMany(Task::class, 'parent_task_id')->orderBy('position');
-	}
+    public function subTasks(): HasMany
+    {
+        return $this->hasMany(Task::class, "parent_task_id")->orderBy("position");
+    }
 
-	public function sprint(): BelongsTo
-	{
-		return $this->belongsTo(Sprint::class);
-	}
+    public function sprint(): BelongsTo
+    {
+        return $this->belongsTo(Sprint::class);
+    }
 
-	public function assignedUser(): BelongsTo
-	{
-		return $this->belongsTo(User::class, "assigned_to");
-	}
+    public function assignedUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, "assigned_to");
+    }
 
-	public function labels(): BelongsToMany
-	{
-		return $this->belongsToMany(Label::class, "task_label");
-	}
+    public function comments(): HasMany
+    {
+        return $this->hasMany(TaskComment::class);
+    }
 
-	public function comments(): HasMany
-	{
-		return $this->hasMany(TaskComment::class);
-	}
+    public function activities(): MorphMany
+    {
+        return $this->morphMany(ProjectActivity::class, "subject");
+    }
 
-	public function activities(): MorphMany
-	{
-		return $this->morphMany(ProjectActivity::class, "subject");
-	}
+    public function isInBacklog(): bool
+    {
+        return $this->status === "Backlog";
+    }
 
-	public function isInBacklog(): bool
-	{
-		return $this->status === "Backlog";
-	}
+    public function isDone(): bool
+    {
+        return $this->status === "Completed";
+    }
 
-	public function isDone(): bool
-	{
-		return $this->status === "Completed";
-	}
+    public function isAssigned(): bool
+    {
+        return $this->assigned_to !== null;
+    }
 
-	public function isAssigned(): bool
-	{
-		return $this->assigned_to !== null;
-	}
+    public function isParent(): bool
+    {
+        return $this->subTasks()->exists();
+    }
 
-	public function isParent(): bool
-	{
-		return $this->subTasks()->exists();
-	}
+    public function hasParent(): bool
+    {
+        return $this->parent_task_id !== null;
+    }
 
-	public function hasParent(): bool
-	{
-		return $this->parent_task_id !== null;
-	}
-
-	public function getTotalStoryPoints(): int
-	{
-		$subTasksPoints = $this->subTasks()->sum('story_points') ?? 0;
-		return ($this->story_points ?? 0) + $subTasksPoints;
-	}
+    public function getTotalStoryPoints(): int
+    {
+        $subTasksPoints = $this->subTasks()->sum("story_points") ?? 0;
+        return ($this->story_points ?? 0) + $subTasksPoints;
+    }
 }

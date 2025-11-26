@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Server Side Rendering
@@ -15,11 +14,10 @@ return [
     |
     */
 
-    'ssr' => [
-        'enabled' => true,
-        'url' => 'http://127.0.0.1:13714',
+    "ssr" => [
+        "enabled" => true,
+        "url" => "http://127.0.0.1:13714",
         // 'bundle' => base_path('bootstrap/ssr/ssr.mjs'),
-
     ],
 
     /*
@@ -33,23 +31,11 @@ return [
     |
     */
 
-    'testing' => [
+    "testing" => [
+        "ensure_pages_exist" => true,
 
-        'ensure_pages_exist' => true,
+        "page_paths" => [resource_path("js/pages")],
 
-        'page_paths' => [
-            resource_path('js/pages'),
-        ],
-
-        'page_extensions' => [
-            'js',
-            'jsx',
-            'svelte',
-            'ts',
-            'tsx',
-            'vue',
-        ],
-
+        "page_extensions" => ["js", "jsx", "svelte", "ts", "tsx", "vue"],
     ],
-
 ];

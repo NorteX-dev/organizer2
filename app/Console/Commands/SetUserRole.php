@@ -13,31 +13,31 @@ class SetUserRole extends Command
      *
      * @var string
      */
-    protected $signature = 'user:set-role {email : User email} {role : Role (admin, product_owner, scrum_master, developer)} {--team= : Team ID (optional, will use first team if not specified)}';
+    protected $signature = "user:set-role {email : User email} {role : Role (admin, product_owner, scrum_master, developer)} {--team= : Team ID (optional, will use first team if not specified)}";
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Set user role in a team';
+    protected $description = "Set user role in a team";
 
     /**
      * Execute the console command.
      */
     public function handle()
     {
-        $email = $this->argument('email');
-        $role = $this->argument('role');
-        $teamId = $this->option('team');
+        $email = $this->argument("email");
+        $role = $this->argument("role");
+        $teamId = $this->option("team");
 
-        $validRoles = ['admin', 'product_owner', 'scrum_master', 'developer'];
+        $validRoles = ["admin", "product_owner", "scrum_master", "developer"];
         if (!in_array($role, $validRoles)) {
-            $this->error("Invalid role. Valid roles: " . implode(', ', $validRoles));
+            $this->error("Invalid role. Valid roles: " . implode(", ", $validRoles));
             return 1;
         }
 
-        $user = User::where('email', $email)->first();
+        $user = User::where("email", $email)->first();
         if (!$user) {
             $this->error("User with email {$email} not found.");
             return 1;
@@ -58,12 +58,12 @@ class SetUserRole extends Command
             }
         }
 
-        if (!$user->teams()->where('teams.id', $team->id)->exists()) {
+        if (!$user->teams()->where("teams.id", $team->id)->exists()) {
             $this->error("User is not a member of team: {$team->name}");
             return 1;
         }
 
-        $user->teams()->updateExistingPivot($team->id, ['role' => $role]);
+        $user->teams()->updateExistingPivot($team->id, ["role" => $role]);
 
         $this->info("Successfully set role '{$role}' for user {$user->name} ({$user->email}) in team '{$team->name}'.");
 

@@ -22,19 +22,19 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        View::composer('app', function ($view) {
+        View::composer("app", function ($view) {
             /** @var User|null $user */
             $user = Auth::user();
             $teams = $user ? $user->teams : collect();
-            $currentTeam = $user ? $user->currentTeam() : null;
+            $currentTeam = $user?->currentTeam();
             $projects = $currentTeam ? $currentTeam->projects : collect();
-            $currentProject = $user ? $user->currentProject() : null;
+            $currentProject = $user?->currentProject();
 
             $view->with([
-                'teams' => $teams,
-                'currentTeam' => $currentTeam,
-                'projects' => $projects,
-                'currentProject' => $currentProject,
+                "teams" => $teams,
+                "currentTeam" => $currentTeam,
+                "projects" => $projects,
+                "currentProject" => $currentProject,
             ]);
         });
     }

@@ -13,7 +13,6 @@ class SprintPolicy
      */
     public function viewAny(User $user): bool
     {
-        
         return true;
     }
 
@@ -38,7 +37,7 @@ class SprintPolicy
         if (!$team) {
             return false;
         }
-        return $user->hasAnyRole($team, ['admin', 'scrum_master']);
+        return $user->hasAnyRole($team, ["admin", "scrum_master"]);
     }
 
     /**
@@ -50,7 +49,7 @@ class SprintPolicy
         if (!$team) {
             return false;
         }
-        return $user->hasAnyRole($team, ['admin', 'scrum_master']);
+        return $user->hasAnyRole($team, ["admin", "scrum_master"]);
     }
 
     /**
@@ -62,7 +61,7 @@ class SprintPolicy
         if (!$team) {
             return false;
         }
-        return $user->hasRole($team, 'admin');
+        return $user->hasRole($team, "admin");
     }
 
     /**

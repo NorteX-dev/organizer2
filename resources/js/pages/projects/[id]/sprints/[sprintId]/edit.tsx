@@ -109,4 +109,3 @@ export default function SprintsEditPage({ project, sprint }: { project: Project;
         </AppLayout>
     );
 }
-

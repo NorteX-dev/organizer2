@@ -15,28 +15,22 @@ class TaskUpdated implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels, InteractsWithBroadcasting;
 
-    public function __construct(
-        public Sprint $sprint,
-        public Task $task
-    ) {
-    }
+    public function __construct(public Sprint $sprint, public Task $task) {}
 
     public function broadcastOn(): array
     {
-        return [
-            new PrivateChannel('sprint.' . $this->sprint->id),
-        ];
+        return [new PrivateChannel("sprint." . $this->sprint->id)];
     }
 
     public function broadcastAs(): string
     {
-        return 'task.updated';
+        return "task.updated";
     }
 
     public function broadcastWith(): array
     {
         return [
-            'task' => $this->task->load(['assignedUser', 'labels']),
+            "task" => $this->task->load(["assignedUser", "labels"]),
         ];
     }
 }

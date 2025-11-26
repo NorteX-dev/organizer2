@@ -1,7 +1,6 @@
 import { HeaderSection } from "@/components/header-section";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
     Dialog,
     DialogContent,
@@ -25,12 +24,7 @@ interface RetrospectivePageProps {
     userVotes: Record<string, { upvote: boolean; downvote: boolean }>;
 }
 
-export default function RetrospectivePage({
-    project,
-    sprint,
-    retrospective,
-    userVotes = {},
-}: RetrospectivePageProps) {
+export default function RetrospectivePage({ project, sprint, retrospective, userVotes = {} }: RetrospectivePageProps) {
     const [editDialogOpen, setEditDialogOpen] = useState(false);
     const [form, setForm] = useState({
         went_well: retrospective?.went_well || "",
@@ -56,12 +50,16 @@ export default function RetrospectivePage({
     const handleVote = (voteType: "went_well" | "went_wrong" | "to_improve", upvote: boolean) => {
         if (!retrospective) return;
 
-        router.post(`/retrospectives/${retrospective.id}/vote`, {
-            vote_type: voteType,
-            upvote: upvote,
-        }, {
-            preserveScroll: true,
-        });
+        router.post(
+            `/retrospectives/${retrospective.id}/vote`,
+            {
+                vote_type: voteType,
+                upvote: upvote,
+            },
+            {
+                preserveScroll: true,
+            },
+        );
     };
 
     const getVoteCounts = (voteType: "went_well" | "went_wrong" | "to_improve") => {
@@ -121,7 +119,7 @@ export default function RetrospectivePage({
                 </CardHeader>
                 <CardContent>
                     {content ? (
-                        <div className="whitespace-pre-wrap text-sm">{content}</div>
+                        <div className="text-sm whitespace-pre-wrap">{content}</div>
                     ) : (
                         <p className="text-sm text-muted-foreground italic">No content yet.</p>
                     )}
@@ -199,11 +197,9 @@ export default function RetrospectivePage({
 
             {editDialogOpen && (
                 <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-                    <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                    <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
                         <DialogHeader>
-                            <DialogTitle>
-                                {retrospective ? "Edit Retrospective" : "Create Retrospective"}
-                            </DialogTitle>
+                            <DialogTitle>{retrospective ? "Edit Retrospective" : "Create Retrospective"}</DialogTitle>
                             <DialogDescription>
                                 {retrospective
                                     ? "Update the retrospective points below."
@@ -259,4 +255,3 @@ export default function RetrospectivePage({
         </AppLayout>
     );
 }
-

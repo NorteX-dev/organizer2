@@ -1,11 +1,10 @@
-import { AppHeader } from "@/components/app-header";
+import { HeaderSection } from "@/components/header-section";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { HeaderSection } from "@/components/header-section";
+import AppLayout from "@/layouts/app-layout";
 import { type Team } from "@/types";
 import { Link, router } from "@inertiajs/react";
 import { Plus, Settings, Trash2, Users } from "lucide-react";
-import AppLayout from "@/layouts/app-layout";
 
 interface TeamsIndexProps {
     teams: Team[];

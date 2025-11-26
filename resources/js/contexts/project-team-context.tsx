@@ -22,7 +22,7 @@ function getProjectTeamData(): ProjectTeamContextValue {
     }
 
     try {
-        const content = metaTag.getAttribute('content');
+        const content = metaTag.getAttribute("content");
         if (!content) {
             return {
                 teams: [],
@@ -40,7 +40,7 @@ function getProjectTeamData(): ProjectTeamContextValue {
             currentProject: data.currentProject || null,
         };
     } catch (error) {
-        console.error('Failed to parse project-team-data:', error);
+        console.error("Failed to parse project-team-data:", error);
         return {
             teams: [],
             currentTeam: null,
@@ -53,11 +53,7 @@ function getProjectTeamData(): ProjectTeamContextValue {
 export function ProjectTeamProvider({ children }: { children: ReactNode }) {
     const data = useMemo(() => getProjectTeamData(), []);
 
-    return (
-        <ProjectTeamContext.Provider value={data}>
-            {children}
-        </ProjectTeamContext.Provider>
-    );
+    return <ProjectTeamContext.Provider value={data}>{children}</ProjectTeamContext.Provider>;
 }
 
 export function useProjectTeam() {
@@ -67,4 +63,3 @@ export function useProjectTeam() {
     }
     return context;
 }
-

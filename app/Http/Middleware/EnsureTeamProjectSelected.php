@@ -17,11 +17,10 @@ class EnsureTeamProjectSelected
      */
     public function handle(Request $request, Closure $next)
     {
-        /** @var User|null $user */
         $user = $request->user();
 
         if (!$user) {
-            return redirect()->route('login');
+            return redirect()->route("login");
         }
 
         $currentTeam = $user->currentTeam();
@@ -29,16 +28,20 @@ class EnsureTeamProjectSelected
 
         $path = $request->path();
 
-        if ($path === 'sprints' || str_starts_with($path, 'sprints/') || preg_match('/^projects\/\d+\/sprints/', $path)) {
+        if (
+            $path === "sprints" ||
+            str_starts_with($path, "sprints/") ||
+            preg_match("/^projects\/\d+\/sprints/", $path)
+        ) {
             if (!$currentTeam) {
-                return Inertia::render('error', [
-                    'message' => 'Please select a team first to access sprints.',
+                return Inertia::render("error", [
+                    "message" => "Please select a team first to access sprints.",
                 ]);
             }
 
             if (!$currentProject) {
-                return Inertia::render('error', [
-                    'message' => 'Please select a project first to view sprints.',
+                return Inertia::render("error", [
+                    "message" => "Please select a project first to view sprints.",
                 ]);
             }
         }
@@ -46,4 +49,3 @@ class EnsureTeamProjectSelected
         return $next($request);
     }
 }
-

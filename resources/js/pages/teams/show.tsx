@@ -69,12 +69,16 @@ export default function TeamsShow({ team, isAdmin = false }: TeamsShowProps) {
 
     const handleUpdateRole = () => {
         if (!selectedUser) return;
-        router.put(`/teams/${team.id}/members/${selectedUser.id}/role`, { role: selectedRole }, {
-            onSuccess: () => {
-                setRoleDialogOpen(false);
-                setSelectedUser(null);
+        router.put(
+            `/teams/${team.id}/members/${selectedUser.id}/role`,
+            { role: selectedRole },
+            {
+                onSuccess: () => {
+                    setRoleDialogOpen(false);
+                    setSelectedUser(null);
+                },
             },
-        });
+        );
     };
 
     const getUserRole = (user: User): string => {

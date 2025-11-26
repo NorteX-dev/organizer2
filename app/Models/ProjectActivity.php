@@ -9,24 +9,24 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class ProjectActivity extends Model
 {
-	protected $fillable = ["project_id", "user_id", "action", "subject_type", "subject_id", "metadata"];
+    protected $fillable = ["project_id", "user_id", "action", "subject_type", "subject_id", "metadata"];
 
-	protected $casts = [
-		"metadata" => "array",
-	];
+    protected $casts = [
+        "metadata" => "array",
+    ];
 
-	public function project(): BelongsTo
-	{
-		return $this->belongsTo(Project::class);
-	}
+    public function project(): BelongsTo
+    {
+        return $this->belongsTo(Project::class);
+    }
 
-	public function user(): BelongsTo
-	{
-		return $this->belongsTo(User::class);
-	}
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 
-	public function subject(): MorphTo
-	{
-		return $this->morphTo();
-	}
+    public function subject(): MorphTo
+    {
+        return $this->morphTo();
+    }
 }

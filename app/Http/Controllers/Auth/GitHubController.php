@@ -9,40 +9,40 @@ use Laravel\Socialite\Facades\Socialite;
 
 class GitHubController extends Controller
 {
-	/**
-	 * Redirect to GitHub for authentication.
-	 */
-	public function redirect()
-	{
-		return Socialite::driver("github")->redirect();
-	}
+    /**
+     * Redirect to GitHub for authentication.
+     */
+    public function redirect()
+    {
+        return Socialite::driver("github")->redirect();
+    }
 
-	/**
-	 * Handle GitHub callback.
-	 */
-	public function callback()
-	{
-		try {
-			$githubUser = Socialite::driver("github")->user();
+    /**
+     * Handle GitHub callback.
+     */
+    public function callback()
+    {
+        try {
+            $githubUser = Socialite::driver("github")->user();
 
-			$user = User::updateOrCreate(
-				["github_id" => $githubUser->id],
-				[
-					"name" => $githubUser->name ?? $githubUser->nickname,
-					"email" => $githubUser->email,
-					"github_token" => $githubUser->token,
-					"github_refresh_token" => $githubUser->refreshToken,
-					"email_verified_at" => now(),
-				],
-			);
+            $user = User::updateOrCreate(
+                ["github_id" => $githubUser->id],
+                [
+                    "name" => $githubUser->name ?? $githubUser->nickname,
+                    "email" => $githubUser->email,
+                    "github_token" => $githubUser->token,
+                    "github_refresh_token" => $githubUser->refreshToken,
+                    "email_verified_at" => now(),
+                ],
+            );
 
-			Auth::login($user, true);
+            Auth::login($user, true);
 
-			return redirect()->intended("/projects");
-		} catch (\Exception $e) {
-			error_log($e);
+            return redirect()->intended("/projects");
+        } catch (\Exception $e) {
+            error_log($e);
 
-			return redirect("/login")->withErrors(["error" => "Unable to authenticate with GitHub."]);
-		}
-	}
+            return redirect("/login")->withErrors(["error" => "Unable to authenticate with GitHub."]);
+        }
+    }
 }

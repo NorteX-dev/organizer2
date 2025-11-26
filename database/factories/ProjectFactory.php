@@ -13,13 +13,12 @@ class ProjectFactory extends Factory
     public function definition(): array
     {
         return [
-            'team_id' => Team::factory(),
-            'name' => fake()->words(3, true),
-            'description' => fake()->paragraph(),
-            'github_repo' => fake()->optional()->userName() . '/' . fake()->word(),
-            'default_sprint_length' => 14,
-            'status' => 'active',
+            "team_id" => Team::factory(),
+            "name" => fake()->words(3, true),
+            "description" => fake()->paragraph(),
+            "github_repo" => fake()->optional()->userName() . "/" . fake()->word(),
+            "default_sprint_length" => 14,
+            "status" => "active",
         ];
     }
 }
-

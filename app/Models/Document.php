@@ -8,19 +8,19 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Document extends Model
 {
-	protected $fillable = ["project_id", "created_by", "title", "content", "position"];
+    protected $fillable = ["project_id", "created_by", "title", "content", "position"];
 
-	protected $casts = [
-		"position" => "integer",
-	];
+    protected $casts = [
+        "position" => "integer",
+    ];
 
-	public function project(): BelongsTo
-	{
-		return $this->belongsTo(Project::class);
-	}
+    public function project(): BelongsTo
+    {
+        return $this->belongsTo(Project::class);
+    }
 
-	public function creator(): BelongsTo
-	{
-		return $this->belongsTo(User::class, "created_by");
-	}
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, "created_by");
+    }
 }

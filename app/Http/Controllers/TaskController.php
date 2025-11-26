@@ -17,290 +17,293 @@ use Illuminate\Support\Facades\DB;
 
 class TaskController extends Controller
 {
-	use AuthorizesRequests, LogsActivity;
+    use AuthorizesRequests, LogsActivity;
 
-	public function index(Project $project, Sprint $sprint)
-	{
-		$this->authorize('view', $sprint);
+    public function index(Project $project, Sprint $sprint)
+    {
+        $this->authorize("view", $sprint);
 
-		$tasks = $sprint->tasks()
-			->whereNull('parent_task_id')
-			->with(['assignedUser', 'labels', 'subTasks.assignedUser', 'subTasks.labels'])
-			->orderBy('status')
-			->orderBy('position')
-			->get();
+        $tasks = $sprint
+            ->tasks()
+            ->whereNull("parent_task_id")
+            ->with(["assignedUser", "labels", "subTasks.assignedUser", "subTasks.labels"])
+            ->orderBy("status")
+            ->orderBy("position")
+            ->get();
 
-		return redirect()->route('projects.sprints.show', [$project->id, $sprint->id]);
-	}
+        return redirect()->route("projects.sprints.show", [$project->id, $sprint->id]);
+    }
 
-	public function store(Request $request, Project $project, Sprint $sprint)
-	{
-		$this->authorize('update', $sprint);
+    public function store(Request $request, Project $project, Sprint $sprint)
+    {
+        $this->authorize("update", $sprint);
 
-		$validated = $request->validate([
-			'title' => 'required|string|max:255',
-			'description' => 'nullable|string',
-			'type' => 'nullable|in:story,task,bug,epic',
-			'status' => 'required|in:Planned,Active,Completed',
-			'priority' => 'nullable|in:low,medium,high,critical',
-			'story_points' => 'nullable|integer|min:0',
-			'assigned_to' => 'nullable|exists:users,id',
-			'github_issue_number' => 'nullable|string',
-			'github_pr_number' => 'nullable|string',
-		]);
+        $validated = $request->validate([
+            "title" => "required|string|max:255",
+            "description" => "nullable|string",
+            "type" => "nullable|in:story,task,bug,epic",
+            "status" => "required|in:Planned,Active,Completed",
+            "priority" => "nullable|in:low,medium,high,critical",
+            "story_points" => "nullable|integer|min:0",
+            "assigned_to" => "nullable|exists:users,id",
+            "github_issue_number" => "nullable|string",
+            "github_pr_number" => "nullable|string",
+        ]);
 
-		$maxPosition = $sprint->tasks()
-			->where('status', $validated['status'])
-			->max('position') ?? -1;
+        $maxPosition = $sprint->tasks()->where("status", $validated["status"])->max("position") ?? -1;
 
-		$task = Task::create([
-			'project_id' => $project->id,
-			'sprint_id' => $sprint->id,
-			'title' => $validated['title'],
-			'description' => $validated['description'] ?? null,
-			'type' => $validated['type'] ?? 'task',
-			'status' => $validated['status'],
-			'priority' => $validated['priority'] ?? 'medium',
-			'story_points' => $validated['story_points'] ?? null,
-			'assigned_to' => $validated['assigned_to'] ?? null,
-			'position' => $maxPosition + 1,
-			'github_issue_number' => $validated['github_issue_number'] ?? null,
-			'github_pr_number' => $validated['github_pr_number'] ?? null,
-		]);
+        $task = Task::create([
+            "project_id" => $project->id,
+            "sprint_id" => $sprint->id,
+            "title" => $validated["title"],
+            "description" => $validated["description"] ?? null,
+            "type" => $validated["type"] ?? "task",
+            "status" => $validated["status"],
+            "priority" => $validated["priority"] ?? "medium",
+            "story_points" => $validated["story_points"] ?? null,
+            "assigned_to" => $validated["assigned_to"] ?? null,
+            "position" => $maxPosition + 1,
+            "github_issue_number" => $validated["github_issue_number"] ?? null,
+            "github_pr_number" => $validated["github_pr_number"] ?? null,
+        ]);
 
-		$task->load(['assignedUser', 'labels']);
+        $task->load(["assignedUser", "labels"]);
 
-		event(new TaskCreated($sprint, $task));
+        event(new TaskCreated($sprint, $task));
 
-		$this->logActivity($project, 'task.created', $task, [
-			'title' => $task->title,
-			'sprint_id' => $sprint->id,
-			'sprint_name' => $sprint->name,
-		]);
+        $this->logActivity($project, "task.created", $task, [
+            "title" => $task->title,
+            "sprint_id" => $sprint->id,
+            "sprint_name" => $sprint->name,
+        ]);
 
-		return redirect()->route('projects.sprints.show', [$project->id, $sprint->id]);
-	}
+        return redirect()->route("projects.sprints.show", [$project->id, $sprint->id]);
+    }
 
-	public function update(Request $request, Project $project, Sprint $sprint, Task $task)
-	{
-		$this->authorize('update', $sprint);
+    public function update(Request $request, Project $project, Sprint $sprint, Task $task)
+    {
+        $this->authorize("update", $sprint);
 
-		if ($task->sprint_id !== $sprint->id || $task->project_id !== $project->id) {
-			return redirect()->route('projects.sprints.show', [$project->id, $sprint->id])
-				->withErrors(['error' => 'Task does not belong to this sprint']);
-		}
+        if ($task->sprint_id !== $sprint->id || $task->project_id !== $project->id) {
+            return redirect()
+                ->route("projects.sprints.show", [$project->id, $sprint->id])
+                ->withErrors(["error" => "Task does not belong to this sprint"]);
+        }
 
-		$validated = $request->validate([
-			'title' => 'sometimes|string|max:255',
-			'description' => 'nullable|string',
-			'type' => 'sometimes|in:story,task,bug,epic',
-			'status' => 'sometimes|in:Planned,Active,Completed',
-			'priority' => 'sometimes|in:low,medium,high,critical',
-			'story_points' => 'nullable|integer|min:0',
-			'assigned_to' => 'nullable|exists:users,id',
-			'position' => 'sometimes|integer|min:0',
-			'github_issue_number' => 'nullable|string',
-			'github_pr_number' => 'nullable|string',
-		]);
+        $validated = $request->validate([
+            "title" => "sometimes|string|max:255",
+            "description" => "nullable|string",
+            "type" => "sometimes|in:story,task,bug,epic",
+            "status" => "sometimes|in:Planned,Active,Completed",
+            "priority" => "sometimes|in:low,medium,high,critical",
+            "story_points" => "nullable|integer|min:0",
+            "assigned_to" => "nullable|exists:users,id",
+            "position" => "sometimes|integer|min:0",
+            "github_issue_number" => "nullable|string",
+            "github_pr_number" => "nullable|string",
+        ]);
 
-		$oldStatus = $task->status;
-		$oldAssignedTo = $task->assigned_to;
-		$newStatus = $validated['status'] ?? $oldStatus;
-		$newAssignedTo = $validated['assigned_to'] ?? $oldAssignedTo;
+        $oldStatus = $task->status;
+        $oldAssignedTo = $task->assigned_to;
+        $newStatus = $validated["status"] ?? $oldStatus;
+        $newAssignedTo = $validated["assigned_to"] ?? $oldAssignedTo;
 
-		if (isset($validated['status']) && $oldStatus !== $newStatus) {
-			DB::transaction(function () use ($task, $validated, $oldStatus, $newStatus, $sprint) {
-				$task->update($validated);
+        if (isset($validated["status"]) && $oldStatus !== $newStatus) {
+            DB::transaction(function () use ($task, $validated, $oldStatus, $newStatus, $sprint) {
+                $task->update($validated);
 
-				$tasksInOldStatus = $sprint->tasks()
-					->where('status', $oldStatus)
-					->where('id', '!=', $task->id)
-					->orderBy('position')
-					->get();
+                $tasksInOldStatus = $sprint
+                    ->tasks()
+                    ->where("status", $oldStatus)
+                    ->where("id", "!=", $task->id)
+                    ->orderBy("position")
+                    ->get();
 
-				foreach ($tasksInOldStatus as $index => $t) {
-					$t->update(['position' => $index]);
-				}
+                foreach ($tasksInOldStatus as $index => $t) {
+                    $t->update(["position" => $index]);
+                }
 
-				if (!isset($validated['position'])) {
-					$maxPosition = $sprint->tasks()
-						->where('status', $newStatus)
-						->where('id', '!=', $task->id)
-						->max('position') ?? -1;
+                if (!isset($validated["position"])) {
+                    $maxPosition =
+                        $sprint->tasks()->where("status", $newStatus)->where("id", "!=", $task->id)->max("position") ??
+                        -1;
 
-					$task->update(['position' => $maxPosition + 1]);
-				}
-			});
-		} else {
-			$task->update($validated);
-		}
+                    $task->update(["position" => $maxPosition + 1]);
+                }
+            });
+        } else {
+            $task->update($validated);
+        }
 
-		$task->load(['assignedUser', 'labels']);
+        $task->load(["assignedUser", "labels"]);
 
-		$metadata = [];
-		if (isset($validated['status']) && $oldStatus !== $newStatus) {
-			$metadata['status_changed'] = ['from' => $oldStatus, 'to' => $newStatus];
-		}
-		if (isset($validated['assigned_to']) && $oldAssignedTo !== $newAssignedTo) {
-			$metadata['assigned_changed'] = ['from' => $oldAssignedTo, 'to' => $newAssignedTo];
-		}
-		if (!empty($validated)) {
-			$metadata['updated_fields'] = array_keys($validated);
-		}
+        $metadata = [];
+        if (isset($validated["status"]) && $oldStatus !== $newStatus) {
+            $metadata["status_changed"] = ["from" => $oldStatus, "to" => $newStatus];
+        }
+        if (isset($validated["assigned_to"]) && $oldAssignedTo !== $newAssignedTo) {
+            $metadata["assigned_changed"] = ["from" => $oldAssignedTo, "to" => $newAssignedTo];
+        }
+        if (!empty($validated)) {
+            $metadata["updated_fields"] = array_keys($validated);
+        }
 
-		event(new TaskUpdated($sprint, $task));
+        event(new TaskUpdated($sprint, $task));
 
-		$this->logActivity($project, 'task.updated', $task, array_merge([
-			'title' => $task->title,
-			'sprint_id' => $sprint->id,
-			'sprint_name' => $sprint->name,
-		], $metadata));
+        $this->logActivity(
+            $project,
+            "task.updated",
+            $task,
+            array_merge(
+                [
+                    "title" => $task->title,
+                    "sprint_id" => $sprint->id,
+                    "sprint_name" => $sprint->name,
+                ],
+                $metadata,
+            ),
+        );
 
-		return redirect()->route('projects.sprints.show', [$project->id, $sprint->id]);
-	}
+        return redirect()->route("projects.sprints.show", [$project->id, $sprint->id]);
+    }
 
-	public function reorder(Request $request, Project $project, Sprint $sprint)
-	{
-		$this->authorize('update', $sprint);
+    public function reorder(Request $request, Project $project, Sprint $sprint)
+    {
+        $this->authorize("update", $sprint);
 
-		$validated = $request->validate([
-			'tasks' => 'required|array',
-			'tasks.*.id' => 'required|exists:tasks,id',
-			'tasks.*.status' => 'required|in:Planned,Active,Completed',
-			'tasks.*.position' => 'required|integer|min:0',
-		]);
+        $validated = $request->validate([
+            "tasks" => "required|array",
+            "tasks.*.id" => "required|exists:tasks,id",
+            "tasks.*.status" => "required|in:Planned,Active,Completed",
+            "tasks.*.position" => "required|integer|min:0",
+        ]);
 
-		$reorderedTasks = [];
-		
-		DB::transaction(function () use ($sprint, $validated, &$reorderedTasks) {
-			foreach ($validated['tasks'] as $taskData) {
-				$task = Task::find($taskData['id']);
+        $reorderedTasks = [];
 
-				if ($task && $task->sprint_id === $sprint->id) {
-					$task->update([
-						'status' => $taskData['status'],
-						'position' => $taskData['position'],
-					]);
-				}
-			}
+        DB::transaction(function () use ($sprint, $validated, &$reorderedTasks) {
+            foreach ($validated["tasks"] as $taskData) {
+                $task = Task::find($taskData["id"]);
 
-			$statuses = ['Planned', 'Active', 'Completed'];
-			foreach ($statuses as $status) {
-				$tasksInStatus = $sprint->tasks()
-					->where('status', $status)
-					->orderBy('position')
-					->get();
+                if ($task && $task->sprint_id === $sprint->id) {
+                    $task->update([
+                        "status" => $taskData["status"],
+                        "position" => $taskData["position"],
+                    ]);
+                }
+            }
 
-				foreach ($tasksInStatus as $index => $task) {
-					$task->update(['position' => $index]);
-					$reorderedTasks[] = [
-						'id' => $task->id,
-						'status' => $task->status,
-						'position' => $index,
-					];
-				}
-			}
-		});
+            $statuses = ["Planned", "Active", "Completed"];
+            foreach ($statuses as $status) {
+                $tasksInStatus = $sprint->tasks()->where("status", $status)->orderBy("position")->get();
 
-		event(new TaskReordered($sprint, $reorderedTasks));
+                foreach ($tasksInStatus as $index => $task) {
+                    $task->update(["position" => $index]);
+                    $reorderedTasks[] = [
+                        "id" => $task->id,
+                        "status" => $task->status,
+                        "position" => $index,
+                    ];
+                }
+            }
+        });
 
-		return redirect()->route('projects.sprints.show', [$project->id, $sprint->id]);
-	}
+        event(new TaskReordered($sprint, $reorderedTasks));
 
-	public function addFromBacklog(Request $request, Project $project, Sprint $sprint)
-	{
-		$this->authorize('update', $sprint);
+        return redirect()->route("projects.sprints.show", [$project->id, $sprint->id]);
+    }
 
-		$validated = $request->validate([
-			'task_ids' => 'required|array',
-			'task_ids.*' => 'required|exists:tasks,id',
-			'include_subtasks' => 'nullable|boolean',
-		]);
+    public function addFromBacklog(Request $request, Project $project, Sprint $sprint)
+    {
+        $this->authorize("update", $sprint);
 
-		$includeSubtasks = $validated['include_subtasks'] ?? false;
+        $validated = $request->validate([
+            "task_ids" => "required|array",
+            "task_ids.*" => "required|exists:tasks,id",
+            "include_subtasks" => "nullable|boolean",
+        ]);
 
-		$tasks = Task::whereIn('id', $validated['task_ids'])
-			->where('project_id', $project->id)
-			->whereNull('sprint_id')
-			->whereNull('parent_task_id')
-			->with('subTasks')
-			->get();
+        $includeSubtasks = $validated["include_subtasks"] ?? false;
 
-		if ($tasks->count() !== count($validated['task_ids'])) {
-			return back()->withErrors(['error' => 'Some tasks are not available in the backlog or belong to another project']);
-		}
+        $tasks = Task::whereIn("id", $validated["task_ids"])
+            ->where("project_id", $project->id)
+            ->whereNull("sprint_id")
+            ->whereNull("parent_task_id")
+            ->with("subTasks")
+            ->get();
 
-		$addedTasks = [];
-		DB::transaction(function () use ($tasks, $sprint, $includeSubtasks, &$addedTasks) {
-			$maxPosition = $sprint->tasks()
-				->where('status', 'Planned')
-				->max('position') ?? -1;
+        if ($tasks->count() !== count($validated["task_ids"])) {
+            return back()->withErrors([
+                "error" => "Some tasks are not available in the backlog or belong to another project",
+            ]);
+        }
 
-			$positionOffset = 0;
+        $addedTasks = [];
+        DB::transaction(function () use ($tasks, $sprint, $includeSubtasks, &$addedTasks) {
+            $maxPosition = $sprint->tasks()->where("status", "Planned")->max("position") ?? -1;
 
-			foreach ($tasks as $task) {
-				$task->update([
-					'sprint_id' => $sprint->id,
-					'status' => 'Planned',
-					'position' => $maxPosition + $positionOffset + 1,
-				]);
-				$task->load(['assignedUser', 'labels']);
-				$addedTasks[] = $task;
-				$positionOffset++;
+            $positionOffset = 0;
 
-				if ($includeSubtasks && $task->subTasks) {
-					foreach ($task->subTasks as $subtask) {
-						$subtask->update([
-							'sprint_id' => $sprint->id,
-							'status' => 'Planned',
-							'position' => $maxPosition + $positionOffset + 1,
-						]);
-						$positionOffset++;
-					}
-				}
-			}
-		});
+            foreach ($tasks as $task) {
+                $task->update([
+                    "sprint_id" => $sprint->id,
+                    "status" => "Planned",
+                    "position" => $maxPosition + $positionOffset + 1,
+                ]);
+                $task->load(["assignedUser", "labels"]);
+                $addedTasks[] = $task;
+                $positionOffset++;
 
-		foreach ($addedTasks as $task) {
-			event(new TaskCreated($sprint, $task));
-			$this->logActivity($project, 'task.added_to_sprint', $task, [
-				'title' => $task->title,
-				'sprint_id' => $sprint->id,
-				'sprint_name' => $sprint->name,
-			]);
-		}
+                if ($includeSubtasks && $task->subTasks) {
+                    foreach ($task->subTasks as $subtask) {
+                        $subtask->update([
+                            "sprint_id" => $sprint->id,
+                            "status" => "Planned",
+                            "position" => $maxPosition + $positionOffset + 1,
+                        ]);
+                        $positionOffset++;
+                    }
+                }
+            }
+        });
 
-		return redirect()->route('projects.sprints.show', [$project->id, $sprint->id]);
-	}
+        foreach ($addedTasks as $task) {
+            event(new TaskCreated($sprint, $task));
+            $this->logActivity($project, "task.added_to_sprint", $task, [
+                "title" => $task->title,
+                "sprint_id" => $sprint->id,
+                "sprint_name" => $sprint->name,
+            ]);
+        }
 
-	public function moveToBacklog(Project $project, Sprint $sprint, Task $task)
-	{
-		$this->authorize('update', $sprint);
+        return redirect()->route("projects.sprints.show", [$project->id, $sprint->id]);
+    }
 
-		if ($task->sprint_id !== $sprint->id || $task->project_id !== $project->id) {
-			return back()->withErrors(['error' => 'Task does not belong to this sprint']);
-		}
+    public function moveToBacklog(Project $project, Sprint $sprint, Task $task)
+    {
+        $this->authorize("update", $sprint);
 
-		$maxBacklogPosition = $project->tasks()
-			->whereNull('sprint_id')
-			->max('position') ?? -1;
+        if ($task->sprint_id !== $sprint->id || $task->project_id !== $project->id) {
+            return back()->withErrors(["error" => "Task does not belong to this sprint"]);
+        }
 
-		$taskId = $task->id;
-		$taskTitle = $task->title;
-		$task->update([
-			'sprint_id' => null,
-			'status' => 'Backlog',
-			'position' => $maxBacklogPosition + 1,
-		]);
+        $maxBacklogPosition = $project->tasks()->whereNull("sprint_id")->max("position") ?? -1;
 
-		event(new TaskDeleted($sprint, $taskId));
+        $taskId = $task->id;
+        $taskTitle = $task->title;
+        $task->update([
+            "sprint_id" => null,
+            "status" => "Backlog",
+            "position" => $maxBacklogPosition + 1,
+        ]);
 
-		$this->logActivity($project, 'task.moved_to_backlog', $task, [
-			'title' => $taskTitle,
-			'sprint_id' => $sprint->id,
-			'sprint_name' => $sprint->name,
-		]);
+        event(new TaskDeleted($sprint, $taskId));
 
-		return redirect()->route('projects.sprints.show', [$project->id, $sprint->id]);
-	}
+        $this->logActivity($project, "task.moved_to_backlog", $task, [
+            "title" => $taskTitle,
+            "sprint_id" => $sprint->id,
+            "sprint_name" => $sprint->name,
+        ]);
+
+        return redirect()->route("projects.sprints.show", [$project->id, $sprint->id]);
+    }
 }

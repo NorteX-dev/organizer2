@@ -58,14 +58,16 @@ export default function BacklogPage({ project, tasks = [], users = [] }: Backlog
         story_points: "",
         assigned_to: "unassigned",
     });
-    const [subtasksForm, setSubtasksForm] = useState<Array<{
-        title: string;
-        description: string;
-        type: "story" | "task" | "bug";
-        priority: "low" | "medium" | "high" | "critical";
-        story_points: string;
-        assigned_to: string;
-    }>>([{ title: "", description: "", type: "task", priority: "medium", story_points: "", assigned_to: "unassigned" }]);
+    const [subtasksForm, setSubtasksForm] = useState<
+        Array<{
+            title: string;
+            description: string;
+            type: "story" | "task" | "bug";
+            priority: "low" | "medium" | "high" | "critical";
+            story_points: string;
+            assigned_to: string;
+        }>
+    >([{ title: "", description: "", type: "task", priority: "medium", story_points: "", assigned_to: "unassigned" }]);
 
     const filteredTasks = useMemo(() => {
         const filterTask = (task: Task): boolean => {
@@ -171,7 +173,16 @@ export default function BacklogPage({ project, tasks = [], users = [] }: Backlog
 
     function openCreateSubtasks(task: Task) {
         setParentTaskForSubtasks(task);
-        setSubtasksForm([{ title: "", description: "", type: "task", priority: "medium", story_points: "", assigned_to: "unassigned" }]);
+        setSubtasksForm([
+            {
+                title: "",
+                description: "",
+                type: "task",
+                priority: "medium",
+                story_points: "",
+                assigned_to: "unassigned",
+            },
+        ]);
         setSubtasksModalOpen(true);
     }
 
@@ -190,17 +201,31 @@ export default function BacklogPage({ project, tasks = [], users = [] }: Backlog
                 assigned_to: st.assigned_to && st.assigned_to !== "unassigned" ? parseInt(st.assigned_to) : null,
             }));
 
-        router.post(`/projects/${project.id}/backlog/${parentTaskForSubtasks.id}/subtasks`, { subtasks }, {
-            preserveScroll: true,
-            onSuccess: () => {
-                setSubtasksModalOpen(false);
-                setParentTaskForSubtasks(null);
+        router.post(
+            `/projects/${project.id}/backlog/${parentTaskForSubtasks.id}/subtasks`,
+            { subtasks },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setSubtasksModalOpen(false);
+                    setParentTaskForSubtasks(null);
+                },
             },
-        });
+        );
     }
 
     function addSubtaskField() {
-        setSubtasksForm([...subtasksForm, { title: "", description: "", type: "task", priority: "medium", story_points: "", assigned_to: "unassigned" }]);
+        setSubtasksForm([
+            ...subtasksForm,
+            {
+                title: "",
+                description: "",
+                type: "task",
+                priority: "medium",
+                story_points: "",
+                assigned_to: "unassigned",
+            },
+        ]);
     }
 
     function removeSubtaskField(index: number) {
@@ -234,12 +259,14 @@ export default function BacklogPage({ project, tasks = [], users = [] }: Backlog
                                             onClick={() => toggleExpanded(task.id)}
                                             title={isExpanded ? "Collapse" : "Expand"}
                                         >
-                                            {isExpanded ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
+                                            {isExpanded ? (
+                                                <ChevronDown className="size-4" />
+                                            ) : (
+                                                <ChevronRight className="size-4" />
+                                            )}
                                         </Button>
                                     )}
-                                    {!hasSubtasks && level === 0 && (
-                                        <div className="h-7 w-7" />
-                                    )}
+                                    {!hasSubtasks && level === 0 && <div className="h-7 w-7" />}
                                     {level === 0 && (
                                         <>
                                             <Button
@@ -268,28 +295,22 @@ export default function BacklogPage({ project, tasks = [], users = [] }: Backlog
                                 <div className="flex-1">
                                     <CardTitle className="text-lg font-medium">{task.title}</CardTitle>
                                     {task.description && (
-                                        <CardDescription className="mt-1">
-                                            {task.description}
-                                        </CardDescription>
+                                        <CardDescription className="mt-1">{task.description}</CardDescription>
                                     )}
                                 </div>
                             </div>
                             <div className={`ml-12 flex flex-wrap items-center gap-2`}>
-                                <Badge
-                                    variant="outline"
-                                    className={`text-xs ${TYPE_COLORS[task.type]}`}
-                                >
+                                <Badge variant="outline" className={`text-xs ${TYPE_COLORS[task.type]}`}>
                                     {task.type}
                                 </Badge>
-                                <Badge
-                                    variant="outline"
-                                    className={`text-xs ${PRIORITY_COLORS[task.priority]}`}
-                                >
+                                <Badge variant="outline" className={`text-xs ${PRIORITY_COLORS[task.priority]}`}>
                                     {task.priority}
                                 </Badge>
                                 {totalPoints > 0 && (
                                     <Badge variant="outline" className="text-xs">
-                                        {totalPoints} pts{hasSubtasks && ` (${task.story_points || 0} + ${totalPoints - (task.story_points || 0)})`}
+                                        {totalPoints} pts
+                                        {hasSubtasks &&
+                                            ` (${task.story_points || 0} + ${totalPoints - (task.story_points || 0)})`}
                                     </Badge>
                                 )}
                                 <Badge variant="outline" className="text-xs">
@@ -332,11 +353,7 @@ export default function BacklogPage({ project, tasks = [], users = [] }: Backlog
                                 <Pencil className="mr-2 size-4" />
                                 Edit
                             </Button>
-                            <Button
-                                size="sm"
-                                variant="destructive"
-                                onClick={() => handleDelete(task.id)}
-                            >
+                            <Button size="sm" variant="destructive" onClick={() => handleDelete(task.id)}>
                                 <Trash2 className="mr-2 size-4" />
                                 Delete
                             </Button>
@@ -447,9 +464,7 @@ export default function BacklogPage({ project, tasks = [], users = [] }: Backlog
                         </CardContent>
                     </Card>
                 ) : (
-                    filteredTasks
-                        .sort((a, b) => a.position - b.position)
-                        .map((task) => renderTask(task, 0))
+                    filteredTasks.sort((a, b) => a.position - b.position).map((task) => renderTask(task, 0))
                 )}
             </div>
 
@@ -577,11 +592,12 @@ export default function BacklogPage({ project, tasks = [], users = [] }: Backlog
 
             {subtasksModalOpen && parentTaskForSubtasks && (
                 <Dialog open={subtasksModalOpen} onOpenChange={setSubtasksModalOpen}>
-                    <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                    <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">
                         <DialogHeader>
                             <DialogTitle>Break Down: {parentTaskForSubtasks.title}</DialogTitle>
                             <DialogDescription>
-                                Create subtasks for this {parentTaskForSubtasks.type}. You can add multiple subtasks at once.
+                                Create subtasks for this {parentTaskForSubtasks.type}. You can add multiple subtasks at
+                                once.
                             </DialogDescription>
                         </DialogHeader>
                         <form onSubmit={handleCreateSubtasks}>
@@ -623,7 +639,9 @@ export default function BacklogPage({ project, tasks = [], users = [] }: Backlog
                                                     placeholder="Subtask description"
                                                     rows={2}
                                                     value={subtask.description}
-                                                    onChange={(e) => updateSubtaskField(index, "description", e.target.value)}
+                                                    onChange={(e) =>
+                                                        updateSubtaskField(index, "description", e.target.value)
+                                                    }
                                                 />
                                             </div>
                                             <div className="grid grid-cols-2 gap-4">
@@ -649,9 +667,9 @@ export default function BacklogPage({ project, tasks = [], users = [] }: Backlog
                                                     <Label htmlFor={`subtask-priority-${index}`}>Priority</Label>
                                                     <Select
                                                         value={subtask.priority}
-                                                        onValueChange={(value: "low" | "medium" | "high" | "critical") =>
-                                                            updateSubtaskField(index, "priority", value)
-                                                        }
+                                                        onValueChange={(
+                                                            value: "low" | "medium" | "high" | "critical",
+                                                        ) => updateSubtaskField(index, "priority", value)}
                                                     >
                                                         <SelectTrigger className="mt-1">
                                                             <SelectValue />
@@ -667,7 +685,9 @@ export default function BacklogPage({ project, tasks = [], users = [] }: Backlog
                                             </div>
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div>
-                                                    <Label htmlFor={`subtask-story-points-${index}`}>Story Points</Label>
+                                                    <Label htmlFor={`subtask-story-points-${index}`}>
+                                                        Story Points
+                                                    </Label>
                                                     <Input
                                                         id={`subtask-story-points-${index}`}
                                                         type="number"
@@ -675,14 +695,18 @@ export default function BacklogPage({ project, tasks = [], users = [] }: Backlog
                                                         className="mt-1"
                                                         placeholder="0"
                                                         value={subtask.story_points}
-                                                        onChange={(e) => updateSubtaskField(index, "story_points", e.target.value)}
+                                                        onChange={(e) =>
+                                                            updateSubtaskField(index, "story_points", e.target.value)
+                                                        }
                                                     />
                                                 </div>
                                                 <div>
                                                     <Label htmlFor={`subtask-assigned-${index}`}>Assign To</Label>
                                                     <Select
                                                         value={subtask.assigned_to}
-                                                        onValueChange={(value) => updateSubtaskField(index, "assigned_to", value)}
+                                                        onValueChange={(value) =>
+                                                            updateSubtaskField(index, "assigned_to", value)
+                                                        }
                                                     >
                                                         <SelectTrigger className="mt-1">
                                                             <SelectValue placeholder="Unassigned" />
@@ -701,12 +725,7 @@ export default function BacklogPage({ project, tasks = [], users = [] }: Backlog
                                         </div>
                                     </Card>
                                 ))}
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={addSubtaskField}
-                                    className="w-full"
-                                >
+                                <Button type="button" variant="outline" onClick={addSubtaskField} className="w-full">
                                     <Plus className="mr-2 size-4" />
                                     Add Another Subtask
                                 </Button>

@@ -14,28 +14,22 @@ class TaskDeleted implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels, InteractsWithBroadcasting;
 
-    public function __construct(
-        public Sprint $sprint,
-        public int $taskId
-    ) {
-    }
+    public function __construct(public Sprint $sprint, public int $taskId) {}
 
     public function broadcastOn(): array
     {
-        return [
-            new PrivateChannel('sprint.' . $this->sprint->id),
-        ];
+        return [new PrivateChannel("sprint." . $this->sprint->id)];
     }
 
     public function broadcastAs(): string
     {
-        return 'task.deleted';
+        return "task.deleted";
     }
 
     public function broadcastWith(): array
     {
         return [
-            'task_id' => $this->taskId,
+            "task_id" => $this->taskId,
         ];
     }
 }

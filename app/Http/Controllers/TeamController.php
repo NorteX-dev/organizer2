@@ -13,18 +13,18 @@ use Inertia\Inertia;
 class TeamController extends Controller
 {
     use AuthorizesRequests;
-    
+
     /**
      * Display a listing of teams.
      */
     public function index()
     {
         $user = Auth::user();
-        $teams = $user->teams()->with('users')->get();
+        $teams = $user->teams()->with("users")->get();
 
-        return Inertia::render('teams/index', [
-            'teams' => $teams,
-            'currentTeam' => $user->currentTeam(),
+        return Inertia::render("teams/index", [
+            "teams" => $teams,
+            "currentTeam" => $user->currentTeam(),
         ]);
     }
 
@@ -33,7 +33,7 @@ class TeamController extends Controller
      */
     public function create()
     {
-        return Inertia::render('teams/create');
+        return Inertia::render("teams/create");
     }
 
     /**
@@ -42,18 +42,16 @@ class TeamController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            "name" => ["required", "string", "max:255"],
         ]);
 
         $team = Team::create([
-            'name' => $request->name,
+            "name" => $request->name,
         ]);
 
-        
-        $team->users()->attach(Auth::id(), ['role' => 'admin']);
+        $team->users()->attach(Auth::id(), ["role" => "admin"]);
 
-        return redirect()->route('teams.index')
-            ->with('success', 'Team created successfully.');
+        return redirect()->route("teams.index")->with("success", "Team created successfully.");
     }
 
     /**
@@ -61,15 +59,15 @@ class TeamController extends Controller
      */
     public function show(Team $team)
     {
-        $this->authorize('view', $team);
+        $this->authorize("view", $team);
 
-        $team->load('users');
+        $team->load("users");
         $currentUser = Auth::user();
-        $isAdmin = $currentUser->hasRole($team, 'admin');
+        $isAdmin = $currentUser->hasRole($team, "admin");
 
-        return Inertia::render('teams/show', [
-            'team' => $team,
-            'isAdmin' => $isAdmin,
+        return Inertia::render("teams/show", [
+            "team" => $team,
+            "isAdmin" => $isAdmin,
         ]);
     }
 
@@ -78,15 +76,15 @@ class TeamController extends Controller
      */
     public function edit(Team $team)
     {
-        $this->authorize('update', $team);
+        $this->authorize("update", $team);
 
-        $team->load('users');
+        $team->load("users");
         $currentUser = Auth::user();
-        $isAdmin = $currentUser->hasRole($team, 'admin');
+        $isAdmin = $currentUser->hasRole($team, "admin");
 
-        return Inertia::render('teams/[id]/edit', [
-            'team' => $team,
-            'isAdmin' => $isAdmin,
+        return Inertia::render("teams/[id]/edit", [
+            "team" => $team,
+            "isAdmin" => $isAdmin,
         ]);
     }
 
@@ -95,18 +93,17 @@ class TeamController extends Controller
      */
     public function update(Request $request, Team $team)
     {
-        $this->authorize('update', $team);
+        $this->authorize("update", $team);
 
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            "name" => ["required", "string", "max:255"],
         ]);
 
         $team->update([
-            'name' => $request->name,
+            "name" => $request->name,
         ]);
 
-        return redirect()->route('teams.index')
-            ->with('success', 'Team updated successfully.');
+        return redirect()->route("teams.index")->with("success", "Team updated successfully.");
     }
 
     /**
@@ -114,12 +111,11 @@ class TeamController extends Controller
      */
     public function destroy(Team $team)
     {
-        $this->authorize('delete', $team);
+        $this->authorize("delete", $team);
 
         $team->delete();
 
-        return redirect()->route('teams.index')
-            ->with('success', 'Team deleted successfully.');
+        return redirect()->route("teams.index")->with("success", "Team deleted successfully.");
     }
 
     /**
@@ -127,21 +123,21 @@ class TeamController extends Controller
      */
     public function addMember(Request $request, Team $team)
     {
-        $this->authorize('update', $team);
+        $this->authorize("update", $team);
 
         $request->validate([
-            'email' => ['required', 'email', 'exists:users,email'],
+            "email" => ["required", "email", "exists:users,email"],
         ]);
 
-        $user = User::where('email', $request->email)->first();
+        $user = User::where("email", $request->email)->first();
 
-        if ($team->users()->where('user_id', $user->id)->exists()) {
-            return back()->withErrors(['email' => 'User is already a member of this team.']);
+        if ($team->users()->where("user_id", $user->id)->exists()) {
+            return back()->withErrors(["email" => "User is already a member of this team."]);
         }
 
-        $team->users()->attach($user->id, ['role' => 'developer']);
+        $team->users()->attach($user->id, ["role" => "developer"]);
 
-        return back()->with('success', 'Member added successfully.');
+        return back()->with("success", "Member added successfully.");
     }
 
     /**
@@ -149,16 +145,15 @@ class TeamController extends Controller
      */
     public function removeMember(Team $team, User $user)
     {
-        $this->authorize('update', $team);
+        $this->authorize("update", $team);
 
-        
         if ($team->users()->count() <= 1) {
-            return back()->withErrors(['error' => 'Cannot remove the last member from the team.']);
+            return back()->withErrors(["error" => "Cannot remove the last member from the team."]);
         }
 
         $team->users()->detach($user->id);
 
-        return back()->with('success', 'Member removed successfully.');
+        return back()->with("success", "Member removed successfully.");
     }
 
     /**
@@ -166,12 +161,12 @@ class TeamController extends Controller
      */
     public function switch(Request $request, Team $team)
     {
-        $this->authorize('view', $team);
+        $this->authorize("view", $team);
 
-        session(['current_team_id' => $team->id]);
-        session()->forget('current_project_id');
+        session(["current_team_id" => $team->id]);
+        session()->forget("current_project_id");
 
-        return back()->with('success', 'Team switched successfully.');
+        return back()->with("success", "Team switched successfully.");
     }
 
     /**
@@ -180,21 +175,21 @@ class TeamController extends Controller
     public function updateRole(Request $request, Team $team, User $user)
     {
         $currentUser = Auth::user();
-        
-        if (!$currentUser->hasRole($team, 'admin')) {
-            abort(403, 'Only admins can change roles.');
+
+        if (!$currentUser->hasRole($team, "admin")) {
+            abort(403, "Only admins can change roles.");
         }
 
         $request->validate([
-            'role' => ['required', 'string', Rule::in(['product_owner', 'scrum_master', 'developer', 'admin'])],
+            "role" => ["required", "string", Rule::in(["product_owner", "scrum_master", "developer", "admin"])],
         ]);
 
-        if (!$team->users()->where('user_id', $user->id)->exists()) {
-            return back()->withErrors(['error' => 'User is not a member of this team.']);
+        if (!$team->users()->where("user_id", $user->id)->exists()) {
+            return back()->withErrors(["error" => "User is not a member of this team."]);
         }
 
-        $team->users()->updateExistingPivot($user->id, ['role' => $request->role]);
+        $team->users()->updateExistingPivot($user->id, ["role" => $request->role]);
 
-        return back()->with('success', 'Role updated successfully.');
+        return back()->with("success", "Role updated successfully.");
     }
 }
