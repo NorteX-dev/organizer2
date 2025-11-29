@@ -20,6 +20,15 @@ function getInSevenDaysString() {
     return date.toISOString().slice(0, 10);
 }
 
+function translateStatus(status: string): string {
+    const statusMap: { [key: string]: string } = {
+        planned: "Zaplanowany",
+        active: "Aktywny",
+        completed: "Zakończony",
+    };
+    return statusMap[status.toLowerCase()] || status;
+}
+
 export default function SprintsPage({ project, sprints = [] }: { project: Project; sprints: Sprint[] }) {
     const initialForm = {
         name: "",
@@ -76,7 +85,7 @@ export default function SprintsPage({ project, sprints = [] }: { project: Projec
             <div className="grid grid-cols-3 gap-6">
                 {Object.entries(statusGroups).map(([status, group]) => (
                     <div key={status}>
-                        <h3 className="mb-2 font-semibold capitalize">{status}</h3>
+                        <h3 className="mb-2 font-semibold">{translateStatus(status)}</h3>
                         <div className="space-y-2">
                             {group.map((sprint) => (
                                 <Card key={sprint.id} className="gap-2 rounded-lg">

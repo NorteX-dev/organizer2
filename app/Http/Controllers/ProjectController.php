@@ -363,7 +363,7 @@ class ProjectController extends Controller
 
         $url = preg_replace('/\.git$/', "", $url);
 
-        if (preg_match("/github\.com[/:]([^\/]+)\/([^\/\s]+)/", $url, $matches)) {
+        if (preg_match("/github\.com[\/:]([^\/]+)\/([^\/\s]+)/", $url, $matches)) {
             return $matches[1] . "/" . $matches[2];
         }
 
