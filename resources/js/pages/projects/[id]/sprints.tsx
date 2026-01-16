@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import AppLayout from "@/layouts/app-layout";
 import type { Project, Sprint } from "@/types";
 import { router } from "@inertiajs/react";
-import { addDays, format, parseISO } from "date-fns";
+import { addDays } from "date-fns";
 import { Info, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 
@@ -27,6 +27,15 @@ function translateStatus(status: string): string {
         completed: "Zakończony",
     };
     return statusMap[status.toLowerCase()] || status;
+}
+
+function formatDate(dateString: string): string {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat("pl-PL", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+    }).format(date);
 }
 
 export default function SprintsPage({ project, sprints = [] }: { project: Project; sprints: Sprint[] }) {
@@ -93,9 +102,9 @@ export default function SprintsPage({ project, sprints = [] }: { project: Projec
                                         <CardTitle className="text-lg font-medium">{sprint.name}</CardTitle>
                                         <div className="flex gap-2">
                                             <Badge variant="outline">
-                                                {format(parseISO(sprint.start_date), "MMM dd, yyyy")}
+                                                {formatDate(sprint.start_date)}
                                                 {" - "}
-                                                {format(parseISO(sprint.end_date), "MMM dd, yyyy")}
+                                                {formatDate(sprint.end_date)}
                                             </Badge>
                                         </div>
                                     </CardHeader>

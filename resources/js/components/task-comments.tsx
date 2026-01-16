@@ -2,7 +2,6 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import type { TaskComment, User } from "@/types";
-import { format, parseISO } from "date-fns";
 import { Edit2, Send, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -10,6 +9,17 @@ interface TaskCommentsProps {
     taskId: number;
     projectId: number;
     currentUser: User;
+}
+
+function formatDate(dateString: string): string {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat("pl-PL", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+    }).format(date);
 }
 
 export function TaskComments({ taskId, projectId, currentUser }: TaskCommentsProps) {
@@ -171,7 +181,7 @@ export function TaskComments({ taskId, projectId, currentUser }: TaskCommentsPro
                                                 {comment.user?.name || "Nieznany użytkownik"}
                                             </span>
                                             <span className="text-xs text-neutral-500">
-                                                {format(parseISO(comment.created_at), "MMM d, yyyy 'at' h:mm a")}
+                                                {formatDate(comment.created_at)}
                                             </span>
                                         </div>
                                     </div>

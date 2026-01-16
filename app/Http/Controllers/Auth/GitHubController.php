@@ -9,17 +9,11 @@ use Laravel\Socialite\Facades\Socialite;
 
 class GitHubController extends Controller
 {
-    /**
-     * Redirect to GitHub for authentication.
-     */
     public function redirect()
     {
         return Socialite::driver("github")->redirect();
     }
 
-    /**
-     * Handle GitHub callback.
-     */
     public function callback()
     {
         try {

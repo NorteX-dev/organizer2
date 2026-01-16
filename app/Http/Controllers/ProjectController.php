@@ -42,10 +42,20 @@ class ProjectController extends Controller
 
         $user = Auth::user();
         $team = $user->currentTeam();
-        $projects = Project::where("team_id", $team->id)->get();
+
+        $query = Project::where("team_id", $team->id);
+
+        if ($request->has("search") && $request->search) {
+            $query->where("name", "like", "%" . $request->search . "%");
+        }
+
+        $perPage = $request->get("per_page", 3); // Dla testów 3
+        $projects = $query->orderBy("created_at", "desc")->paginate($perPage)->withQueryString();
+
         return Inertia::render("projects/index", [
             "projects" => $projects,
             "team" => $team,
+            "search" => $request->get("search", ""),
         ]);
     }
 
@@ -118,17 +128,7 @@ class ProjectController extends Controller
 
         $project->update($validated);
 
-        $this->logActivity(
-            $project,
-            "project.updated",
-            $project,
-            array_merge(
-                [
-                    "name" => $project->name,
-                ],
-                $metadata,
-            ),
-        );
+        $this->logActivity($project, "project.updated", $project, array_merge(["name" => $project->name], $metadata));
 
         return redirect()->route("projects.index")->with("success", "Project updated successfully.");
     }
@@ -186,6 +186,7 @@ class ProjectController extends Controller
             return back()->withErrors(["error" => "Invalid GitHub repository URL."]);
         }
 
+        error_log(json_encode($repoPath));
         try {
             $response = Http::get("https://api.github.com/repos/{$repoPath}");
 
@@ -241,6 +242,7 @@ class ProjectController extends Controller
         }
 
         $repoPath = $this->parseGithubRepoUrl($project->github_repo);
+        error_log(json_encode($repoPath));
         if (!$repoPath) {
             return response()->json(["error" => "Invalid GitHub repository URL."], 400);
         }
@@ -328,7 +330,7 @@ class ProjectController extends Controller
         $activities = $query->paginate($perPage)->withQueryString();
 
         $team = $project->team;
-        $users = $team ? $team->users : collect();
+        $users = $team->users ?? collect();
 
         $availableActions = [
             "task.created",

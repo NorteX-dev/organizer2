@@ -5,7 +5,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import AppLayout from "@/layouts/app-layout";
 import { Head, router, usePage } from "@inertiajs/react";
-import { format } from "date-fns";
 import { Github, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -38,6 +37,17 @@ interface GithubSync {
 interface PageProps {
     project: Project;
     latestGithubSync?: GithubSync | null;
+}
+
+function formatDate(dateString: string): string {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat("pl-PL", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+    }).format(date);
 }
 
 export default function ProjectEditPage({ project: initial, latestGithubSync: initialSync }: PageProps) {
@@ -244,8 +254,7 @@ export default function ProjectEditPage({ project: initial, latestGithubSync: in
                                                         {latestSync.data?.name || "Zsynchronizowane repozytorium"}
                                                     </div>
                                                     <div className="text-sm text-muted-foreground">
-                                                        Ostatnia synchronizacja:{" "}
-                                                        {format(new Date(latestSync.synced_at), "PPpp")}
+                                                        Ostatnia synchronizacja: {formatDate(latestSync.synced_at)}
                                                     </div>
                                                 </div>
                                             </div>

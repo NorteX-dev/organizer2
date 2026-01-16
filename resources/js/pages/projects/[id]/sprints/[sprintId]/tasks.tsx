@@ -33,7 +33,6 @@ import {
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Link, router, usePage } from "@inertiajs/react";
-import { format, parseISO } from "date-fns";
 import { ArrowRight, ExternalLink, Github, GripVertical, Plus, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -231,7 +230,7 @@ function TaskCard({
                                 {TYPE_LABELS[task.type] || task.type}
                             </Badge>
                             <Badge variant="outline" className={`text-xs ${PRIORITY_COLORS[task.priority]}`}>
-                                {PRIORITY_LABELS[task.priority] || task.priority}
+                                Priorytet: {PRIORITY_LABELS[task.priority] || task.priority}
                             </Badge>
                         </div>
                     </CardHeader>
@@ -583,6 +582,15 @@ function AddTaskForm({ onAdd, onCancel }: { onAdd: (title: string) => void; onCa
             </form>
         </Card>
     );
+}
+
+function formatDate(dateString: string): string {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat("pl-PL", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+    }).format(date);
 }
 
 export default function SprintTasksPage({
@@ -965,7 +973,7 @@ export default function SprintTasksPage({
         >
             <HeaderSection
                 title={`${sprint.name} - Zadania`}
-                description={`${format(parseISO(sprint.start_date), "MMM dd, yyyy")} - ${format(parseISO(sprint.end_date), "MMM dd, yyyy")}${sprint.goal ? ` • ${sprint.goal}` : ""}${isSaving ? " (Zapisywanie...)" : ""}`}
+                description={`${formatDate(sprint.start_date)} - ${formatDate(sprint.end_date)}${sprint.goal ? ` • ${sprint.goal}` : ""}${isSaving ? " (Zapisywanie...)" : ""}`}
                 rightHandItem={
                     <div className="flex gap-2">
                         {sprint.status === "completed" && (

@@ -59,6 +59,8 @@ export interface Project {
     name: string;
     status: string;
     github_repo?: string | null;
+    created_at: string;
+    updated_at: string;
 }
 
 export interface Sprint {

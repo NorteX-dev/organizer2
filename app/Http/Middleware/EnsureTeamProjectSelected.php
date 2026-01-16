@@ -28,11 +28,7 @@ class EnsureTeamProjectSelected
 
         $path = $request->path();
 
-        if (
-            $path === "sprints" ||
-            str_starts_with($path, "sprints/") ||
-            preg_match("/^projects\/\d+\/sprints/", $path)
-        ) {
+        if (preg_match("/^projects\/\d+\/sprints/", $path)) {
             if (!$currentTeam) {
                 return Inertia::render("error", [
                     "message" => "Please select a team first to access sprints.",

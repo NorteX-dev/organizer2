@@ -6,14 +6,29 @@ import { Label } from "@/components/ui/label";
 import AppLayout from "@/layouts/app-layout";
 import type { Project } from "@/types";
 import { Head, Link, router } from "@inertiajs/react";
-import { PencilIcon, Trash2Icon } from "lucide-react";
-import { useState } from "react";
+import { PencilIcon, SearchIcon, Trash2Icon } from "lucide-react";
+import { useEffect, useState } from "react";
 
-export default function ProjectsIndexPage({ projects }: { projects: Project[] }) {
+interface ProjectsPaginated {
+    data: Project[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+}
+
+export default function ProjectsIndexPage({
+    projects,
+    search: initialSearch = "",
+}: {
+    projects: ProjectsPaginated;
+    search?: string;
+}) {
     const [open, setOpen] = useState(false);
     const [form, setForm] = useState({ name: "", status: "" });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [search, setSearch] = useState(initialSearch);
 
     function handleSubmit(e: any) {
         e.preventDefault();
@@ -49,6 +64,33 @@ export default function ProjectsIndexPage({ projects }: { projects: Project[] })
         });
     }
 
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            if (search !== initialSearch) {
+                router.get(
+                    "/projects",
+                    { search: search || "" },
+                    {
+                        preserveState: true,
+                        preserveScroll: true,
+                        replace: true,
+                    },
+                );
+            }
+        }, 300);
+
+        return () => clearTimeout(timeoutId);
+    }, [search, initialSearch]);
+
+    function formatDate(dateString: string): string {
+        const date = new Date(dateString);
+        return new Intl.DateTimeFormat("pl-PL", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+        }).format(date);
+    }
+
     return (
         <AppLayout breadcrumbs={[{ title: "Projekty", href: "/projects" }]}>
             <Head title="Projekty" />
@@ -56,89 +98,145 @@ export default function ProjectsIndexPage({ projects }: { projects: Project[] })
                 title="Projekty"
                 description="Zarządzaj projektami swojego zespołu."
                 rightHandItem={
-                    <Dialog open={open} onOpenChange={setOpen}>
-                        <DialogTrigger asChild>
-                            <Button variant="default">Nowy projekt</Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                            <DialogHeader>
-                                <DialogTitle>Nowy projekt</DialogTitle>
-                            </DialogHeader>
-                            <form className="space-y-4" onSubmit={handleSubmit}>
-                                <div>
-                                    <Label className="mb-2 block text-sm font-medium">Nazwa</Label>
-                                    <Input
-                                        className="input w-full"
-                                        required
-                                        value={form.name}
-                                        onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                                    />
-                                </div>
-                                <div>
-                                    <Label className="mb-2 block text-sm font-medium">Status</Label>
-                                    <Input
-                                        className="input w-full"
-                                        value={form.status}
-                                        onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}
-                                    />
-                                </div>
-                                {error && <div className="text-sm text-red-500">{error}</div>}
-                                <Button type="submit" disabled={loading}>
-                                    Utwórz
-                                </Button>
-                            </form>
-                        </DialogContent>
-                    </Dialog>
+                    <div className="flex items-center gap-2">
+                        <div className="relative">
+                            <SearchIcon className="absolute top-1/2 left-2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            <Input
+                                type="text"
+                                placeholder="Szukaj po nazwie..."
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                className="w-64 pl-8"
+                            />
+                        </div>
+                        <Dialog open={open} onOpenChange={setOpen}>
+                            <DialogTrigger asChild>
+                                <Button variant="default">Nowy projekt</Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>Nowy projekt</DialogTitle>
+                                </DialogHeader>
+                                <form className="space-y-4" onSubmit={handleSubmit}>
+                                    <div>
+                                        <Label className="mb-2 block text-sm font-medium">Nazwa</Label>
+                                        <Input
+                                            className="input w-full"
+                                            required
+                                            value={form.name}
+                                            onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                                        />
+                                    </div>
+                                    <div>
+                                        <Label className="mb-2 block text-sm font-medium">Status</Label>
+                                        <Input
+                                            className="input w-full"
+                                            value={form.status}
+                                            onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}
+                                        />
+                                    </div>
+                                    {error && <div className="text-sm text-red-500">{error}</div>}
+                                    <Button type="submit" disabled={loading}>
+                                        Utwórz
+                                    </Button>
+                                </form>
+                            </DialogContent>
+                        </Dialog>
+                    </div>
                 }
             />
             <div>
                 <div className="grid gap-2">
-                    {projects.length === 0 ? (
+                    {projects.data.length === 0 ? (
                         <div className="text-muted-foreground">Nie znaleziono projektów.</div>
                     ) : (
-                        <table className="w-full rounded bg-white shadow">
-                            <thead>
-                                <tr>
-                                    <th className="px-3 py-2 text-left">Nazwa</th>
-                                    <th className="px-3 py-2 text-left">Status</th>
-                                    <th className="w-6 px-3 py-2">Akcje</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {projects.map((project: Project) => (
-                                    <tr
-                                        key={project.id}
-                                        className="cursor-pointer border-b last:border-b-0 hover:bg-gray-50"
-                                        onClick={() => router.visit(`/projects/${project.id}/sprints`)}
-                                    >
-                                        <td className="px-3 py-2">{project.name}</td>
-                                        <td className="px-3 py-2">{project.status}</td>
-                                        <td className="flex justify-center space-x-2 px-3 py-2">
+                        <>
+                            <table className="w-full rounded bg-white shadow">
+                                <thead>
+                                    <tr>
+                                        <th className="px-3 py-2 text-left">Nazwa</th>
+                                        <th className="px-3 py-2 text-left">Status</th>
+                                        <th className="px-3 py-2 text-left">Data utworzenia</th>
+                                        <th className="w-6 px-3 py-2">Akcje</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {projects.data.map((project: Project) => (
+                                        <tr
+                                            key={project.id}
+                                            className="cursor-pointer border-b last:border-b-0 hover:bg-gray-50"
+                                            onClick={() => router.visit(`/projects/${project.id}/sprints`)}
+                                        >
+                                            <td className="px-3 py-2">{project.name}</td>
+                                            <td className="px-3 py-2">{project.status}</td>
+                                            <td className="px-3 py-2">{formatDate(project.created_at)}</td>
+                                            <td className="flex justify-center space-x-2 px-3 py-2">
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    asChild
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
+                                                    <Link href={`/projects/${project.id}/edit`}>
+                                                        <PencilIcon />
+                                                    </Link>
+                                                </Button>
+                                                <Button
+                                                    variant="destructive"
+                                                    size="sm"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleDeleteProject(e, project.id);
+                                                    }}
+                                                >
+                                                    <Trash2Icon />
+                                                </Button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                            {projects.last_page > 1 && (
+                                <div className="flex items-center justify-between pt-4">
+                                    <div className="text-sm text-muted-foreground">
+                                        Strona {projects.current_page} z {projects.last_page} ({projects.total}{" "}
+                                        projektów)
+                                    </div>
+                                    <div className="flex gap-2">
+                                        {projects.current_page > 1 && (
                                             <Button
                                                 variant="outline"
                                                 size="sm"
-                                                asChild
-                                                onClick={(e) => e.stopPropagation()}
+                                                onClick={() =>
+                                                    router.get(
+                                                        "/projects",
+                                                        { search, page: projects.current_page - 1 },
+                                                        { preserveState: true, preserveScroll: true },
+                                                    )
+                                                }
                                             >
-                                                <Link href={`/projects/${project.id}/edit`}>
-                                                    <PencilIcon />
-                                                </Link>
+                                                Poprzednia
                                             </Button>
+                                        )}
+                                        {projects.current_page < projects.last_page && (
                                             <Button
-                                                variant="destructive"
+                                                variant="outline"
                                                 size="sm"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleDeleteProject(e, project.id);
-                                                }}
+                                                onClick={() =>
+                                                    router.get(
+                                                        "/projects",
+                                                        { search, page: projects.current_page + 1 },
+                                                        { preserveState: true, preserveScroll: true },
+                                                    )
+                                                }
                                             >
-                                                <Trash2Icon />
+                                                Następna
                                             </Button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
             </div>
