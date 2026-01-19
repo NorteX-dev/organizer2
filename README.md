@@ -25,10 +25,6 @@ W terminalu ustawionym na katalog główny aplikacji wykonaj następujące kroki
   ```
   php artisan migrate
   ```
-- Załaduj dane testowe do bazy danych:
-  ```
-  php artisan db:seed
-  ```
 - Zainstaluj zależności front-endowe za pomocą npm:
   ```
   npm install
