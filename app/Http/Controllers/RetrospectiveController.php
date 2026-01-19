@@ -15,9 +15,6 @@ class RetrospectiveController extends Controller
 {
     use AuthorizesRequests;
 
-    /**
-     * Display the retrospective for a sprint.
-     */
     public function show(Project $project, Sprint $sprint)
     {
         $this->authorize("view", $sprint);
@@ -46,9 +43,6 @@ class RetrospectiveController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created retrospective.
-     */
     public function store(Request $request, Project $project, Sprint $sprint)
     {
         $this->authorize("update", $sprint);
@@ -82,9 +76,6 @@ class RetrospectiveController extends Controller
             ->with("success", "Retrospective created successfully.");
     }
 
-    /**
-     * Update the specified retrospective.
-     */
     public function update(Request $request, Project $project, Sprint $sprint, Retrospective $retrospective)
     {
         $this->authorize("update", $sprint);
@@ -107,9 +98,6 @@ class RetrospectiveController extends Controller
             ->with("success", "Retrospective updated successfully.");
     }
 
-    /**
-     * Vote on a retrospective point.
-     */
     public function vote(Request $request, Retrospective $retrospective)
     {
         $validated = $request->validate([

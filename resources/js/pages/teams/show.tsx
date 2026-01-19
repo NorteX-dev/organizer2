@@ -100,7 +100,6 @@ export default function TeamsShow({ team, isAdmin = false }: TeamsShowProps) {
             <HeaderSection title={`Zespół ${team.name}`} description="Zarządzaj projektami swojego zespołu." className="mt-0" />
 
             <div className="grid gap-6 lg:grid-cols-2">
-                {/* Add Member */}
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
@@ -130,7 +129,6 @@ export default function TeamsShow({ team, isAdmin = false }: TeamsShowProps) {
                     </CardContent>
                 </Card>
 
-                {/* Członkowie */}
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">

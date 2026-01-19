@@ -153,9 +153,6 @@ class ProjectController extends Controller
         return redirect()->route("projects.index")->with("success", "Project deleted successfully.");
     }
 
-    /**
-     * Switch to a different project.
-     */
     public function switch(Request $request, Project $project)
     {
         $this->authorize("view", $project);
@@ -165,9 +162,6 @@ class ProjectController extends Controller
         return back()->with("success", "Project switched successfully.");
     }
 
-    /**
-     * Sync GitHub repository data.
-     */
     public function syncGithub(Project $project)
     {
         $redirect = $this->ensureCurrentTeam();
@@ -225,9 +219,6 @@ class ProjectController extends Controller
         }
     }
 
-    /**
-     * Fetch GitHub issues and PRs for a project.
-     */
     public function fetchGithubIssuesAndPRs(Project $project)
     {
         $redirect = $this->ensureCurrentTeam();
@@ -296,9 +287,6 @@ class ProjectController extends Controller
         }
     }
 
-    /**
-     * Display project activities history.
-     */
     public function activities(Request $request, Project $project)
     {
         $this->authorize("view", $project);
@@ -356,9 +344,6 @@ class ProjectController extends Controller
         ]);
     }
 
-    /**
-     * Parse GitHub repository URL to extract owner/repo path.
-     */
     private function parseGithubRepoUrl(string $url): ?string
     {
         $url = trim($url);

@@ -16,9 +16,6 @@ class SprintBacklogController extends Controller
 {
     use AuthorizesRequests, LogsActivity;
 
-    /**
-     * Display the sprint backlog for a sprint.
-     */
     public function index(Project $project, Sprint $sprint)
     {
         $this->authorize("view", $sprint);
@@ -55,9 +52,6 @@ class SprintBacklogController extends Controller
         ]);
     }
 
-    /**
-     * Store a new task in the sprint backlog.
-     */
     public function store(Request $request, Project $project, Sprint $sprint)
     {
         $this->authorize("update", $sprint);
@@ -117,9 +111,6 @@ class SprintBacklogController extends Controller
         return redirect()->route("projects.sprints.backlog.index", [$project->id, $sprint->id]);
     }
 
-    /**
-     * Update a task in the sprint backlog.
-     */
     public function update(Request $request, Project $project, Sprint $sprint, Task $task)
     {
         $this->authorize("update", $sprint);
@@ -189,9 +180,6 @@ class SprintBacklogController extends Controller
         return redirect()->route("projects.sprints.backlog.index", [$project->id, $sprint->id]);
     }
 
-    /**
-     * Remove a task from the sprint backlog.
-     */
     public function destroy(Project $project, Sprint $sprint, Task $task)
     {
         $this->authorize("update", $sprint);
@@ -220,9 +208,6 @@ class SprintBacklogController extends Controller
         return redirect()->route("projects.sprints.backlog.index", [$project->id, $sprint->id]);
     }
 
-    /**
-     * Reorder tasks in the sprint backlog.
-     */
     public function reorder(Request $request, Project $project, Sprint $sprint)
     {
         $this->authorize("update", $sprint);
@@ -253,9 +238,6 @@ class SprintBacklogController extends Controller
         return redirect()->route("projects.sprints.backlog.index", [$project->id, $sprint->id]);
     }
 
-    /**
-     * Move task up in the sprint backlog order.
-     */
     public function moveUp(Project $project, Sprint $sprint, Task $task)
     {
         $this->authorize("update", $sprint);
@@ -285,9 +267,6 @@ class SprintBacklogController extends Controller
         return back();
     }
 
-    /**
-     * Move task down in the sprint backlog order.
-     */
     public function moveDown(Project $project, Sprint $sprint, Task $task)
     {
         $this->authorize("update", $sprint);
@@ -317,9 +296,6 @@ class SprintBacklogController extends Controller
         return back();
     }
 
-    /**
-     * Create subtasks for a parent task.
-     */
     public function createSubtasks(Request $request, Project $project, Sprint $sprint, Task $task)
     {
         $this->authorize("update", $sprint);
@@ -389,9 +365,6 @@ class SprintBacklogController extends Controller
         return redirect()->route("projects.sprints.backlog.index", [$project->id, $sprint->id]);
     }
 
-    /**
-     * Move tasks from product backlog to sprint backlog.
-     */
     public function addFromProductBacklog(Request $request, Project $project, Sprint $sprint)
     {
         $this->authorize("update", $sprint);
@@ -458,9 +431,6 @@ class SprintBacklogController extends Controller
         return redirect()->route("projects.sprints.backlog.index", [$project->id, $sprint->id]);
     }
 
-    /**
-     * Move task from sprint backlog back to product backlog.
-     */
     public function moveToProductBacklog(Project $project, Sprint $sprint, Task $task)
     {
         $this->authorize("update", $sprint);

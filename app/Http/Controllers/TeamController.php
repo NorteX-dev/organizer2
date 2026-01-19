@@ -14,9 +14,6 @@ class TeamController extends Controller
 {
     use AuthorizesRequests;
 
-    /**
-     * Display a listing of teams.
-     */
     public function index()
     {
         $user = Auth::user();
@@ -28,17 +25,11 @@ class TeamController extends Controller
         ]);
     }
 
-    /**
-     * Show the form for creating a new team.
-     */
     public function create()
     {
         return Inertia::render("teams/create");
     }
 
-    /**
-     * Store a newly created team.
-     */
     public function store(Request $request)
     {
         $request->validate([
@@ -54,9 +45,6 @@ class TeamController extends Controller
         return redirect()->route("teams.index")->with("success", "Team created successfully.");
     }
 
-    /**
-     * Display the specified team.
-     */
     public function show(Team $team)
     {
         $this->authorize("view", $team);
@@ -71,9 +59,6 @@ class TeamController extends Controller
         ]);
     }
 
-    /**
-     * Show the form for editing the team.
-     */
     public function edit(Team $team)
     {
         $this->authorize("update", $team);
@@ -88,9 +73,6 @@ class TeamController extends Controller
         ]);
     }
 
-    /**
-     * Update the specified team.
-     */
     public function update(Request $request, Team $team)
     {
         $this->authorize("update", $team);
@@ -106,9 +88,6 @@ class TeamController extends Controller
         return redirect()->route("teams.index")->with("success", "Team updated successfully.");
     }
 
-    /**
-     * Remove the specified team.
-     */
     public function destroy(Team $team)
     {
         $this->authorize("delete", $team);
@@ -118,9 +97,6 @@ class TeamController extends Controller
         return redirect()->route("teams.index")->with("success", "Team deleted successfully.");
     }
 
-    /**
-     * Add a member to the team.
-     */
     public function addMember(Request $request, Team $team)
     {
         $this->authorize("update", $team);
@@ -140,9 +116,6 @@ class TeamController extends Controller
         return back()->with("success", "Member added successfully.");
     }
 
-    /**
-     * Remove a member from the team.
-     */
     public function removeMember(Team $team, User $user)
     {
         $this->authorize("update", $team);
@@ -156,9 +129,6 @@ class TeamController extends Controller
         return back()->with("success", "Member removed successfully.");
     }
 
-    /**
-     * Switch to a different team.
-     */
     public function switch(Request $request, Team $team)
     {
         $this->authorize("view", $team);
@@ -169,9 +139,6 @@ class TeamController extends Controller
         return back()->with("success", "Team switched successfully.");
     }
 
-    /**
-     * Update a member's role in the team.
-     */
     public function updateRole(Request $request, Team $team, User $user)
     {
         $currentUser = Auth::user();

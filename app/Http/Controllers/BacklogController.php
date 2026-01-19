@@ -15,9 +15,6 @@ class BacklogController extends Controller
 {
     use AuthorizesRequests, LogsActivity;
 
-    /**
-     * Display the product backlog for a project.
-     */
     public function index(Project $project)
     {
         $this->authorize("view", $project);
@@ -42,9 +39,6 @@ class BacklogController extends Controller
         ]);
     }
 
-    /**
-     * Store a new task in the backlog.
-     */
     public function store(Request $request, Project $project)
     {
         $this->authorize("manageBacklog", $project);
@@ -105,9 +99,6 @@ class BacklogController extends Controller
         return redirect()->route("projects.backlog.index", $project->id);
     }
 
-    /**
-     * Update a task in the backlog.
-     */
     public function update(Request $request, Project $project, Task $task)
     {
         $this->authorize("manageBacklog", $project);
@@ -175,9 +166,6 @@ class BacklogController extends Controller
         return redirect()->route("projects.backlog.index", $project->id);
     }
 
-    /**
-     * Remove a task from the backlog.
-     */
     public function destroy(Project $project, Task $task)
     {
         $this->authorize("manageBacklog", $project);
@@ -200,9 +188,6 @@ class BacklogController extends Controller
         return redirect()->route("projects.backlog.index", $project->id);
     }
 
-    /**
-     * Reorder tasks in the backlog.
-     */
     public function reorder(Request $request, Project $project)
     {
         $this->authorize("manageBacklog", $project);
@@ -233,9 +218,6 @@ class BacklogController extends Controller
         return redirect()->route("projects.backlog.index", $project->id);
     }
 
-    /**
-     * Move task up in the backlog order.
-     */
     public function moveUp(Project $project, Task $task)
     {
         $this->authorize("manageBacklog", $project);
@@ -261,9 +243,6 @@ class BacklogController extends Controller
         return back();
     }
 
-    /**
-     * Move task down in the backlog order.
-     */
     public function moveDown(Project $project, Task $task)
     {
         $this->authorize("manageBacklog", $project);
@@ -289,9 +268,6 @@ class BacklogController extends Controller
         return back();
     }
 
-    /**
-     * Create subtasks for a parent task.
-     */
     public function createSubtasks(Request $request, Project $project, Task $task)
     {
         $this->authorize("manageBacklog", $project);

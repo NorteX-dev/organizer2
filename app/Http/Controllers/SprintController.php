@@ -15,18 +15,12 @@ class SprintController extends Controller
 {
     use AuthorizesRequests, LogsActivity;
 
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Project $project)
     {
         $sprints = Sprint::where("project_id", $project->id)->get();
         return Inertia::render("projects/[id]/sprints", ["project" => $project, "sprints" => $sprints]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create(Project $project)
     {
         $this->authorize("create", Sprint::class);
@@ -46,9 +40,6 @@ class SprintController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request, Project $project)
     {
         $this->authorize("create", Sprint::class);
@@ -102,9 +93,6 @@ class SprintController extends Controller
         return redirect()->route("projects.sprints.index", $project->id);
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Project $project, Sprint $sprint)
     {
         $this->authorize("view", $sprint);
@@ -141,9 +129,6 @@ class SprintController extends Controller
         ]);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Project $project, Sprint $sprint)
     {
         $this->authorize("update", $sprint);
@@ -165,9 +150,6 @@ class SprintController extends Controller
         ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, Project $project, Sprint $sprint)
     {
         $this->authorize("update", $sprint);
@@ -207,9 +189,6 @@ class SprintController extends Controller
         return redirect()->route("projects.sprints.index", $project->id);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Project $project, Sprint $sprint)
     {
         $this->authorize("delete", $sprint);
