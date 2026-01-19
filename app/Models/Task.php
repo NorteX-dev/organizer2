@@ -17,6 +17,7 @@ class Task extends Model
         "project_id",
         "parent_task_id",
         "sprint_id",
+        "sprint_backlog_id",
         "assigned_to",
         "title",
         "description",
@@ -57,6 +58,11 @@ class Task extends Model
     public function sprint(): BelongsTo
     {
         return $this->belongsTo(Sprint::class);
+    }
+
+    public function sprintBacklog(): BelongsTo
+    {
+        return $this->belongsTo(Sprint::class, "sprint_backlog_id");
     }
 
     public function assignedUser(): BelongsTo

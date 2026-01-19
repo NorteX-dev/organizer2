@@ -227,13 +227,14 @@ class TaskController extends Controller
         $tasks = Task::whereIn("id", $validated["task_ids"])
             ->where("project_id", $project->id)
             ->whereNull("sprint_id")
+            ->where("sprint_backlog_id", $sprint->id)
             ->whereNull("parent_task_id")
             ->with("subTasks")
             ->get();
 
         if ($tasks->count() !== count($validated["task_ids"])) {
             return back()->withErrors([
-                "error" => "Some tasks are not available in the backlog or belong to another project",
+                "error" => "Some tasks are not available in the sprint backlog or belong to another project",
             ]);
         }
 
@@ -246,6 +247,7 @@ class TaskController extends Controller
             foreach ($tasks as $task) {
                 $task->update([
                     "sprint_id" => $sprint->id,
+                    "sprint_backlog_id" => null,
                     "status" => "Planned",
                     "position" => $maxPosition + $positionOffset + 1,
                 ]);
@@ -257,6 +259,7 @@ class TaskController extends Controller
                     foreach ($task->subTasks as $subtask) {
                         $subtask->update([
                             "sprint_id" => $sprint->id,
+                            "sprint_backlog_id" => null,
                             "status" => "Planned",
                             "position" => $maxPosition + $positionOffset + 1,
                         ]);
@@ -286,12 +289,14 @@ class TaskController extends Controller
             return back()->withErrors(["error" => "Task does not belong to this sprint"]);
         }
 
-        $maxBacklogPosition = $project->tasks()->whereNull("sprint_id")->max("position") ?? -1;
+        $maxBacklogPosition =
+            $project->tasks()->whereNull("sprint_id")->whereNull("sprint_backlog_id")->max("position") ?? -1;
 
         $taskId = $task->id;
         $taskTitle = $task->title;
         $task->update([
             "sprint_id" => null,
+            "sprint_backlog_id" => null,
             "status" => "Backlog",
             "position" => $maxBacklogPosition + 1,
         ]);

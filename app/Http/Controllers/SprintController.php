@@ -34,6 +34,7 @@ class SprintController extends Controller
         $backlogTasks = $project
             ->tasks()
             ->whereNull("sprint_id")
+            ->whereNull("sprint_backlog_id")
             ->with(["assignedUser", "labels"])
             ->orderBy("position")
             ->orderBy("created_at")
@@ -69,7 +70,11 @@ class SprintController extends Controller
         $sprint = Sprint::create($fields);
 
         if (!empty($taskIds)) {
-            $tasks = Task::whereIn("id", $taskIds)->where("project_id", $project->id)->whereNull("sprint_id")->get();
+            $tasks = Task::whereIn("id", $taskIds)
+                ->where("project_id", $project->id)
+                ->whereNull("sprint_id")
+                ->whereNull("sprint_backlog_id")
+                ->get();
 
             if ($tasks->count() > 0) {
                 DB::transaction(function () use ($tasks, $sprint) {
@@ -118,6 +123,7 @@ class SprintController extends Controller
         $backlogTasks = $project
             ->tasks()
             ->whereNull("sprint_id")
+            ->where("sprint_backlog_id", $sprint->id)
             ->whereNull("parent_task_id")
             ->with(["assignedUser", "labels", "subTasks.assignedUser", "subTasks.labels"])
             ->orderBy("position")
@@ -145,6 +151,7 @@ class SprintController extends Controller
         $backlogTasks = $project
             ->tasks()
             ->whereNull("sprint_id")
+            ->where("sprint_backlog_id", $sprint->id)
             ->whereNull("parent_task_id")
             ->with(["assignedUser", "labels", "subTasks.assignedUser", "subTasks.labels"])
             ->orderBy("position")

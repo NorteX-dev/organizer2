@@ -25,6 +25,7 @@ class BacklogController extends Controller
         $tasks = $project
             ->tasks()
             ->whereNull("sprint_id")
+            ->whereNull("sprint_backlog_id")
             ->whereNull("parent_task_id")
             ->with(["assignedUser", "labels", "subTasks.assignedUser", "subTasks.labels"])
             ->orderBy("position")
@@ -60,8 +61,14 @@ class BacklogController extends Controller
 
         if (isset($validated["parent_task_id"])) {
             $parentTask = Task::findOrFail($validated["parent_task_id"]);
-            if ($parentTask->project_id !== $project->id || $parentTask->sprint_id !== null) {
-                return back()->withErrors(["error" => "Parent task must belong to the same project and be in backlog"]);
+            if (
+                $parentTask->project_id !== $project->id ||
+                $parentTask->sprint_id !== null ||
+                $parentTask->sprint_backlog_id !== null
+            ) {
+                return back()->withErrors([
+                    "error" => "Parent task must belong to the same project and be in product backlog",
+                ]);
             }
             if ($parentTask->type === "task" || $parentTask->type === "bug") {
                 return back()->withErrors(["error" => "Only epic and story tasks can have subtasks"]);
@@ -71,12 +78,13 @@ class BacklogController extends Controller
             }
         }
 
-        $maxPosition = $project->tasks()->whereNull("sprint_id")->max("position") ?? -1;
+        $maxPosition = $project->tasks()->whereNull("sprint_id")->whereNull("sprint_backlog_id")->max("position") ?? -1;
 
         $task = Task::create([
             "project_id" => $project->id,
             "parent_task_id" => $validated["parent_task_id"] ?? null,
             "sprint_id" => null,
+            "sprint_backlog_id" => null,
             "title" => $validated["title"],
             "description" => $validated["description"] ?? null,
             "type" => $validated["type"] ?? "task",
@@ -104,10 +112,10 @@ class BacklogController extends Controller
     {
         $this->authorize("manageBacklog", $project);
 
-        if ($task->project_id !== $project->id || $task->sprint_id !== null) {
+        if ($task->project_id !== $project->id || $task->sprint_id !== null || $task->sprint_backlog_id !== null) {
             return redirect()
                 ->route("projects.backlog.index", $project->id)
-                ->withErrors(["error" => "Task does not belong to this backlog"]);
+                ->withErrors(["error" => "Task does not belong to this product backlog"]);
         }
 
         $validated = $request->validate([
@@ -122,8 +130,14 @@ class BacklogController extends Controller
 
         if (isset($validated["parent_task_id"])) {
             $parentTask = Task::findOrFail($validated["parent_task_id"]);
-            if ($parentTask->project_id !== $project->id || $parentTask->sprint_id !== null) {
-                return back()->withErrors(["error" => "Parent task must belong to the same project and be in backlog"]);
+            if (
+                $parentTask->project_id !== $project->id ||
+                $parentTask->sprint_id !== null ||
+                $parentTask->sprint_backlog_id !== null
+            ) {
+                return back()->withErrors([
+                    "error" => "Parent task must belong to the same project and be in product backlog",
+                ]);
             }
             if ($parentTask->type === "task" || $parentTask->type === "bug") {
                 return back()->withErrors(["error" => "Only epic and story tasks can have subtasks"]);
@@ -168,10 +182,10 @@ class BacklogController extends Controller
     {
         $this->authorize("manageBacklog", $project);
 
-        if ($task->project_id !== $project->id || $task->sprint_id !== null) {
+        if ($task->project_id !== $project->id || $task->sprint_id !== null || $task->sprint_backlog_id !== null) {
             return redirect()
                 ->route("projects.backlog.index", $project->id)
-                ->withErrors(["error" => "Task does not belong to this backlog"]);
+                ->withErrors(["error" => "Task does not belong to this product backlog"]);
         }
 
         $taskTitle = $task->title;
@@ -203,7 +217,12 @@ class BacklogController extends Controller
             foreach ($validated["tasks"] as $taskData) {
                 $task = Task::find($taskData["id"]);
 
-                if ($task && $task->project_id === $project->id && $task->sprint_id === null) {
+                if (
+                    $task &&
+                    $task->project_id === $project->id &&
+                    $task->sprint_id === null &&
+                    $task->sprint_backlog_id === null
+                ) {
                     $task->update([
                         "position" => $taskData["position"],
                     ]);
@@ -228,6 +247,7 @@ class BacklogController extends Controller
         $previousTask = $project
             ->tasks()
             ->whereNull("sprint_id")
+            ->whereNull("sprint_backlog_id")
             ->where("position", "<", $task->position)
             ->orderBy("position", "desc")
             ->first();
@@ -255,6 +275,7 @@ class BacklogController extends Controller
         $nextTask = $project
             ->tasks()
             ->whereNull("sprint_id")
+            ->whereNull("sprint_backlog_id")
             ->where("position", ">", $task->position)
             ->orderBy("position", "asc")
             ->first();
@@ -275,8 +296,8 @@ class BacklogController extends Controller
     {
         $this->authorize("manageBacklog", $project);
 
-        if ($task->project_id !== $project->id || $task->sprint_id !== null) {
-            return back()->withErrors(["error" => "Task does not belong to this backlog"]);
+        if ($task->project_id !== $project->id || $task->sprint_id !== null || $task->sprint_backlog_id !== null) {
+            return back()->withErrors(["error" => "Task does not belong to this product backlog"]);
         }
 
         if ($task->type !== "epic" && $task->type !== "story") {
@@ -296,13 +317,19 @@ class BacklogController extends Controller
         $createdSubtasks = [];
         DB::transaction(function () use ($project, $task, $validated, &$createdSubtasks) {
             $maxPosition =
-                $project->tasks()->whereNull("sprint_id")->whereNull("parent_task_id")->max("position") ?? -1;
+                $project
+                    ->tasks()
+                    ->whereNull("sprint_id")
+                    ->whereNull("sprint_backlog_id")
+                    ->whereNull("parent_task_id")
+                    ->max("position") ?? -1;
 
             foreach ($validated["subtasks"] as $index => $subtaskData) {
                 $subtask = Task::create([
                     "project_id" => $project->id,
                     "parent_task_id" => $task->id,
                     "sprint_id" => null,
+                    "sprint_backlog_id" => null,
                     "title" => $subtaskData["title"],
                     "description" => $subtaskData["description"] ?? null,
                     "type" => $subtaskData["type"] ?? "task",

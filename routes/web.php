@@ -75,6 +75,47 @@ Route::middleware(["auth"])->group(function () {
             "createSubtasks",
         ])->name("projects.backlog.create-subtasks");
 
+        Route::get("projects/{project}/sprints/{sprint}/backlog", [
+            App\Http\Controllers\SprintBacklogController::class,
+            "index",
+        ])->name("projects.sprints.backlog.index");
+        Route::post("projects/{project}/sprints/{sprint}/backlog", [
+            App\Http\Controllers\SprintBacklogController::class,
+            "store",
+        ])->name("projects.sprints.backlog.store");
+        Route::put("projects/{project}/sprints/{sprint}/backlog/{task}", [
+            App\Http\Controllers\SprintBacklogController::class,
+            "update",
+        ])->name("projects.sprints.backlog.update");
+        Route::delete("projects/{project}/sprints/{sprint}/backlog/{task}", [
+            App\Http\Controllers\SprintBacklogController::class,
+            "destroy",
+        ])->name("projects.sprints.backlog.destroy");
+        Route::post("projects/{project}/sprints/{sprint}/backlog/reorder", [
+            App\Http\Controllers\SprintBacklogController::class,
+            "reorder",
+        ])->name("projects.sprints.backlog.reorder");
+        Route::post("projects/{project}/sprints/{sprint}/backlog/{task}/move-up", [
+            App\Http\Controllers\SprintBacklogController::class,
+            "moveUp",
+        ])->name("projects.sprints.backlog.move-up");
+        Route::post("projects/{project}/sprints/{sprint}/backlog/{task}/move-down", [
+            App\Http\Controllers\SprintBacklogController::class,
+            "moveDown",
+        ])->name("projects.sprints.backlog.move-down");
+        Route::post("projects/{project}/sprints/{sprint}/backlog/{task}/subtasks", [
+            App\Http\Controllers\SprintBacklogController::class,
+            "createSubtasks",
+        ])->name("projects.sprints.backlog.create-subtasks");
+        Route::post("projects/{project}/sprints/{sprint}/backlog/add-from-product-backlog", [
+            App\Http\Controllers\SprintBacklogController::class,
+            "addFromProductBacklog",
+        ])->name("projects.sprints.backlog.add-from-product-backlog");
+        Route::post("projects/{project}/sprints/{sprint}/backlog/{task}/move-to-product-backlog", [
+            App\Http\Controllers\SprintBacklogController::class,
+            "moveToProductBacklog",
+        ])->name("projects.sprints.backlog.move-to-product-backlog");
+
         Route::get("/sprints", function () {
             $user = auth()->user();
             $currentProject = $user->currentProject();
@@ -97,7 +138,7 @@ Route::middleware(["auth"])->group(function () {
             App\Http\Controllers\TaskController::class,
             "reorder",
         ])->name("projects.sprints.tasks.reorder");
-        Route::post("projects/{project}/sprints/{sprint}/tasks/add-from-backlog", [
+        Route::post("projects/{project}/sprints/{sprint}/tasks/add-from-sprint-backlog", [
             App\Http\Controllers\TaskController::class,
             "addFromBacklog",
         ])->name("projects.sprints.tasks.add-from-backlog");

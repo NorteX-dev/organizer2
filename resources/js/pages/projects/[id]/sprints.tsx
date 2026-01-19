@@ -113,11 +113,11 @@ export default function SprintsPage({ project, sprints = [] }: { project: Projec
                                             {sprint.goal}
                                         </CardDescription>
                                     </CardContent>
-                                    <CardFooter className="mt-3 flex gap-2">
+                                    <CardFooter className="mt-3 flex flex-wrap gap-2">
                                         <Button
                                             size="sm"
                                             variant="secondary"
-                                            className="w-full cursor-pointer rounded-lg py-2 text-sm"
+                                            className="flex-1 cursor-pointer rounded-lg py-2 text-sm"
                                             onClick={() =>
                                                 router.get(`/projects/${project.id}/sprints/${sprint.id}/edit`)
                                             }
@@ -128,7 +128,7 @@ export default function SprintsPage({ project, sprints = [] }: { project: Projec
                                         <Button
                                             size="sm"
                                             variant="destructive"
-                                            className="w-full cursor-pointer rounded-lg py-2 text-sm"
+                                            className="flex-1 cursor-pointer rounded-lg py-2 text-sm"
                                             onClick={() => handleDelete(sprint.id)}
                                         >
                                             <Trash2 className="mr-2 size-4" />
@@ -137,7 +137,15 @@ export default function SprintsPage({ project, sprints = [] }: { project: Projec
                                         <Button
                                             size="sm"
                                             variant="outline"
-                                            className="w-full cursor-pointer rounded-lg py-2 text-sm"
+                                            className="flex-1 cursor-pointer rounded-lg py-2 text-sm"
+                                            onClick={() => router.get(`/projects/${project.id}/sprints/${sprint.id}/backlog`)}
+                                        >
+                                            Backlog
+                                        </Button>
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            className="flex-1 cursor-pointer rounded-lg py-2 text-sm"
                                             onClick={() => router.get(`/projects/${project.id}/sprints/${sprint.id}`)}
                                         >
                                             <Info className="mr-2 size-4" />

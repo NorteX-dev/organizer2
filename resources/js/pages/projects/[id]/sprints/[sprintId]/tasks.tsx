@@ -928,7 +928,7 @@ export default function SprintTasksPage({
         isLocalChangeRef.current = true;
 
         router.post(
-            `/projects/${project.id}/sprints/${sprint.id}/tasks/add-from-backlog`,
+            `/projects/${project.id}/sprints/${sprint.id}/tasks/add-from-sprint-backlog`,
             { task_ids: selectedBacklogTaskIds },
             {
                 preserveScroll: true,
@@ -976,6 +976,11 @@ export default function SprintTasksPage({
                 description={`${formatDate(sprint.start_date)} - ${formatDate(sprint.end_date)}${sprint.goal ? ` • ${sprint.goal}` : ""}${isSaving ? " (Zapisywanie...)" : ""}`}
                 rightHandItem={
                     <div className="flex gap-2">
+                        <Link href={`/projects/${project.id}/sprints/${sprint.id}/backlog`}>
+                            <Button variant="outline">
+                                Backlog sprintowy
+                            </Button>
+                        </Link>
                         {sprint.status === "completed" && (
                             <Link href={`/projects/${project.id}/sprints/${sprint.id}/retrospective`}>
                                 <Button variant="outline">
@@ -985,7 +990,7 @@ export default function SprintTasksPage({
                             </Link>
                         )}
                         <Button onClick={() => setAddFromBacklogOpen(true)} variant="outline">
-                            Dodaj z Backlogu
+                            Dodaj z backlogu sprintowego
                         </Button>
                     </div>
                 }
@@ -1046,12 +1051,12 @@ export default function SprintTasksPage({
             <Dialog open={addFromBacklogOpen} onOpenChange={setAddFromBacklogOpen}>
                 <DialogContent className="max-h-[80vh] max-w-3xl overflow-y-auto">
                     <DialogHeader>
-                        <DialogTitle>Dodaj zadania z backlogu</DialogTitle>
+                        <DialogTitle>Dodaj zadania z backlogu sprintowego</DialogTitle>
                         <DialogDescription>Wybierz zadania do dodania do tego sprintu</DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
                         {backlogTasks.length === 0 ? (
-                            <div className="py-8 text-center text-neutral-500">Brak dostępnych zadań w backlogu</div>
+                            <div className="py-8 text-center text-neutral-500">Brak dostępnych zadań w backlogu sprintowym</div>
                         ) : (
                             <div className="max-h-[400px] space-y-2 overflow-y-auto">
                                 {backlogTasks.map((task) => (
