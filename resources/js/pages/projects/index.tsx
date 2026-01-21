@@ -91,6 +91,15 @@ export default function ProjectsIndexPage({
         }).format(date);
     }
 
+    function translateStatus(status: string): string {
+        const statusMap: { [key: string]: string } = {
+            active: "Aktywny",
+            archived: "Zarchiwizowany",
+            paused: "Wstrzymany",
+        };
+        return statusMap[status?.toLowerCase()] || status;
+    }
+
     return (
         <AppLayout breadcrumbs={[{ title: "Projekty", href: "/projects" }]}>
             <Head title="Projekty" />
@@ -168,7 +177,7 @@ export default function ProjectsIndexPage({
                                             onClick={() => router.visit(`/projects/${project.id}/sprints`)}
                                         >
                                             <td className="px-3 py-2">{project.name}</td>
-                                            <td className="px-3 py-2">{project.status}</td>
+                                            <td className="px-3 py-2">{translateStatus(project.status || "")}</td>
                                             <td className="px-3 py-2">{formatDate(project.created_at)}</td>
                                             <td className="flex justify-center space-x-2 px-3 py-2">
                                                 <Button

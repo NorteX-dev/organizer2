@@ -43,6 +43,7 @@ class HandleInertiaRequests extends Middleware
         $currentTeam = $user ? $user->currentTeam() : null;
         $projects = $currentTeam ? $currentTeam->projects : collect();
         $currentProject = $user ? $user->currentProject() : null;
+        $unreadMessageCount = $user ? \App\Models\Message::where('to_user_id', $user->id)->where('read', false)->count() : 0;
 
         return [
             ...parent::share($request),
@@ -56,6 +57,7 @@ class HandleInertiaRequests extends Middleware
             "currentTeam" => $currentTeam,
             "projects" => $projects,
             "currentProject" => $currentProject,
+            "unreadMessageCount" => $unreadMessageCount,
         ];
     }
 }

@@ -17,8 +17,9 @@ import { useProjectTeam } from "@/contexts/project-team-context";
 import { useInitials } from "@/hooks/use-initials";
 import { cn, isSameUrl, resolveUrl } from "@/lib/utils";
 import { type BreadcrumbItem, type NavItem, type SharedData } from "@/types";
+import { Badge } from "@/components/ui/badge";
 import { Link, usePage } from "@inertiajs/react";
-import { Activity, FileText, LayoutDashboard, ListTodo, Menu } from "lucide-react";
+import { Activity, FileText, LayoutDashboard, ListTodo, Mail, Menu } from "lucide-react";
 import AppLogo from "./app-logo";
 import AppLogoIcon from "./app-logo-icon";
 
@@ -42,6 +43,11 @@ const mainNavItems: NavItem[] = [
         title: "Aktywność",
         href: "/activities",
         icon: Activity,
+    },
+    {
+        title: "Wiadomości",
+        href: "/messages",
+        icon: Mail,
     },
 ];
 
@@ -88,6 +94,13 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                                 >
                                                     {item.icon && <Icon iconNode={item.icon} className="h-5 w-5" />}
                                                     <span>{item.title}</span>
+                                                    {item.href === "/messages" && (page.props.unreadMessageCount ?? 0) > 1 && (
+                                                        <Badge variant="destructive" className="h-5 min-w-5 px-1.5 text-xs">
+                                                            {(page.props.unreadMessageCount ?? 0) > 99
+                                                                ? "99+"
+                                                                : (page.props.unreadMessageCount ?? 0)}
+                                                        </Badge>
+                                                    )}
                                                 </Link>
                                             ))}
                                         </div>
@@ -131,6 +144,13 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                         >
                                             {item.icon && <Icon iconNode={item.icon} className="mr-2 h-4 w-4" />}
                                             {item.title}
+                                            {item.href === "/messages" && (page.props.unreadMessageCount ?? 0) > 1 && (
+                                                <Badge variant="destructive" className="ml-2 h-5 min-w-5 px-1.5 text-xs">
+                                                    {(page.props.unreadMessageCount ?? 0) > 99
+                                                        ? "99+"
+                                                        : (page.props.unreadMessageCount ?? 0)}
+                                                </Badge>
+                                            )}
                                         </Link>
                                         {isSameUrl(page.url, item.href) && (
                                             <div className="absolute bottom-0 left-0 h-0.5 w-full translate-y-px bg-black dark:bg-white"></div>

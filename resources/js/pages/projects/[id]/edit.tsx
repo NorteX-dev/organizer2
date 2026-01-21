@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import AppLayout from "@/layouts/app-layout";
@@ -207,13 +208,19 @@ export default function ProjectEditPage({ project: initial, latestGithubSync: in
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="status">Status</Label>
-                                <Input
-                                    id="status"
-                                    name="status"
-                                    value={project.status ?? ""}
-                                    onChange={handleChange}
-                                    placeholder="Wprowadź status projektu"
-                                />
+                                <Select
+                                    value={project.status ?? "active"}
+                                    onValueChange={(value) => setProject((p) => ({ ...p, status: value }))}
+                                >
+                                    <SelectTrigger id="status">
+                                        <SelectValue placeholder="Wybierz status..." />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="active">Aktywny</SelectItem>
+                                        <SelectItem value="archived">Zarchiwizowany</SelectItem>
+                                        <SelectItem value="paused">Wstrzymany</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
                         </TabsContent>
                         <TabsContent value="integration" className="space-y-5 pt-4">

@@ -223,6 +223,11 @@ Route::middleware(["auth"])->group(function () {
         "teams.members.update-role",
     );
     Route::post("teams/{team}/switch", [App\Http\Controllers\TeamController::class, "switch"])->name("teams.switch");
+
+    Route::get("/messages", [App\Http\Controllers\MessageController::class, "index"])->name("messages.index");
+    Route::post("/messages", [App\Http\Controllers\MessageController::class, "store"])->name("messages.store");
+    Route::get("/messages/{message}", [App\Http\Controllers\MessageController::class, "show"])->name("messages.show");
+    Route::delete("/messages/{message}", [App\Http\Controllers\MessageController::class, "destroy"])->name("messages.destroy");
 });
 
 require __DIR__ . "/settings.php";

@@ -23,6 +23,7 @@ function getInSevenDaysString() {
 function translateStatus(status: string): string {
     const statusMap: { [key: string]: string } = {
         planned: "Zaplanowany",
+        planning: "Zaplanowany",
         active: "Aktywny",
         completed: "Zakończony",
     };
@@ -72,7 +73,8 @@ export default function SprintsPage({ project, sprints = [] }: { project: Projec
     }
     const statusGroups: { [k: string]: Sprint[] } = { planned: [], active: [], completed: [] };
     (sprints || []).forEach((s: Sprint) => {
-        (statusGroups[s.status] ??= []).push(s);
+        const normalizedStatus = s.status === "planning" ? "planned" : s.status;
+        (statusGroups[normalizedStatus] ??= []).push(s);
     });
 
     return (

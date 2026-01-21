@@ -31,6 +31,7 @@ export interface SharedData {
     currentTeam?: Team | null;
     projects?: Project[];
     currentProject?: Project | null;
+    unreadMessageCount?: number;
     [key: string]: unknown;
 }
 
@@ -170,4 +171,18 @@ export interface ProjectActivity {
     updated_at: string;
     user?: User;
     subject?: Task | Sprint | Project;
+}
+
+export interface Message {
+    id: number;
+    from_user_id: number;
+    to_user_id: number;
+    subject: string;
+    body: string;
+    read: boolean;
+    read_at: string | null;
+    created_at: string;
+    updated_at: string;
+    from_user?: User;
+    to_user?: User;
 }
