@@ -44,4 +44,10 @@ W terminalu ustawionym na katalog główny aplikacji wykonaj następujące kroki
   php artisan reverb:start
   ```
   
+### Uruchomienie testów jednostkowych:
+- Wykonaj testy jednostkowe:
+  ```
+  php artisan test
+  ```
+
 Aplikacja będzie dostępna pod adresem `http://localhost:8000`.
