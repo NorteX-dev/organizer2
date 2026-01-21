@@ -15,19 +15,45 @@ class BacklogController extends Controller
 {
     use AuthorizesRequests, LogsActivity;
 
-    public function index(Project $project)
+    public function index(Request $request, Project $project)
     {
         $this->authorize("view", $project);
 
-        $tasks = $project
+        $query = $project
             ->tasks()
             ->whereNull("sprint_id")
             ->whereNull("sprint_backlog_id")
             ->whereNull("parent_task_id")
-            ->with(["assignedUser", "labels", "subTasks.assignedUser", "subTasks.labels"])
+            ->with(["assignedUser", "labels", "subTasks.assignedUser", "subTasks.labels"]);
+
+        $search = $request->get("search", "");
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where("title", "like", "%" . $search . "%")->orWhere("description", "like", "%" . $search . "%");
+            });
+        }
+
+        $type = $request->get("type", "all");
+        if ($type && $type !== "all") {
+            $query->where("type", $type);
+        }
+
+        $priority = $request->get("priority", "all");
+        if ($priority && $priority !== "all") {
+            $query->where("priority", $priority);
+        }
+
+        $status = $request->get("status", "all");
+        if ($status && $status !== "all") {
+            $query->where("status", $status);
+        }
+
+        $perPage = (int) $request->get("per_page", 10);
+        $tasks = $query
             ->orderBy("position")
             ->orderBy("created_at")
-            ->get();
+            ->paginate($perPage)
+            ->withQueryString();
 
         $team = $project->team;
         $users = $team ? $team->users : collect();
@@ -36,6 +62,10 @@ class BacklogController extends Controller
             "project" => $project,
             "tasks" => $tasks,
             "users" => $users,
+            "search" => $search,
+            "type" => $type,
+            "priority" => $priority,
+            "status" => $status,
         ]);
     }
 
@@ -96,7 +126,7 @@ class BacklogController extends Controller
             "in_backlog" => true,
         ]);
 
-        return redirect()->route("projects.backlog.index", $project->id);
+        return back();
     }
 
     public function update(Request $request, Project $project, Task $task)
@@ -163,7 +193,7 @@ class BacklogController extends Controller
             ),
         );
 
-        return redirect()->route("projects.backlog.index", $project->id);
+        return back();
     }
 
     public function destroy(Project $project, Task $task)
@@ -185,7 +215,7 @@ class BacklogController extends Controller
             "in_backlog" => true,
         ]);
 
-        return redirect()->route("projects.backlog.index", $project->id);
+        return back();
     }
 
     public function reorder(Request $request, Project $project)
@@ -215,7 +245,7 @@ class BacklogController extends Controller
             }
         });
 
-        return redirect()->route("projects.backlog.index", $project->id);
+        return back();
     }
 
     public function moveUp(Project $project, Task $task)
@@ -327,6 +357,6 @@ class BacklogController extends Controller
             ]);
         }
 
-        return redirect()->route("projects.backlog.index", $project->id);
+        return back();
     }
 }

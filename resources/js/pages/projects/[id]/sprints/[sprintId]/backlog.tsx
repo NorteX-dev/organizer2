@@ -19,7 +19,7 @@ import AppLayout from "@/layouts/app-layout";
 import type { Project, Sprint, Task, User } from "@/types";
 import { router } from "@inertiajs/react";
 import { ArrowDown, ArrowUp, ChevronDown, ChevronRight, Pencil, Plus, Search, Split, Trash2, X } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 const PRIORITY_COLORS = {
     low: "bg-green-50 text-green-700 border-green-200",
@@ -52,22 +52,38 @@ const TYPE_LABELS: Record<string, string> = {
 interface SprintBacklogPageProps {
     project: Project;
     sprint: Sprint;
-    tasks: Task[];
+    tasks: TasksPaginated;
     productBacklogTasks?: Task[];
     users: User[];
+    search?: string;
+    type?: string;
+    priority?: string;
+    status?: string;
+}
+
+interface TasksPaginated {
+    data: Task[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
 }
 
 export default function SprintBacklogPage({
     project,
     sprint,
-    tasks = [],
+    tasks,
     productBacklogTasks = [],
     users = [],
+    search: initialSearch = "",
+    type: initialType = "all",
+    priority: initialPriority = "all",
+    status: initialStatus = "all",
 }: SprintBacklogPageProps) {
-    const [searchQuery, setSearchQuery] = useState("");
-    const [filterType, setFilterType] = useState<string>("all");
-    const [filterPriority, setFilterPriority] = useState<string>("all");
-    const [filterStatus, setFilterStatus] = useState<string>("all");
+    const [searchQuery, setSearchQuery] = useState(initialSearch);
+    const [filterType, setFilterType] = useState<string>(initialType);
+    const [filterPriority, setFilterPriority] = useState<string>(initialPriority);
+    const [filterStatus, setFilterStatus] = useState<string>(initialStatus);
     const [modalOpen, setModalOpen] = useState(false);
     const [subtasksModalOpen, setSubtasksModalOpen] = useState(false);
     const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -94,21 +110,45 @@ export default function SprintBacklogPage({
         }>
     >([{ title: "", description: "", type: "task", priority: "medium", story_points: "", assigned_to: "unassigned" }]);
 
-    const filteredTasks = useMemo(() => {
-        const filterTask = (task: Task): boolean => {
-            const matchesSearch =
-                searchQuery === "" ||
-                task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                (task.description && task.description.toLowerCase().includes(searchQuery.toLowerCase()));
-            const matchesType = filterType === "all" || task.type === filterType;
-            const matchesPriority = filterPriority === "all" || task.priority === filterPriority;
-            const matchesStatus = filterStatus === "all" || task.status === filterStatus;
+    const taskItems = tasks.data ?? [];
 
-            return (matchesSearch && matchesType && matchesPriority && matchesStatus) as boolean;
-        };
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            if (
+                searchQuery !== initialSearch ||
+                filterType !== initialType ||
+                filterPriority !== initialPriority ||
+                filterStatus !== initialStatus
+            ) {
+                router.get(
+                    `/projects/${project.id}/sprints/${sprint.id}/backlog`,
+                    {
+                        search: searchQuery || "",
+                        type: filterType,
+                        priority: filterPriority,
+                        status: filterStatus,
+                        per_page: tasks.per_page,
+                        page: 1,
+                    },
+                    { preserveState: true, preserveScroll: true, replace: true },
+                );
+            }
+        }, 300);
 
-        return tasks.filter(filterTask);
-    }, [tasks, searchQuery, filterType, filterPriority, filterStatus]);
+        return () => clearTimeout(timeoutId);
+    }, [
+        searchQuery,
+        filterType,
+        filterPriority,
+        filterStatus,
+        initialSearch,
+        initialType,
+        initialPriority,
+        initialStatus,
+        project.id,
+        sprint.id,
+        tasks.per_page,
+    ]);
 
     function toggleExpanded(taskId: number) {
         setExpandedTasks((prev) => {
@@ -287,12 +327,15 @@ export default function SprintBacklogPage({
         );
     }
 
-    function renderTask(task: Task, level: number = 0) {
+    function renderTask(task: Task, level: number = 0, index?: number) {
         const hasSubtasks = (task.sub_tasks || []).length > 0;
         const isExpanded = expandedTasks.has(task.id);
-        const position = getTaskPosition(task);
-        const isFirst = position === 0;
-        const isLast = position === tasks.length - 1;
+        const isFirst = level === 0 && index === 0 && tasks.current_page === 1;
+        const isLast =
+            level === 0 &&
+            index === taskItems.length - 1 &&
+            tasks.current_page === tasks.last_page &&
+            taskItems.length > 0;
         const totalPoints = getTotalStoryPoints(task);
 
         return (
@@ -420,11 +463,6 @@ export default function SprintBacklogPage({
         );
     }
 
-    function getTaskPosition(task: Task) {
-        const sortedTasks = [...tasks].sort((a, b) => a.position - b.position);
-        return sortedTasks.findIndex((t) => t.id === task.id);
-    }
-
     return (
         <AppLayout
             breadcrumbs={[
@@ -515,16 +553,70 @@ export default function SprintBacklogPage({
             </div>
 
             <div className="space-y-3">
-                {filteredTasks.length === 0 ? (
+                {taskItems.length === 0 ? (
                     <Card>
                         <CardContent className="py-12 text-center">
                             <p className="text-neutral-500">Nie znaleziono zadań w backlogu sprintowym.</p>
                         </CardContent>
                     </Card>
                 ) : (
-                    filteredTasks.sort((a, b) => a.position - b.position).map((task) => renderTask(task, 0))
+                    taskItems.map((task, index) => renderTask(task, 0, index))
                 )}
             </div>
+
+            {tasks.last_page > 1 && (
+                <div className="flex items-center justify-between pt-6">
+                    <div className="text-sm text-muted-foreground">
+                        Strona {tasks.current_page} z {tasks.last_page} ({tasks.total} zadań)
+                    </div>
+                    <div className="flex gap-2">
+                        {tasks.current_page > 1 && (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() =>
+                                    router.get(
+                                        `/projects/${project.id}/sprints/${sprint.id}/backlog`,
+                                        {
+                                            search: searchQuery || "",
+                                            type: filterType,
+                                            priority: filterPriority,
+                                            status: filterStatus,
+                                            per_page: tasks.per_page,
+                                            page: tasks.current_page - 1,
+                                        },
+                                        { preserveState: true, preserveScroll: true },
+                                    )
+                                }
+                            >
+                                Poprzednia
+                            </Button>
+                        )}
+                        {tasks.current_page < tasks.last_page && (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() =>
+                                    router.get(
+                                        `/projects/${project.id}/sprints/${sprint.id}/backlog`,
+                                        {
+                                            search: searchQuery || "",
+                                            type: filterType,
+                                            priority: filterPriority,
+                                            status: filterStatus,
+                                            per_page: tasks.per_page,
+                                            page: tasks.current_page + 1,
+                                        },
+                                        { preserveState: true, preserveScroll: true },
+                                    )
+                                }
+                            >
+                                Następna
+                            </Button>
+                        )}
+                    </div>
+                </div>
+            )}
 
             {modalOpen && (
                 <Dialog open={modalOpen} onOpenChange={setModalOpen}>

@@ -16,19 +16,45 @@ class SprintBacklogController extends Controller
 {
     use AuthorizesRequests, LogsActivity;
 
-    public function index(Project $project, Sprint $sprint)
+    public function index(Request $request, Project $project, Sprint $sprint)
     {
         $this->authorize("view", $sprint);
 
-        $tasks = $project
+        $query = $project
             ->tasks()
             ->whereNull("sprint_id")
             ->where("sprint_backlog_id", $sprint->id)
             ->whereNull("parent_task_id")
-            ->with(["assignedUser", "labels", "subTasks.assignedUser", "subTasks.labels"])
+            ->with(["assignedUser", "labels", "subTasks.assignedUser", "subTasks.labels"]);
+
+        $search = $request->get("search", "");
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where("title", "like", "%" . $search . "%")->orWhere("description", "like", "%" . $search . "%");
+            });
+        }
+
+        $type = $request->get("type", "all");
+        if ($type && $type !== "all") {
+            $query->where("type", $type);
+        }
+
+        $priority = $request->get("priority", "all");
+        if ($priority && $priority !== "all") {
+            $query->where("priority", $priority);
+        }
+
+        $status = $request->get("status", "all");
+        if ($status && $status !== "all") {
+            $query->where("status", $status);
+        }
+
+        $perPage = (int) $request->get("per_page", 10);
+        $tasks = $query
             ->orderBy("position")
             ->orderBy("created_at")
-            ->get();
+            ->paginate($perPage)
+            ->withQueryString();
 
         $productBacklogTasks = $project
             ->tasks()
@@ -49,6 +75,10 @@ class SprintBacklogController extends Controller
             "tasks" => $tasks,
             "productBacklogTasks" => $productBacklogTasks,
             "users" => $users,
+            "search" => $search,
+            "type" => $type,
+            "priority" => $priority,
+            "status" => $status,
         ]);
     }
 
@@ -108,7 +138,7 @@ class SprintBacklogController extends Controller
             "in_sprint_backlog" => true,
         ]);
 
-        return redirect()->route("projects.sprints.backlog.index", [$project->id, $sprint->id]);
+        return back();
     }
 
     public function update(Request $request, Project $project, Sprint $sprint, Task $task)
@@ -177,7 +207,7 @@ class SprintBacklogController extends Controller
             ),
         );
 
-        return redirect()->route("projects.sprints.backlog.index", [$project->id, $sprint->id]);
+        return back();
     }
 
     public function destroy(Project $project, Sprint $sprint, Task $task)
@@ -205,7 +235,7 @@ class SprintBacklogController extends Controller
             "in_sprint_backlog" => true,
         ]);
 
-        return redirect()->route("projects.sprints.backlog.index", [$project->id, $sprint->id]);
+        return back();
     }
 
     public function reorder(Request $request, Project $project, Sprint $sprint)
@@ -235,7 +265,7 @@ class SprintBacklogController extends Controller
             }
         });
 
-        return redirect()->route("projects.sprints.backlog.index", [$project->id, $sprint->id]);
+        return back();
     }
 
     public function moveUp(Project $project, Sprint $sprint, Task $task)
@@ -362,7 +392,7 @@ class SprintBacklogController extends Controller
             ]);
         }
 
-        return redirect()->route("projects.sprints.backlog.index", [$project->id, $sprint->id]);
+        return back();
     }
 
     public function addFromProductBacklog(Request $request, Project $project, Sprint $sprint)
@@ -428,7 +458,7 @@ class SprintBacklogController extends Controller
             ]);
         }
 
-        return redirect()->route("projects.sprints.backlog.index", [$project->id, $sprint->id]);
+        return back();
     }
 
     public function moveToProductBacklog(Project $project, Sprint $sprint, Task $task)
@@ -458,6 +488,6 @@ class SprintBacklogController extends Controller
             "sprint_name" => $sprint->name,
         ]);
 
-        return redirect()->route("projects.sprints.backlog.index", [$project->id, $sprint->id]);
+        return back();
     }
 }
