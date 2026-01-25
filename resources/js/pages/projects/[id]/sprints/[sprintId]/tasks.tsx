@@ -51,19 +51,13 @@ interface KanbanTask extends Omit<Task, "id"> {
     isNew?: boolean;
 }
 
-const PRIORITY_COLORS = {
-    low: "bg-green-50 text-green-700 border-green-200",
-    medium: "bg-blue-50 text-blue-700 border-blue-200",
-    high: "bg-orange-50 text-orange-700 border-orange-200",
-    critical: "bg-red-50 text-red-700 border-red-200",
-};
-
-const PRIORITY_LABELS: Record<string, string> = {
-    low: "Niski",
-    medium: "Średni",
-    high: "Wysoki",
-    critical: "Krytyczny",
-};
+function getPriorityColor(priority: number): string {
+    if (priority <= 2) return "bg-green-50 text-green-700 border-green-200";
+    if (priority <= 4) return "bg-lime-50 text-lime-700 border-lime-200";
+    if (priority <= 6) return "bg-yellow-50 text-yellow-700 border-yellow-200";
+    if (priority <= 8) return "bg-orange-50 text-orange-700 border-orange-200";
+    return "bg-red-50 text-red-700 border-red-200";
+}
 
 const TYPE_COLORS = {
     story: "bg-purple-50 text-purple-700 border-purple-200",
@@ -229,8 +223,8 @@ function TaskCard({
                             <Badge variant="outline" className={`text-xs ${TYPE_COLORS[task.type]}`}>
                                 {TYPE_LABELS[task.type] || task.type}
                             </Badge>
-                            <Badge variant="outline" className={`text-xs ${PRIORITY_COLORS[task.priority]}`}>
-                                Priorytet: {PRIORITY_LABELS[task.priority] || task.priority}
+                            <Badge variant="outline" className={`text-xs ${getPriorityColor(task.priority)}`}>
+                                Priorytet: {task.priority}
                             </Badge>
                         </div>
                     </CardHeader>
@@ -882,7 +876,7 @@ export default function SprintTasksPage({
             description: null,
             type: "task",
             status,
-            priority: "medium",
+            priority: 5,
             story_points: null,
             position: 0,
             github_issue_number: null,
@@ -901,7 +895,7 @@ export default function SprintTasksPage({
                 title,
                 status,
                 type: "task",
-                priority: "medium",
+                priority: 5,
             },
             {
                 preserveScroll: true,
@@ -1086,9 +1080,9 @@ export default function SprintTasksPage({
                                                         </Badge>
                                                         <Badge
                                                             variant="outline"
-                                                            className={`text-xs ${PRIORITY_COLORS[task.priority]}`}
+                                                            className={`text-xs ${getPriorityColor(task.priority)}`}
                                                         >
-                                                            {PRIORITY_LABELS[task.priority] || task.priority}
+                                                            Priorytet: {task.priority}
                                                         </Badge>
                                                         {task.story_points && (
                                                             <Badge variant="outline" className="text-xs">

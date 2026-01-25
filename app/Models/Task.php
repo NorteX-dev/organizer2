@@ -33,6 +33,7 @@ class Task extends Model
     protected $casts = [
         "story_points" => "integer",
         "position" => "integer",
+        "priority" => "integer",
     ];
 
     public function project(): BelongsTo

@@ -23,7 +23,7 @@ class TaskFactory extends Factory
             "description" => fake()->optional()->paragraph(),
             "type" => fake()->randomElement(["story", "task", "bug", "epic"]),
             "status" => fake()->randomElement(["Planned", "Backlog", "Active", "Completed"]),
-            "priority" => fake()->randomElement(["low", "medium", "high", "critical"]),
+            "priority" => fake()->numberBetween(1, 10),
             "story_points" => fake()->optional()->numberBetween(1, 21),
             "position" => 0,
             "github_issue_number" => fake()->optional()->numberBetween(1, 1000),

@@ -41,7 +41,7 @@ class SprintBacklogController extends Controller
 
         $priority = $request->get("priority", "all");
         if ($priority && $priority !== "all") {
-            $query->where("priority", $priority);
+            $query->where("priority", (int) $priority);
         }
 
         $status = $request->get("status", "all");
@@ -50,11 +50,7 @@ class SprintBacklogController extends Controller
         }
 
         $perPage = (int) $request->get("per_page", 10);
-        $tasks = $query
-            ->orderBy("position")
-            ->orderBy("created_at")
-            ->paginate($perPage)
-            ->withQueryString();
+        $tasks = $query->orderBy("position")->orderBy("created_at")->paginate($perPage)->withQueryString();
 
         $productBacklogTasks = $project
             ->tasks()
@@ -90,7 +86,7 @@ class SprintBacklogController extends Controller
             "title" => "required|string|max:255",
             "description" => "nullable|string",
             "type" => "nullable|in:story,task,bug,epic",
-            "priority" => "nullable|in:low,medium,high,critical",
+            "priority" => "nullable|integer|min:1|max:10",
             "story_points" => "nullable|integer|min:0",
             "assigned_to" => "nullable|exists:users,id",
             "parent_task_id" => "nullable|exists:tasks,id",
@@ -123,7 +119,7 @@ class SprintBacklogController extends Controller
             "description" => $validated["description"] ?? null,
             "type" => $validated["type"] ?? "task",
             "status" => "Backlog",
-            "priority" => $validated["priority"] ?? "medium",
+            "priority" => $validated["priority"] ?? 5,
             "story_points" => $validated["story_points"] ?? null,
             "assigned_to" => $validated["assigned_to"] ?? null,
             "position" => $maxPosition + 1,
@@ -159,7 +155,7 @@ class SprintBacklogController extends Controller
             "title" => "sometimes|string|max:255",
             "description" => "nullable|string",
             "type" => "sometimes|in:story,task,bug,epic",
-            "priority" => "sometimes|in:low,medium,high,critical",
+            "priority" => "sometimes|integer|min:1|max:10",
             "story_points" => "nullable|integer|min:0",
             "assigned_to" => "nullable|exists:users,id",
             "parent_task_id" => "nullable|exists:tasks,id",
@@ -347,7 +343,7 @@ class SprintBacklogController extends Controller
             "subtasks.*.title" => "required|string|max:255",
             "subtasks.*.description" => "nullable|string",
             "subtasks.*.type" => "nullable|in:story,task,bug",
-            "subtasks.*.priority" => "nullable|in:low,medium,high,critical",
+            "subtasks.*.priority" => "nullable|integer|min:1|max:10",
             "subtasks.*.story_points" => "nullable|integer|min:0",
             "subtasks.*.assigned_to" => "nullable|exists:users,id",
         ]);

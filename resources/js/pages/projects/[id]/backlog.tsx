@@ -20,19 +20,13 @@ import { router } from "@inertiajs/react";
 import { ArrowDown, ArrowUp, ChevronDown, ChevronRight, Pencil, Plus, Search, Split, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
-const PRIORITY_COLORS = {
-    low: "bg-green-50 text-green-700 border-green-200",
-    medium: "bg-blue-50 text-blue-700 border-blue-200",
-    high: "bg-orange-50 text-orange-700 border-orange-200",
-    critical: "bg-red-50 text-red-700 border-red-200",
-};
-
-const PRIORITY_LABELS: Record<string, string> = {
-    low: "Niski",
-    medium: "Średni",
-    high: "Wysoki",
-    critical: "Krytyczny",
-};
+function getPriorityColor(priority: number): string {
+    if (priority <= 2) return "bg-green-50 text-green-700 border-green-200";
+    if (priority <= 4) return "bg-lime-50 text-lime-700 border-lime-200";
+    if (priority <= 6) return "bg-yellow-50 text-yellow-700 border-yellow-200";
+    if (priority <= 8) return "bg-orange-50 text-orange-700 border-orange-200";
+    return "bg-red-50 text-red-700 border-red-200";
+}
 
 const TYPE_COLORS = {
     story: "bg-purple-50 text-purple-700 border-purple-200",
@@ -88,7 +82,7 @@ export default function BacklogPage({
         title: "",
         description: "",
         type: "task" as "story" | "task" | "bug" | "epic",
-        priority: "medium" as "low" | "medium" | "high" | "critical",
+        priority: 5,
         story_points: "",
         assigned_to: "unassigned",
     });
@@ -97,11 +91,11 @@ export default function BacklogPage({
             title: string;
             description: string;
             type: "story" | "task" | "bug";
-            priority: "low" | "medium" | "high" | "critical";
+            priority: number;
             story_points: string;
             assigned_to: string;
         }>
-    >([{ title: "", description: "", type: "task", priority: "medium", story_points: "", assigned_to: "unassigned" }]);
+    >([{ title: "", description: "", type: "task", priority: 5, story_points: "", assigned_to: "unassigned" }]);
 
     const taskItems = tasks.data ?? [];
 
@@ -165,7 +159,7 @@ export default function BacklogPage({
             title: "",
             description: "",
             type: "task",
-            priority: "medium",
+            priority: 5,
             story_points: "",
             assigned_to: "unassigned",
         });
@@ -235,7 +229,7 @@ export default function BacklogPage({
                 title: "",
                 description: "",
                 type: "task",
-                priority: "medium",
+                priority: 5,
                 story_points: "",
                 assigned_to: "unassigned",
             },
@@ -253,7 +247,7 @@ export default function BacklogPage({
                 title: st.title,
                 description: st.description,
                 type: st.type,
-                priority: st.priority,
+                priority: typeof st.priority === "number" ? st.priority : parseInt(st.priority),
                 story_points: st.story_points ? parseInt(st.story_points) : null,
                 assigned_to: st.assigned_to && st.assigned_to !== "unassigned" ? parseInt(st.assigned_to) : null,
             }));
@@ -278,7 +272,7 @@ export default function BacklogPage({
                 title: "",
                 description: "",
                 type: "task",
-                priority: "medium",
+                priority: 5,
                 story_points: "",
                 assigned_to: "unassigned",
             },
@@ -290,7 +284,16 @@ export default function BacklogPage({
     }
 
     function updateSubtaskField(index: number, field: string, value: string) {
-        setSubtasksForm(subtasksForm.map((st, i) => (i === index ? { ...st, [field]: value } : st)));
+        setSubtasksForm(
+            subtasksForm.map((st, i) =>
+                i === index
+                    ? {
+                          ...st,
+                          [field]: field === "priority" ? parseInt(value) : value,
+                      }
+                    : st,
+            ),
+        );
     }
 
     function renderTask(task: Task, level: number = 0, index?: number) {
@@ -363,8 +366,8 @@ export default function BacklogPage({
                                 <Badge variant="outline" className={`text-xs ${TYPE_COLORS[task.type]}`}>
                                     {TYPE_LABELS[task.type] || task.type}
                                 </Badge>
-                                <Badge variant="outline" className={`text-xs ${PRIORITY_COLORS[task.priority]}`}>
-                                    {PRIORITY_LABELS[task.priority] || task.priority}
+                                <Badge variant="outline" className={`text-xs ${getPriorityColor(task.priority)}`}>
+                                    Priorytet: {task.priority}
                                 </Badge>
                                 {totalPoints > 0 && (
                                     <Badge variant="outline" className="text-xs">
@@ -478,10 +481,11 @@ export default function BacklogPage({
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">Wszystkie priorytety</SelectItem>
-                            <SelectItem value="low">Niski</SelectItem>
-                            <SelectItem value="medium">Średni</SelectItem>
-                            <SelectItem value="high">Wysoki</SelectItem>
-                            <SelectItem value="critical">Krytyczny</SelectItem>
+                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+                                <SelectItem key={num} value={num.toString()}>
+                                    {num}
+                                </SelectItem>
+                            ))}
                         </SelectContent>
                     </Select>
                     <Select value={filterStatus} onValueChange={setFilterStatus}>
@@ -637,19 +641,20 @@ export default function BacklogPage({
                                     <div>
                                         <Label htmlFor="priority">Priorytet</Label>
                                         <Select
-                                            value={form.priority}
-                                            onValueChange={(value: "low" | "medium" | "high" | "critical") =>
-                                                setForm((f) => ({ ...f, priority: value }))
+                                            value={form.priority.toString()}
+                                            onValueChange={(value) =>
+                                                setForm((f) => ({ ...f, priority: parseInt(value) }))
                                             }
                                         >
                                             <SelectTrigger className="mt-1">
                                                 <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="low">Niski</SelectItem>
-                                                <SelectItem value="medium">Średni</SelectItem>
-                                                <SelectItem value="high">Wysoki</SelectItem>
-                                                <SelectItem value="critical">Krytyczny</SelectItem>
+                                                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+                                                    <SelectItem key={num} value={num.toString()}>
+                                                        {num}
+                                                    </SelectItem>
+                                                ))}
                                             </SelectContent>
                                         </Select>
                                     </div>
@@ -774,19 +779,20 @@ export default function BacklogPage({
                                                 <div>
                                                     <Label htmlFor={`subtask-priority-${index}`}>Priorytet</Label>
                                                     <Select
-                                                        value={subtask.priority}
-                                                        onValueChange={(
-                                                            value: "low" | "medium" | "high" | "critical",
-                                                        ) => updateSubtaskField(index, "priority", value)}
+                                                        value={subtask.priority.toString()}
+                                                        onValueChange={(value) =>
+                                                            updateSubtaskField(index, "priority", value)
+                                                        }
                                                     >
                                                         <SelectTrigger className="mt-1">
                                                             <SelectValue />
                                                         </SelectTrigger>
                                                         <SelectContent>
-                                                            <SelectItem value="low">Niski</SelectItem>
-                                                            <SelectItem value="medium">Średni</SelectItem>
-                                                            <SelectItem value="high">Wysoki</SelectItem>
-                                                            <SelectItem value="critical">Krytyczny</SelectItem>
+                                                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+                                                                <SelectItem key={num} value={num.toString()}>
+                                                                    {num}
+                                                                </SelectItem>
+                                                            ))}
                                                         </SelectContent>
                                                     </Select>
                                                 </div>

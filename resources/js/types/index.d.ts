@@ -88,7 +88,7 @@ export interface Task {
     description: string | null;
     type: "story" | "task" | "bug" | "epic";
     status: "Planned" | "Backlog" | "Active" | "Completed";
-    priority: "low" | "medium" | "high" | "critical";
+    priority: number;
     story_points: number | null;
     position: number;
     github_issue_number: string | null;

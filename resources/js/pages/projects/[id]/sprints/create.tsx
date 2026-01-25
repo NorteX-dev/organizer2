@@ -9,12 +9,13 @@ import type { Project, Task } from "@/types";
 import { router } from "@inertiajs/react";
 import { useMemo, useState } from "react";
 
-const PRIORITY_COLORS = {
-    low: "bg-green-50 text-green-700 border-green-200",
-    medium: "bg-blue-50 text-blue-700 border-blue-200",
-    high: "bg-orange-50 text-orange-700 border-orange-200",
-    critical: "bg-red-50 text-red-700 border-red-200",
-};
+function getPriorityColor(priority: number): string {
+    if (priority <= 2) return "bg-green-50 text-green-700 border-green-200";
+    if (priority <= 4) return "bg-lime-50 text-lime-700 border-lime-200";
+    if (priority <= 6) return "bg-yellow-50 text-yellow-700 border-yellow-200";
+    if (priority <= 8) return "bg-orange-50 text-orange-700 border-orange-200";
+    return "bg-red-50 text-red-700 border-red-200";
+}
 
 const TYPE_COLORS = {
     story: "bg-purple-50 text-purple-700 border-purple-200",
@@ -210,9 +211,9 @@ export default function SprintsCreatePage({ project, backlogTasks = [] }: Sprint
                                                     </Badge>
                                                     <Badge
                                                         variant="outline"
-                                                        className={`text-xs ${PRIORITY_COLORS[task.priority]}`}
+                                                        className={`text-xs ${getPriorityColor(task.priority)}`}
                                                     >
-                                                        {task.priority}
+                                                        Priorytet: {task.priority}
                                                     </Badge>
                                                     {task.story_points && (
                                                         <Badge variant="outline" className="text-xs">
