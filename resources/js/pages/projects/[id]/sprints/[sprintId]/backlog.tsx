@@ -53,6 +53,8 @@ interface SprintBacklogPageProps {
     type?: string;
     priority?: string;
     status?: string;
+    canManageBacklog?: boolean;
+    isReadOnly?: boolean;
 }
 
 interface TasksPaginated {
@@ -73,6 +75,8 @@ export default function SprintBacklogPage({
     type: initialType = "all",
     priority: initialPriority = "all",
     status: initialStatus = "all",
+    canManageBacklog = true,
+    isReadOnly = false,
 }: SprintBacklogPageProps) {
     const [searchQuery, setSearchQuery] = useState(initialSearch);
     const [filterType, setFilterType] = useState<string>(initialType);
@@ -434,27 +438,29 @@ export default function SprintBacklogPage({
                                 )}
                             </div>
                         </div>
-                        <div className="flex gap-2">
-                            {(task.type === "epic" || task.type === "story") && level === 0 && (
-                                <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => openCreateSubtasks(task)}
-                                    title="Podziel na podzadania"
-                                >
-                                    <Split className="mr-2 size-4" />
-                                    Podziel
+                        {canManageBacklog && (
+                            <div className="flex gap-2">
+                                {(task.type === "epic" || task.type === "story") && level === 0 && (
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => openCreateSubtasks(task)}
+                                        title="Podziel na podzadania"
+                                    >
+                                        <Split className="mr-2 size-4" />
+                                        Podziel
+                                    </Button>
+                                )}
+                                <Button size="sm" variant="secondary" onClick={() => openEdit(task)}>
+                                    <Pencil className="mr-2 size-4" />
+                                    Edytuj
                                 </Button>
-                            )}
-                            <Button size="sm" variant="secondary" onClick={() => openEdit(task)}>
-                                <Pencil className="mr-2 size-4" />
-                                Edytuj
-                            </Button>
-                            <Button size="sm" variant="destructive" onClick={() => handleDelete(task.id)}>
-                                <Trash2 className="mr-2 size-4" />
-                                Usuń
-                            </Button>
-                        </div>
+                                <Button size="sm" variant="destructive" onClick={() => handleDelete(task.id)}>
+                                    <Trash2 className="mr-2 size-4" />
+                                    Usuń
+                                </Button>
+                            </div>
+                        )}
                     </CardHeader>
                 </Card>
                 {hasSubtasks && isExpanded && (
@@ -476,18 +482,25 @@ export default function SprintBacklogPage({
                 { title: "Backlog sprintowy", href: `/projects/${project.id}/sprints/${sprint.id}/backlog` },
             ]}
         >
+            {isReadOnly && (
+                <div className="mb-4 rounded-lg border border-yellow-200 bg-yellow-50 p-3 text-sm text-yellow-800">
+                    <strong>Tryb tylko do odczytu:</strong> Jesteś zalogowany jako deweloper. Możesz przeglądać backlog, ale nie możesz go modyfikować.
+                </div>
+            )}
             <HeaderSection
                 title={`Backlog sprintowy: ${sprint.name}`}
                 rightHandItem={
-                    <div className="flex gap-2">
-                        <Button onClick={() => setAddFromProductBacklogOpen(true)} variant="outline">
-                            Dodaj z backlogu produktu
-                        </Button>
-                        <Button onClick={openCreate} className="cursor-pointer">
-                            <Plus className="mr-2 size-4" />
-                            Utwórz zadanie
-                        </Button>
-                    </div>
+                    canManageBacklog && (
+                        <div className="flex gap-2">
+                            <Button onClick={() => setAddFromProductBacklogOpen(true)} variant="outline">
+                                Dodaj z backlogu produktu
+                            </Button>
+                            <Button onClick={openCreate} className="cursor-pointer">
+                                <Plus className="mr-2 size-4" />
+                                Utwórz zadanie
+                            </Button>
+                        </div>
+                    )
                 }
             />
 

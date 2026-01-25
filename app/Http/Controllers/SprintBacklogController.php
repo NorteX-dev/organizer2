@@ -9,6 +9,7 @@ use App\Models\Task;
 use App\Models\User;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
@@ -19,6 +20,10 @@ class SprintBacklogController extends Controller
     public function index(Request $request, Project $project, Sprint $sprint)
     {
         $this->authorize("view", $sprint);
+
+        $user = Auth::user();
+        $team = $project->team;
+        $canManageBacklog = $user->isAdmin() || ($team && $user->hasAnyRole($team, ["admin", "product_owner"]));
 
         $query = $project
             ->tasks()

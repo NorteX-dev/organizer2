@@ -9,7 +9,7 @@ import { UserInfo } from "@/components/user-info";
 import { useMobileNavigation } from "@/hooks/use-mobile-navigation";
 import { type SharedData, type User } from "@/types";
 import { Link, router, usePage } from "@inertiajs/react";
-import { LogOut, Settings } from "lucide-react";
+import { LogOut } from "lucide-react";
 
 interface UserMenuContentProps {
     user: User;
@@ -34,15 +34,6 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <TeamSelector teams={teams || []} currentTeam={currentTeam} />
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-                <DropdownMenuItem asChild>
-                    <Link className="block w-full" href="/settings/profile" as="button" prefetch onClick={cleanup}>
-                        <Settings className="mr-2" />
-                        Ustawienia
-                    </Link>
-                </DropdownMenuItem>
-            </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
                 <Link

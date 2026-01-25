@@ -50,6 +50,8 @@ interface BacklogPageProps {
     type?: string;
     priority?: string;
     status?: string;
+    canManageBacklog?: boolean;
+    isReadOnly?: boolean;
 }
 
 interface TasksPaginated {
@@ -68,6 +70,8 @@ export default function BacklogPage({
     type: initialType = "all",
     priority: initialPriority = "all",
     status: initialStatus = "all",
+    canManageBacklog = true,
+    isReadOnly = false,
 }: BacklogPageProps) {
     const [searchQuery, setSearchQuery] = useState(initialSearch);
     const [filterType, setFilterType] = useState<string>(initialType);
@@ -401,7 +405,7 @@ export default function BacklogPage({
                             </div>
                         </div>
                         <div className="flex gap-2">
-                            {(task.type === "epic" || task.type === "story") && level === 0 && (
+                            {canManageBacklog && (task.type === "epic" || task.type === "story") && level === 0 && (
                                 <Button
                                     size="sm"
                                     variant="outline"
@@ -412,14 +416,18 @@ export default function BacklogPage({
                                     Podziel
                                 </Button>
                             )}
-                            <Button size="sm" variant="secondary" onClick={() => openEdit(task)}>
-                                <Pencil className="mr-2 size-4" />
-                                Edytuj
-                            </Button>
-                            <Button size="sm" variant="destructive" onClick={() => handleDelete(task.id)}>
-                                <Trash2 className="mr-2 size-4" />
-                                Usuń
-                            </Button>
+                            {canManageBacklog && (
+                                <>
+                                    <Button size="sm" variant="secondary" onClick={() => openEdit(task)}>
+                                        <Pencil className="mr-2 size-4" />
+                                        Edytuj
+                                    </Button>
+                                    <Button size="sm" variant="destructive" onClick={() => handleDelete(task.id)}>
+                                        <Trash2 className="mr-2 size-4" />
+                                        Usuń
+                                    </Button>
+                                </>
+                            )}
                         </div>
                     </CardHeader>
                 </Card>
@@ -440,13 +448,20 @@ export default function BacklogPage({
                 { title: "Backlog", href: `/projects/${project.id}/backlog` },
             ]}
         >
+            {isReadOnly && (
+                <div className="mb-4 rounded-lg border border-yellow-200 bg-yellow-50 p-3 text-sm text-yellow-800">
+                    <strong>Tryb tylko do odczytu:</strong> Jesteś zalogowany jako deweloper. Możesz przeglądać backlog, ale nie możesz go modyfikować.
+                </div>
+            )}
             <HeaderSection
                 title="Backlog produktu"
                 rightHandItem={
-                    <Button onClick={openCreate} className="cursor-pointer">
-                        <Plus className="mr-2 size-4" />
-                        Utwórz zadanie
-                    </Button>
+                    canManageBacklog && (
+                        <Button onClick={openCreate} className="cursor-pointer">
+                            <Plus className="mr-2 size-4" />
+                            Utwórz zadanie
+                        </Button>
+                    )
                 }
             />
 

@@ -62,6 +62,7 @@ export interface Project {
     github_repo?: string | null;
     created_at: string;
     updated_at: string;
+    team?: Team;
 }
 
 export interface Sprint {

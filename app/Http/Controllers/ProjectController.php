@@ -35,27 +35,38 @@ class ProjectController extends Controller
 
     public function index(Request $request)
     {
-        $redirect = $this->ensureCurrentTeam();
-        if ($redirect) {
-            return $redirect;
+        $user = Auth::user();
+        $isAdmin = $user->isAdmin();
+
+        // Admin can see all projects, others need a team
+        if (!$isAdmin) {
+            $redirect = $this->ensureCurrentTeam();
+            if ($redirect) {
+                return $redirect;
+            }
         }
 
-        $user = Auth::user();
-        $team = $user->currentTeam();
-
-        $query = Project::where("team_id", $team->id);
+        if ($isAdmin) {
+            // Admin sees all projects from all teams
+            $query = Project::with("team");
+        } else {
+            $team = $user->currentTeam();
+            $query = Project::where("team_id", $team->id)->with("team");
+        }
 
         if ($request->has("search") && $request->search) {
             $query->where("name", "like", "%" . $request->search . "%");
         }
 
-        $perPage = $request->get("per_page", 3); // Dla testów 3
+        $perPage = $request->get("per_page", 3);
         $projects = $query->orderBy("created_at", "desc")->paginate($perPage)->withQueryString();
 
         return Inertia::render("projects/index", [
             "projects" => $projects,
-            "team" => $team,
+            "team" => $isAdmin ? null : $user->currentTeam(),
             "search" => $request->get("search", ""),
+            "isAdmin" => $isAdmin,
+            "showingAllTeams" => $isAdmin,
         ]);
     }
 

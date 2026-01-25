@@ -20,9 +20,13 @@ interface ProjectsPaginated {
 export default function ProjectsIndexPage({
     projects,
     search: initialSearch = "",
+    isAdmin = false,
+    showingAllTeams = false,
 }: {
     projects: ProjectsPaginated;
     search?: string;
+    isAdmin?: boolean;
+    showingAllTeams?: boolean;
 }) {
     const [open, setOpen] = useState(false);
     const [form, setForm] = useState({ name: "", status: "" });
@@ -103,9 +107,14 @@ export default function ProjectsIndexPage({
     return (
         <AppLayout breadcrumbs={[{ title: "Projekty", href: "/projects" }]}>
             <Head title="Projekty" />
+            {showingAllTeams && (
+                <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800">
+                    <strong>Tryb administratora:</strong> Wyświetlane są wszystkie projekty ze wszystkich zespołów.
+                </div>
+            )}
             <HeaderSection
                 title="Projekty"
-                description="Zarządzaj projektami swojego zespołu."
+                description={showingAllTeams ? "Zarządzaj wszystkimi projektami." : "Zarządzaj projektami swojego zespołu."}
                 rightHandItem={
                     <div className="flex items-center gap-2">
                         <div className="relative">
@@ -164,6 +173,7 @@ export default function ProjectsIndexPage({
                                 <thead>
                                     <tr>
                                         <th className="px-3 py-2 text-left">Nazwa</th>
+                                        {showingAllTeams && <th className="px-3 py-2 text-left">Zespół</th>}
                                         <th className="px-3 py-2 text-left">Status</th>
                                         <th className="px-3 py-2 text-left">Data utworzenia</th>
                                         <th className="w-6 px-3 py-2">Akcje</th>
@@ -177,6 +187,9 @@ export default function ProjectsIndexPage({
                                             onClick={() => router.visit(`/projects/${project.id}/sprints`)}
                                         >
                                             <td className="px-3 py-2">{project.name}</td>
+                                            {showingAllTeams && (
+                                                <td className="px-3 py-2">{project.team?.name || "Brak zespołu"}</td>
+                                            )}
                                             <td className="px-3 py-2">{translateStatus(project.status || "")}</td>
                                             <td className="px-3 py-2">{formatDate(project.created_at)}</td>
                                             <td className="flex justify-center space-x-2 px-3 py-2">

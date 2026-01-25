@@ -72,6 +72,14 @@ class User extends Authenticatable
         return in_array($userRole, $roles);
     }
 
+    /**
+     * Check if user is admin in any team
+     */
+    public function isAdmin(): bool
+    {
+        return $this->teams()->wherePivot("role", "admin")->exists();
+    }
+
     public function currentTeam(): ?Team
     {
         $teamId = session("current_team_id");
