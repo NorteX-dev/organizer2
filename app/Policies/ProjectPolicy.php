@@ -13,7 +13,6 @@ class ProjectPolicy
      */
     public function viewAny(User $user): bool
     {
-        // Admin can view all projects, others need a team
         if ($user->isAdmin()) {
             return true;
         }
@@ -25,7 +24,6 @@ class ProjectPolicy
      */
     public function view(User $user, Project $project): bool
     {
-        // Admin can view all projects
         if ($user->isAdmin()) {
             return true;
         }
@@ -78,7 +76,6 @@ class ProjectPolicy
      */
     public function manageBacklog(User $user, Project $project): bool
     {
-        // Admin can manage all backlogs
         if ($user->isAdmin()) {
             return true;
         }
@@ -95,7 +92,6 @@ class ProjectPolicy
      */
     public function viewBacklog(User $user, Project $project): bool
     {
-        // Admin can view all backlogs
         if ($user->isAdmin()) {
             return true;
         }
@@ -105,7 +101,6 @@ class ProjectPolicy
             return false;
         }
         
-        // Developer has read-only access, Product Owner and Admin have full access
         return $user->teams()->where("teams.id", $team->id)->exists();
     }
 

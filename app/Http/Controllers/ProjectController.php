@@ -38,7 +38,6 @@ class ProjectController extends Controller
         $user = Auth::user();
         $isAdmin = $user->isAdmin();
 
-        // Admin can see all projects, others need a team
         if (!$isAdmin) {
             $redirect = $this->ensureCurrentTeam();
             if ($redirect) {
@@ -47,7 +46,6 @@ class ProjectController extends Controller
         }
 
         if ($isAdmin) {
-            // Admin sees all projects from all teams
             $query = Project::with("team");
         } else {
             $team = $user->currentTeam();
