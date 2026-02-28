@@ -1,0 +1,54 @@
+INSTRUKCJA INSTALACJI I URUCHOMIENIA APLIKACJI
+
+Wymagania systemowe:
+- Windows 10
+- PHP 8.4 NTS
+- PostgreSQL 18
+- Composer
+- Node.js LTS
+
+
+1. INSTALACJA ŚRODOWISKA
+
+1.1. PHP 8.4 NTS
+   - Zainstalować z https://windows.php.net/download/ do C:\php
+   - Dodać C:\php do zmiennej PATH
+   - W pliku php.ini włączyć rozszerzenia: pdo_pgsql, pgsql, mbstring, openssl, curl, fileinfo
+
+1.2. PostgreSQL
+   - Zainstalować z https://www.postgresql.org/download/windows/
+   - Utworzyć bazę danych:
+     CREATE DATABASE organizer2;
+     CREATE USER organizer_user WITH PASSWORD 'haslo';
+     GRANT ALL PRIVILEGES ON DATABASE organizer2 TO organizer_user;
+
+1.3. Composer i Node.js
+   - Composer: https://getcomposer.org/download/
+   - Node.js: https://nodejs.org/
+
+
+2. KONFIGURACJA PROJEKTU
+
+composer install
+npm install
+copy .env.example .env
+
+Edycja pliku .env:
+   DB_DATABASE=organizer2
+   DB_USERNAME=organizer_user
+   DB_PASSWORD=haslo
+   # Jeżeli host inny niż localhost
+   DB_HOST=127.0.0.1
+   # Jeżeli port inny niż 5432
+   DB_PORT=5432
+
+php artisan key:generate
+php artisan migrate
+
+
+3. URUCHOMIENIE
+
+Terminal 1: composer run dev
+Terminal 2 (opcjonalnie, do tablicy WebSocket): php artisan reverb:start
+
+Aplikacja dostępna pod adresem: http://localhost:8000
